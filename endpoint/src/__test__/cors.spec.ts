@@ -9,11 +9,13 @@ import type * as methods from "../methods";
 const testCORSedEP = async (
   t: ExecutionContext,
   method: methods.HttpMethod,
+  allowHeaders: spec.CORSOptions["allowHeaders"],
 ) => {
+  t.plan(7);
   const md = {};
   const corsOptions: spec.CORSOptions = {
     origin: "origin",
-    allowHeaders: "allow-headers",
+    allowHeaders,
   };
   const url = /url/;
   const response: ep.DynamicHandlerResponse<unknown> = {
@@ -88,8 +90,11 @@ const testCORSedEP = async (
         "Access-Control-Allow-Origin": corsOptions.origin,
       };
       if (method === "OPTIONS") {
-        expectedHeaders["Access-Control-Allow-Headers"] =
-          corsOptions.allowHeaders;
+        expectedHeaders["Access-Control-Allow-Headers"] = Array.isArray(
+          allowHeaders,
+        )
+          ? allowHeaders.join(",")
+          : allowHeaders;
       }
       t.deepEqual(
         awaited.data.headers,
@@ -104,6 +109,21 @@ const testCORSedEP = async (
   }
 };
 
-test("Validate withCORSOptions works for GET", testCORSedEP, "GET");
-
-test("Validate withCORSOptions works for OPTIONS", testCORSedEP, "OPTIONS");
+test(
+  "Validate withCORSOptions works for OPTIONS",
+  testCORSedEP,
+  "OPTIONS",
+  "allow-headers",
+);
+test(
+  "Validate withCORSOptions works for GET",
+  testCORSedEP,
+  "GET",
+  "allow-headers",
+);
+test(
+  "Validate withCORSOptions works for GET and multiple headers",
+  testCORSedEP,
+  "GET",
+  ["header1", "header2"],
+);
