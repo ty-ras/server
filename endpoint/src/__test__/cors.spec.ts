@@ -11,7 +11,7 @@ const testCORSedEP = async (
   method: methods.HttpMethod,
   allowHeaders: spec.CORSOptions["allowHeaders"],
 ) => {
-  t.plan(7);
+  t.plan(7 + (method === "OPTIONS" ? 0 : 1));
   const md = {};
   const corsOptions: spec.CORSOptions = {
     origin: "origin",
@@ -29,7 +29,7 @@ const testCORSedEP = async (
         error: "none",
         data: {
           contentType: "application/json",
-          output: {},
+          output: "output",
         },
       }),
     },
@@ -101,6 +101,12 @@ const testCORSedEP = async (
         expectedHeaders,
         "CORSed EP must return correct headers",
       );
+      if (method !== "OPTIONS") {
+        t.deepEqual(data.omit(awaited.data, "headers"), {
+          contentType: "application/json",
+          output: "output",
+        });
+      }
     } else {
       t.fail("CORSed EP must not return error.");
     }
