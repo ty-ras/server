@@ -31,22 +31,13 @@ export type DynamicHandlerResponse<TContext> =
     };
 
 export type StaticAppEndpointHandler<TContext> = {
-  contextValidator: Pick<
-    dataServer.ContextValidatorSpec<TContext, unknown, unknown>,
-    "validator" | "getState"
-  >;
-  urlValidator:
-    | {
-        groupNames: Record<string, string>;
-        validators: dataServer.URLParameterValidators<dataServer.RuntimeAnyURLData>;
-      }
-    | undefined;
-  headerValidator:
-    | dataServer.RequestHeaderDataValidators<dataServer.RuntimeAnyHeaders>
-    | undefined;
-  queryValidator:
-    | dataServer.QueryDataValidators<dataServer.RuntimeAnyQuery>
-    | undefined;
+  contextValidator: dataServer.ContextValidatorSpec<TContext, unknown, unknown>;
+  urlValidator?: {
+    groupNames: Record<string, string>;
+    validators: dataServer.URLParameterValidators<dataServer.RuntimeAnyURLData>;
+  };
+  headerValidator?: dataServer.RequestHeaderDataValidators<dataServer.RuntimeAnyHeaders>;
+  queryValidator?: dataServer.QueryDataValidators<dataServer.RuntimeAnyQuery>;
   bodyValidator?: dataServer.DataValidatorRequestInput<unknown>;
   handler: StaticAppEndpointHandlerFunction<TContext>;
 };

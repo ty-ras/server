@@ -19,16 +19,6 @@ export const withCORSOptions = <
           handlerResult = {
             found: "handler",
             handler: {
-              contextValidator: {
-                validator: (ctx) => ({
-                  error: "none",
-                  data: ctx,
-                }),
-                getState: () => undefined,
-              },
-              urlValidator: undefined,
-              queryValidator: undefined,
-              headerValidator: undefined,
               handler: () => ({
                 error: "none",
                 data: {
@@ -43,6 +33,13 @@ export const withCORSOptions = <
                   },
                 },
               }),
+              contextValidator: {
+                validator: (ctx) => ({
+                  error: "none",
+                  data: ctx,
+                }),
+                getState: () => undefined,
+              },
             },
           };
         } else if (handlerResult.found === "handler") {
