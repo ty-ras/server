@@ -1,6 +1,6 @@
 import type * as method from "./methods";
 import type * as data from "@ty-ras/data";
-import type * as dataServer from "@ty-ras/data-backend";
+import type * as dataBE from "@ty-ras/data-backend";
 
 export interface AppEndpoint<
   TContext,
@@ -31,14 +31,14 @@ export type DynamicHandlerResponse<TContext> =
     };
 
 export type StaticAppEndpointHandler<TContext> = {
-  contextValidator: dataServer.ContextValidatorSpec<TContext, unknown, unknown>;
+  contextValidator: dataBE.ContextValidatorSpec<TContext, unknown, unknown>;
   urlValidator?: {
     groupNames: Record<string, string>;
-    validators: dataServer.URLParameterValidators<dataServer.RuntimeAnyURLData>;
+    validators: dataBE.URLParameterValidators<dataBE.RuntimeAnyURLData>;
   };
-  headerValidator?: dataServer.RequestHeaderDataValidators<dataServer.RuntimeAnyHeaders>;
-  queryValidator?: dataServer.QueryDataValidators<dataServer.RuntimeAnyQuery>;
-  bodyValidator?: dataServer.DataValidatorRequestInput<unknown>;
+  headerValidator?: dataBE.RequestHeaderDataValidators<dataBE.RuntimeAnyHeaders>;
+  queryValidator?: dataBE.QueryDataValidators<dataBE.RuntimeAnyQuery>;
+  bodyValidator?: dataBE.DataValidatorRequestInput<unknown>;
   handler: StaticAppEndpointHandlerFunction<TContext>;
 };
 
@@ -46,11 +46,11 @@ export type StaticAppEndpointHandlerFunction<TContext> = (args: {
   context: TContext;
   state: unknown;
   url: unknown;
-  headers: dataServer.RuntimeAnyHeaders;
+  headers: dataBE.RuntimeAnyHeaders;
   query: unknown;
   body: unknown;
 }) => MaybePromise<
-  data.DataValidatorResult<dataServer.DataValidatorResponseOutputSuccess>
+  data.DataValidatorResult<dataBE.DataValidatorResponseOutputSuccess>
 >;
 
 export type MaybePromise<T> = T | Promise<T>;
