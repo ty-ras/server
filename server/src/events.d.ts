@@ -12,10 +12,10 @@ export type ServerEventEmitter<
 >;
 
 export interface EventEmitter<TVirtualEvents extends object> {
-  emit: <TEventName extends keyof TVirtualEvents>(
+  emit<TEventName extends keyof TVirtualEvents>(
     eventName: TEventName,
     eventArgs: TVirtualEvents[TEventName],
-  ) => void;
+  ): void;
 }
 
 // This is 'virtual interface' -> instances of this interface are never meant to be created!
