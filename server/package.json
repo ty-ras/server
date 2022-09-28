@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build:run": "yarn run lint && yarn run tsc",
-    "build:ci": "yarn run clear-build-artifacts && yarn run build:run && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS",
+    "build:ci": "yarn run clear-build-artifacts && yarn run tsc && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS",
     "clear-build-artifacts": "rm -rf dist build",
     "lint": "eslint ./src --ext .ts,.tsx",
     "rename-js-to-mjs": "find dist -name '*.js' -type f -exec sh -c 'for f in \"$@\"; do mv -- \"$f\" \"${f%.js}.mjs\"; done' -- {} +",
