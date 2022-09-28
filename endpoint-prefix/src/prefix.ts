@@ -33,23 +33,7 @@ export function atPrefix<TContext, TMetadata extends Record<string, unknown>>(
       );
       return {
         url: new RegExp(`${ep.escapeRegExp(prefix)}(${regExpSource})`),
-        handler: (method, groups) => {
-          const matchingHandler = findFirstMatching(
-            builtEndpoints,
-            ({ regExpGroupName, handler }) => {
-              if (groups[regExpGroupName] !== undefined) {
-                return handler(method, groups);
-              }
-            },
-          );
-          // Matching handler should really never be undefined at this point, but let's failsafe anyway
-          return (
-            matchingHandler ?? {
-              found: "invalid-method",
-              allowedMethods: [],
-            }
-          );
-        },
+        handler: createPrefixedHandlerImpl(builtEndpoints),
       };
     },
     getMetadata: (urlPrefix) => {
@@ -73,7 +57,7 @@ export function atPrefix<TContext, TMetadata extends Record<string, unknown>>(
 const buildEndpoints = <TContext, TMetadata extends Record<string, unknown>>(
   endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TMetadata>>,
   regExpGroupNamePrefix?: string,
-) => {
+): PrefixedAppEndpointsInfo<TContext> => {
   const isTopLevel = !regExpGroupNamePrefix;
   const groupNamePrefix = isTopLevel ? "e_" : regExpGroupNamePrefix;
   // TODO maybe throw if multiple endpoints have same regex?
@@ -124,4 +108,34 @@ function findFirstMatching<T, U>(
     }
   }
   return undefined;
+}
+
+const createPrefixedHandlerImpl =
+  <TContext>(
+    builtEndpoints: PrefixedAppEndpointsInfo<TContext>["builtEndpoints"],
+  ): ep.DynamicHandlerGetter<TContext> =>
+  (method, groups) => {
+    const matchingHandler = findFirstMatching(
+      builtEndpoints,
+      ({ regExpGroupName, handler }) => {
+        if (groups[regExpGroupName] !== undefined) {
+          return handler(method, groups);
+        }
+      },
+    );
+    // Matching handler should really never be undefined at this point, but let's failsafe anyway
+    return (
+      matchingHandler ?? {
+        found: "invalid-method",
+        allowedMethods: [],
+      }
+    );
+  };
+
+interface PrefixedAppEndpointsInfo<TContext> {
+  builtEndpoints: {
+    regExpGroupName: string;
+    handler: ep.DynamicHandlerGetter<TContext>;
+  }[];
+  regExpSource: string;
 }

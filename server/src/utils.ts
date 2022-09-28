@@ -122,13 +122,10 @@ export const checkURLParametersForHandler = <TContext, TState>(
         );
       } else {
         const validatorResult = validator(groupValue);
-        switch (validatorResult.error) {
-          case "none":
-            url[parameterName] = validatorResult.data;
-            break;
-          default:
-            errors.push(validatorResult);
-            break;
+        if (validatorResult.error === "none") {
+          url[parameterName] = validatorResult.data;
+        } else {
+          errors.push(validatorResult);
         }
       }
     }
@@ -232,25 +229,22 @@ export const checkBodyForHandler = async <TContext, TState>(
           },
         }),
     });
-    switch (bodyValidationResult.error) {
-      case "none":
-        body = bodyValidationResult.data;
-        proceedToInvokeHandler = true;
-        break;
-      default:
-        proceedToInvokeHandler = false;
-        if (bodyValidationResult.error === "error") {
-          events?.emit("onInvalidBody", {
-            ...eventArgs,
-            validationError: bodyValidationResult,
-          });
-        } else {
-          events?.emit("onInvalidContentType", {
-            ...eventArgs,
-            contentType,
-          });
-        }
-        break;
+    if (bodyValidationResult.error === "none") {
+      body = bodyValidationResult.data;
+      proceedToInvokeHandler = true;
+    } else {
+      proceedToInvokeHandler = false;
+      if (bodyValidationResult.error === "error") {
+        events?.emit("onInvalidBody", {
+          ...eventArgs,
+          validationError: bodyValidationResult,
+        });
+      } else {
+        events?.emit("onInvalidContentType", {
+          ...eventArgs,
+          contentType,
+        });
+      }
     }
   } else {
     proceedToInvokeHandler =
