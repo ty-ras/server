@@ -117,7 +117,7 @@ export const checkURLParametersForHandler = <TContext, TState>(
       if (groupValue === undefined) {
         errors.push(
           data.exceptionAsValidationError(
-            `No regexp match for group ${groupName}`,
+            `No regexp match for group "${groupName}".`,
           ),
         );
       } else {
@@ -151,23 +151,17 @@ export const checkQueryForHandler = <TContext, TState>(
     | evt.ServerEventEmitter<TContext, TState, "onInvalidQuery">
     | undefined,
   queryValidation: ep.StaticAppEndpointHandler<TContext>["queryValidator"],
-  queryObject:
-    | Record<string, string | Array<string> | undefined>
-    | (() => data.DataValidatorResultError),
+  queryObject: Record<string, data.QueryValue>,
 ) => {
   let query: dataBE.RuntimeAnyQuery = {};
   let proceedToInvokeHandler = true;
   if (queryValidation) {
     let errors: Record<string, data.DataValidatorResultError>;
-    if (typeof queryObject === "function") {
-      errors = { [""]: queryObject() };
-    } else {
-      [proceedToInvokeHandler, query, errors] = dataBE.checkHeaders(
-        queryValidation,
-        (q) => queryObject[q],
-        false,
-      );
-    }
+    [proceedToInvokeHandler, query, errors] = dataBE.checkHeaders(
+      queryValidation,
+      (q) => queryObject[q],
+      false,
+    );
     if (!proceedToInvokeHandler) {
       events?.emit("onInvalidQuery", {
         ...eventArgs,
