@@ -33,7 +33,7 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
     ValidationErrorArgs<data.DataValidatorResultError | undefined>;
   // URL matched combined regex, but parameter validation failed
   onInvalidUrlParameters: EventArguments<TContext, TState> &
-    ValidationErrorArgs;
+    ValidationErrorArgs<Record<string, Array<data.DataValidatorResultError>>>;
   onInvalidRequestHeaders: EventArguments<TContext, TState> &
     ValidationErrorArgs<Record<string, data.DataValidatorResultError>>;
   // Could not parse query string

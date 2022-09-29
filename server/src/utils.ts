@@ -103,19 +103,22 @@ export const checkURLParametersForHandler = <TContext, TState>(
     | evt.ServerEventEmitter<TContext, TState, "onInvalidUrlParameters">
     | undefined,
   urlValidation: ep.StaticAppEndpointHandler<TContext>["urlValidator"],
+  // This is not really that complex...
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
   let url: Record<string, unknown> | undefined;
-  let proceedToInvokeHandler: boolean;
+  let proceedToInvokeHandler = true;
   if (urlValidation) {
     url = {};
-    const errors: Array<data.DataValidatorResultError> = [];
+    const errors: Record<string, Array<data.DataValidatorResultError>> = {};
     for (const [parameterName, validator] of Object.entries(
       urlValidation.validators,
     )) {
       const groupName = urlValidation.groupNames[parameterName];
       const groupValue = eventArgs.groups[groupName];
+      const thisErrors: Array<data.DataValidatorResultError> = [];
       if (groupValue === undefined) {
-        errors.push(
+        thisErrors.push(
           data.exceptionAsValidationError(
             `No regexp match for group "${groupName}".`,
           ),
@@ -125,19 +128,20 @@ export const checkURLParametersForHandler = <TContext, TState>(
         if (validatorResult.error === "none") {
           url[parameterName] = validatorResult.data;
         } else {
-          errors.push(validatorResult);
+          thisErrors.push(validatorResult);
         }
       }
+      if (thisErrors.length > 0) {
+        proceedToInvokeHandler = false;
+        errors[parameterName] = thisErrors;
+      }
     }
-    proceedToInvokeHandler = errors.length === 0;
     if (!proceedToInvokeHandler) {
       events?.emit("onInvalidUrlParameters", {
         ...eventArgs,
-        validationError: data.combineErrorObjects(errors),
+        validationError: errors,
       });
     }
-  } else {
-    proceedToInvokeHandler = true;
   }
   return [proceedToInvokeHandler, url] as const;
 };
@@ -217,17 +221,16 @@ export const checkBodyForHandler = async <TContext, TState>(
   if (isBodyValid) {
     const bodyValidationResult = await isBodyValid({
       contentType: contentType,
-      input:
-        bodyStream ??
-        new stream.Readable({
-          read() {
-            setImmediate(() => {
-              this.push(null);
-              this.push(Buffer.alloc(0));
-              this.push(null);
-            });
-          },
-        }),
+      input: bodyStream ?? stream.Readable.from([]),
+      // new stream.Readable({
+      //   read() {
+      //     setImmediate(() => {
+      //       this.push(null);
+      //       this.push(Buffer.alloc(0));
+      //       this.push(null);
+      //     });
+      //   },
+      // }),
     });
     if (bodyValidationResult.error === "none") {
       body = bodyValidationResult.data;
