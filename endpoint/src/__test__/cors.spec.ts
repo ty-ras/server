@@ -62,8 +62,34 @@ const testCORSedEP = async (
   const { url: seenURL, handler: seenHandler } =
     corsEP.getRegExpAndHandler("ignored");
   t.is(seenURL, url, "CORSed EP must return same URL");
-  const handlerResponse = seenHandler(method, {});
+  await validateCORSedResponse(t, method, corsOptions, seenHandler(method, {}));
+};
 
+test(
+  "Validate withCORSOptions works for OPTIONS",
+  testCORSedEP,
+  "OPTIONS",
+  "allow-headers",
+);
+test(
+  "Validate withCORSOptions works for GET",
+  testCORSedEP,
+  "GET",
+  "allow-headers",
+);
+test(
+  "Validate withCORSOptions works for GET and multiple headers",
+  testCORSedEP,
+  "GET",
+  ["header1", "header2"],
+);
+
+const validateCORSedResponse = async (
+  t: ExecutionContext,
+  method: methods.HttpMethod,
+  { allowHeaders, origin }: spec.CORSOptions,
+  handlerResponse: ep.DynamicHandlerResponse<unknown>,
+) => {
   if (handlerResponse.found === "handler") {
     t.deepEqual(
       data.omit(handlerResponse.handler, "contextValidator", "handler"),
@@ -87,7 +113,7 @@ const testCORSedEP = async (
     const awaited = await maybePromise;
     if (awaited.error === "none") {
       const expectedHeaders: Record<string, data.HeaderValue> = {
-        "Access-Control-Allow-Origin": corsOptions.origin,
+        "Access-Control-Allow-Origin": origin,
       };
       if (method === "OPTIONS") {
         expectedHeaders["Access-Control-Allow-Headers"] = Array.isArray(
@@ -114,22 +140,3 @@ const testCORSedEP = async (
     t.fail("CORSed EP must return handler for OPTIONS method");
   }
 };
-
-test(
-  "Validate withCORSOptions works for OPTIONS",
-  testCORSedEP,
-  "OPTIONS",
-  "allow-headers",
-);
-test(
-  "Validate withCORSOptions works for GET",
-  testCORSedEP,
-  "GET",
-  "allow-headers",
-);
-test(
-  "Validate withCORSOptions works for GET and multiple headers",
-  testCORSedEP,
-  "GET",
-  ["header1", "header2"],
-);
