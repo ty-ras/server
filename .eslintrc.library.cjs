@@ -7,6 +7,7 @@ module.exports = {
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     // See https://github.com/prettier/eslint-config-prettier/blob/main/CHANGELOG.md#version-800-2021-02-21
     "plugin:prettier/recommended",
+    "plugin:sonarjs/recommended"
   ],
   plugins: ["prettier"],
   parser: "@typescript-eslint/parser",
@@ -28,7 +29,8 @@ module.exports = {
     "@typescript-eslint/unbound-method": "off", // We never use 'this' within functions anyways.
     "@typescript-eslint/no-empty-function": "off", // Empty functions are ok sometimes.
     "no-useless-return": "error",
-    "no-console": "error"
+    "no-console": "error",
+    "sonarjs/no-nested-template-literals": "off", // Nested template literals are OK really
   },
   settings: {
     "import/resolver": {

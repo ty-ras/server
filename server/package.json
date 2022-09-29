@@ -1,5 +1,5 @@
 {
-  "name": "@ty-ras/endpoint-prefix",
+  "name": "@ty-ras/server",
   "version": "0.9.0",
   "author": {
     "name": "Stanislav Muhametsin",
@@ -42,6 +42,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-sonarjs": "0.15.0",
     "prettier": "2.7.1",
+    "raw-body": "2.5.1",
     "ts-node": "10.9.1",
     "typescript": "4.8.3"
   },

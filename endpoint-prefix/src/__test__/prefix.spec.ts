@@ -10,7 +10,7 @@ test("Validate atPrefix works with no endpoints", (t) => {
   t.deepEqual(url, /prefix()/);
   for (const method of ["GET", "POST", "DELETE", "PUT", "OPTIONS"] as const) {
     t.deepEqual(handler(method, {}), {
-      found: "invalid-method",
+      found: INVALID_METHOD,
       allowedMethods: [],
     });
   }
@@ -90,7 +90,7 @@ const testOneURLWithPrefix = (
       t.deepEqual(
         prefixedResponse,
         {
-          found: "invalid-method",
+          found: INVALID_METHOD,
           // Prefixed handler doesn't really know which methods are accepted
           // This is perhaps something to be fixed later.
           // Although, the expectation and assumption of the prefixedHandler.handler method is that RegExp it gave has matched to URL.
@@ -229,7 +229,7 @@ const testTwoURLsWithPrefix = (
         t.deepEqual(
           prefixedResponse,
           {
-            found: "invalid-method",
+            found: INVALID_METHOD,
             // Prefixed handler doesn't really know which methods are accepted
             // This is perhaps something to be fixed later.
             // Although, the expectation and assumption of the prefixedHandler.handler method is that RegExp it gave has matched to URL.
@@ -270,3 +270,5 @@ test(
   "prefix/",
   true,
 );
+
+const INVALID_METHOD = "invalid-method";
