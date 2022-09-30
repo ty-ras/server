@@ -1,4 +1,4 @@
-# Typesafe REST API Specification - Server Endpoint Prefixing
+# Typesafe REST API Specification - Server Skeleton Implementation
 
 [![Coverage](https://codecov.io/gh/ty-ras/server/branch/main/graph/badge.svg?flag=server)](https://codecov.io/gh/ty-ras/server)
 
