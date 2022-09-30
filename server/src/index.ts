@@ -10,6 +10,8 @@ export type {
 } from "./context";
 export type {
   EventArguments,
+  EventEmitter,
+  ServerEventEmitter,
   ValidationErrorArgs,
   VirtualRequestProcessingEvents,
 } from "./events";
