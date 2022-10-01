@@ -2,6 +2,7 @@
 import test from "ava";
 import * as spec from "../flow";
 import * as stream from "stream";
+import * as url from "url";
 
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
@@ -85,15 +86,143 @@ test("Validate typicalServerFlow works", async (t) => {
   ]);
 });
 
+test("Validate typicalServerFlow works with special values", async (t) => {
+  t.plan(1);
+  const { seenCallbacks, callbacks } = createTrackingCallback("undefined");
+  await spec.typicalServerFlow(
+    "Context",
+    {
+      url: /^(?<group>\/)$/,
+      handler: (method, groups) => ({
+        found: "handler",
+        handler: {
+          contextValidator: {
+            getState: (ctx) => ({ method, groups, ctx, state: "State" }),
+            validator: () => ({
+              error: "none",
+              data: "Context2",
+            }),
+          },
+          handler: () => ({
+            error: "none",
+            data: {
+              contentType: "contentType",
+              output: undefined,
+            },
+          }),
+        },
+      }),
+    },
+    undefined,
+    callbacks,
+  );
+  t.deepEqual(seenCallbacks, [
+    {
+      callbackName: "getURL",
+      args: ["Context"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "getState",
+      args: ["Context"],
+      returnValue: "State",
+    },
+    {
+      callbackName: "getMethod",
+      args: ["Context"],
+      returnValue: "GET",
+    },
+    {
+      callbackName: "getHeader",
+      args: ["Context2", contentType],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "getRequestBody",
+      args: ["Context2"],
+      returnValue: dummyBody,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: ["Context2", 204, false],
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate typicalServerFlow works with special values 2", async (t) => {
+  t.plan(1);
+  const { seenCallbacks, callbacks } = createTrackingCallback("array");
+  await spec.typicalServerFlow(
+    "Context",
+    {
+      url: /(?<group>path)/,
+      handler: (method, groups) => ({
+        found: "handler",
+        handler: {
+          contextValidator: {
+            getState: (ctx) => ({ method, groups, ctx, state: "State" }),
+            validator: () => ({
+              error: "none",
+              data: "Context2",
+            }),
+          },
+          handler: () => ({
+            error: "none",
+            data: {
+              contentType: "contentType",
+              output: undefined,
+            },
+          }),
+        },
+      }),
+    },
+    undefined,
+    callbacks,
+  );
+  t.deepEqual(seenCallbacks, [
+    {
+      callbackName: "getURL",
+      args: ["Context"],
+      returnValue: dummyURLObject,
+    },
+    {
+      callbackName: "getState",
+      args: ["Context"],
+      returnValue: "State",
+    },
+    {
+      callbackName: "getMethod",
+      args: ["Context"],
+      returnValue: "GET",
+    },
+    {
+      callbackName: "getHeader",
+      args: ["Context2", contentType],
+      returnValue: [contentType],
+    },
+    {
+      callbackName: "getRequestBody",
+      args: ["Context2"],
+      returnValue: dummyBody,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: ["Context2", 204, false],
+      returnValue: undefined,
+    },
+  ]);
+});
+
 test("Validate typicalServerFlow works with invalid URL", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = createTrackingCallback();
   await spec.typicalServerFlow(
     "Context",
     {
-      url: /no-named-groups-will-cause-error/,
+      url: /no-named-groups-will-match/,
       handler: () => {
-        throw new Error("This shouldn't be called");
+        throw new Error(errorMessage);
       },
     },
     undefined,
@@ -583,11 +712,57 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
   ]);
 });
 
-const createTrackingCallback = () => {
+test("Validate typicalServerFlow works with throwing callback", async (t) => {
+  t.plan(1);
+  const { seenCallbacks, callbacks } = createTrackingCallback();
+  const thrownError = new ThrownError();
+  await spec.typicalServerFlow(
+    "Context",
+    {
+      url: /(?<group>path)/,
+      handler: () => {
+        throw thrownError;
+      },
+    },
+    undefined,
+    callbacks,
+  );
+  t.deepEqual(seenCallbacks, [
+    {
+      callbackName: "getURL",
+      args: ["Context"],
+      returnValue: dummyURL,
+    },
+    {
+      callbackName: "getState",
+      args: ["Context"],
+      returnValue: "State",
+    },
+    {
+      callbackName: "getMethod",
+      args: ["Context"],
+      returnValue: "GET",
+    },
+    {
+      callbackName: "setStatusCode",
+      args: ["Context", 500, false, thrownError],
+      returnValue: undefined,
+    },
+  ]);
+});
+
+const createTrackingCallback = (
+  headerMode: "arg" | "array" | "undefined" = "arg",
+) => {
   const seenCallbacks: AllCallbacksArray = [];
   const callbacks: spec.ServerFlowCallbacks<unknown, unknown> = {
     getURL: (...args) => {
-      const returnValue = dummyURL;
+      const returnValue =
+        headerMode === "arg"
+          ? dummyURL
+          : headerMode === "undefined"
+          ? undefined
+          : dummyURLObject;
       seenCallbacks.push({ callbackName: "getURL", args, returnValue });
       return returnValue;
     },
@@ -602,7 +777,17 @@ const createTrackingCallback = () => {
       return returnValue;
     },
     getHeader: (...args) => {
-      const returnValue = args[1];
+      let returnValue;
+      switch (headerMode) {
+        case "arg":
+          returnValue = args[1];
+          break;
+        case "undefined":
+          returnValue = undefined;
+          break;
+        default:
+          returnValue = [args[1]];
+      }
       seenCallbacks.push({ callbackName: "getHeader", args, returnValue });
       return returnValue;
     },
@@ -655,8 +840,11 @@ type KeysAndValuesAsUnion<T extends object> = {
 const dummyBody = stream.Readable.from(["Body"]);
 
 const dummyURL = "http://localhost/path";
+const dummyURLObject = new url.URL(dummyURL);
 
 const getHumanReadableMessage = () => "";
 
 const errorMessage = "This should never be called";
 const contentType = "content-type";
+
+class ThrownError extends Error {}

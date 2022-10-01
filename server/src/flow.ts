@@ -27,154 +27,159 @@ export const typicalServerFlow = async <TContext, TState>(
     sendContent,
   }: ServerFlowCallbacks<TContext, TState>, // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-  const maybeURL = getURL(ctx);
-  const parsedUrl =
-    maybeURL instanceof url.URL
-      ? maybeURL
-      : new url.URL(maybeURL ?? "<no url>", "http://dummy");
-  const maybeEventArgs = server.checkURLPathNameForHandler(
-    ctx,
-    getState(ctx),
-    events,
-    parsedUrl,
-    regExp,
-  );
-  if (maybeEventArgs) {
-    // We have a match -> get the handler that will handle our match
-    const foundHandler = server.checkMethodForHandler(
-      maybeEventArgs,
+  try {
+    const maybeURL = getURL(ctx);
+    const parsedUrl =
+      maybeURL instanceof url.URL
+        ? maybeURL
+        : new url.URL(maybeURL ?? "", "http://example.com");
+    const maybeEventArgs = server.checkURLPathNameForHandler(
+      ctx,
+      getState(ctx),
       events,
-      getMethod(ctx) as ep.HttpMethod,
-      handler,
+      parsedUrl,
+      regExp,
     );
-
-    if (foundHandler.found === "handler") {
-      const {
-        handler: {
-          contextValidator,
-          urlValidator,
-          headerValidator,
-          queryValidator,
-          bodyValidator,
-          handler,
-        },
-      } = foundHandler;
-      // At this point, check context state.
-      // State typically includes things like username etc, so verifying it as a first thing before checking body is meaningful.
-      // Also, allow the context state checker return custom status code, e.g. 401 for when lacking credentials.
-      const contextValidation = server.checkContextForHandler(
+    if (maybeEventArgs) {
+      // We have a match -> get the handler that will handle our match
+      const foundHandler = server.checkMethodForHandler(
         maybeEventArgs,
         events,
-        contextValidator,
+        getMethod(ctx) as ep.HttpMethod,
+        handler,
       );
-      if (contextValidation.result === "context") {
-        const eventArgs = {
-          ...maybeEventArgs,
-          ctx: contextValidation.context as typeof ctx,
-          state: contextValidation.state as TState,
-        };
-        ctx = eventArgs.ctx;
-        // State was OK, validate url & query & body
-        const [proceedAfterURL, url] = server.checkURLParametersForHandler(
-          eventArgs,
+
+      if (foundHandler.found === "handler") {
+        const {
+          handler: {
+            contextValidator,
+            urlValidator,
+            headerValidator,
+            queryValidator,
+            bodyValidator,
+            handler,
+          },
+        } = foundHandler;
+        // At this point, check context state.
+        // State typically includes things like username etc, so verifying it as a first thing before checking body is meaningful.
+        // Also, allow the context state checker return custom status code, e.g. 401 for when lacking credentials.
+        const contextValidation = server.checkContextForHandler(
+          maybeEventArgs,
           events,
-          urlValidator,
+          contextValidator,
         );
-        if (proceedAfterURL) {
-          const [proceedAfterQuery, query] = server.checkQueryForHandler(
+        if (contextValidation.result === "context") {
+          const eventArgs = {
+            ...maybeEventArgs,
+            ctx: contextValidation.context as typeof ctx,
+            state: contextValidation.state as TState,
+          };
+          ctx = eventArgs.ctx;
+          // State was OK, validate url & query & body
+          const [proceedAfterURL, url] = server.checkURLParametersForHandler(
             eventArgs,
             events,
-            queryValidator,
-            // parsedUrl.search.substring(1), // Remove leading '?'
-            Object.fromEntries(parsedUrl.searchParams.entries()),
+            urlValidator,
           );
-          if (proceedAfterQuery) {
-            const [proceedAfterHeaders, headers] =
-              server.checkHeadersForHandler(
-                eventArgs,
-                events,
-                headerValidator,
-                (headerName) => getHeader(ctx, headerName),
-              );
-            if (proceedAfterHeaders) {
-              const reqContentType = getHeader(ctx, "content-type") ?? "";
-              const [proceedAfterBody, body] = await server.checkBodyForHandler(
-                eventArgs,
-                events,
-                bodyValidator,
-                Array.isArray(reqContentType)
-                  ? reqContentType[0]
-                  : reqContentType,
-                getRequestBody(ctx),
-              );
-              if (proceedAfterBody) {
-                const retVal = await server.invokeHandler(
+          if (proceedAfterURL) {
+            const [proceedAfterQuery, query] = server.checkQueryForHandler(
+              eventArgs,
+              events,
+              queryValidator,
+              // parsedUrl.search.substring(1), // Remove leading '?'
+              Object.fromEntries(parsedUrl.searchParams.entries()),
+            );
+            if (proceedAfterQuery) {
+              const [proceedAfterHeaders, headers] =
+                server.checkHeadersForHandler(
                   eventArgs,
                   events,
-                  handler,
-                  {
-                    context: eventArgs.ctx,
-                    state: eventArgs.state,
-                    url,
-                    headers,
-                    body,
-                    query,
-                  },
+                  headerValidator,
+                  (headerName) => getHeader(ctx, headerName),
                 );
-                switch (retVal.error) {
-                  case "none":
+              if (proceedAfterHeaders) {
+                const reqContentType = getHeader(ctx, "content-type") ?? "";
+                const [proceedAfterBody, body] =
+                  await server.checkBodyForHandler(
+                    eventArgs,
+                    events,
+                    bodyValidator,
+                    Array.isArray(reqContentType)
+                      ? reqContentType[0]
+                      : reqContentType,
+                    getRequestBody(ctx),
+                  );
+                if (proceedAfterBody) {
+                  const retVal = await server.invokeHandler(
+                    eventArgs,
+                    events,
+                    handler,
                     {
-                      const { contentType, output, headers } = retVal.data;
-                      if (headers) {
-                        for (const [hdrName, hdrValue] of Object.entries(
-                          headers,
-                        )) {
-                          if (hdrValue !== undefined) {
-                            setHeader(ctx, hdrName, hdrValue);
+                      context: eventArgs.ctx,
+                      state: eventArgs.state,
+                      url,
+                      headers,
+                      body,
+                      query,
+                    },
+                  );
+                  switch (retVal.error) {
+                    case "none":
+                      {
+                        const { contentType, output, headers } = retVal.data;
+                        if (headers) {
+                          for (const [hdrName, hdrValue] of Object.entries(
+                            headers,
+                          )) {
+                            if (hdrValue !== undefined) {
+                              setHeader(ctx, hdrName, hdrValue);
+                            }
                           }
                         }
+                        const hasOutput = output !== undefined;
+                        setStatusCode(ctx, hasOutput ? 200 : 204, hasOutput);
+                        if (hasOutput) {
+                          setHeader(ctx, "Content-Type", contentType);
+                          await sendContent(ctx, output);
+                        }
                       }
-                      const hasOutput = output !== undefined;
-                      setStatusCode(ctx, hasOutput ? 200 : 204, hasOutput);
-                      if (hasOutput) {
-                        setHeader(ctx, "Content-Type", contentType);
-                        await sendContent(ctx, output);
-                      }
+                      break;
+                    case "error": {
+                      // Internal Server Error
+                      setStatusCode(ctx, 500, false);
                     }
-                    break;
-                  case "error": {
-                    // Internal Server Error
-                    setStatusCode(ctx, 500, false);
                   }
+                } else {
+                  // Body failed validation
+                  setStatusCode(ctx, 422, false);
                 }
               } else {
-                // Body failed validation
-                setStatusCode(ctx, 422, false);
+                // Headers validation failed
+                setStatusCode(ctx, 400, false);
               }
             } else {
-              // Headers validation failed
+              // Query parameters failed validation
               setStatusCode(ctx, 400, false);
             }
           } else {
-            // Query parameters failed validation
+            // While URL matched regex, the parameters failed further validation
             setStatusCode(ctx, 400, false);
           }
         } else {
-          // While URL matched regex, the parameters failed further validation
-          setStatusCode(ctx, 400, false);
+          // Context validation failed - set status code
+          setStatusCode(ctx, contextValidation.customStatusCode ?? 500, true); // Internal server error
+          await sendContent(ctx, contextValidation.customBody);
         }
       } else {
-        // Context validation failed - set status code
-        setStatusCode(ctx, contextValidation.customStatusCode ?? 500, true); // Internal server error
-        await sendContent(ctx, contextValidation.customBody);
+        setHeader(ctx, "Allow", foundHandler.allowedMethods.join(","));
+        setStatusCode(ctx, 405, false);
       }
     } else {
-      setHeader(ctx, "Allow", foundHandler.allowedMethods.join(","));
-      setStatusCode(ctx, 405, false);
+      // Not Found
+      setStatusCode(ctx, 404, false);
     }
-  } else {
-    // Not Found
-    setStatusCode(ctx, 404, false);
+  } catch (e) {
+    setStatusCode(ctx, 500, false, e);
   }
 };
 
@@ -193,6 +198,7 @@ export interface ServerFlowCallbacks<TContext, TState> {
     ctx: TContext,
     statusCode: number,
     willCallSendContent: boolean,
+    error?: unknown,
   ) => void;
   sendContent: (
     ctx: TContext,
