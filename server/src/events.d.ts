@@ -47,6 +47,10 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
   onInvalidBody: EventArguments<TContext, TState> & ValidationErrorArgs;
   // Response body did not pass data validation
   onInvalidResponse: EventArguments<TContext, TState> & ValidationErrorArgs;
+  // There was an exception thrown
+  onException: Pick<EventArguments<TContext, TState>, "ctx" | "regExp"> & {
+    error: unknown;
+  };
 }
 
 export interface EventArguments<TContext, TState> {
