@@ -4,6 +4,7 @@
 import test, { ExecutionContext } from "ava";
 import * as spec from "../utils";
 import type * as evt from "../events";
+import * as evtUtil from "./events";
 import type * as ep from "@ty-ras/endpoint";
 import type * as dataBE from "@ty-ras/data-backend";
 import type * as data from "@ty-ras/data";
@@ -697,36 +698,15 @@ test("Validate invokeHandler works on invalid output", async (t) => {
   });
 });
 
-const createTrackingEvents = () => {
-  const seenEvents: AllEventsArray = [];
-  const emitter: evt.ServerEventEmitter<any, any> = {
-    emit: (eventName, args) =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      seenEvents.push({ eventName: eventName as any, args }),
-  };
-  return {
-    seenEvents,
-    emitter,
-  };
-};
-
-type AllEventsArray = Array<
-  KeysAndValuesAsUnion<evt.VirtualRequestProcessingEvents<any, any>>
->;
-
-type KeysAndValuesAsUnion<T extends object> = {
-  [P in keyof T]: { eventName: P; args: T[P] };
-}[keyof T];
-
 const withoutAndWithEvents = (
   t: ExecutionContext,
   runTest: (
     emitter: evt.ServerEventEmitter<any, any> | undefined,
-  ) => AllEventsArray | void,
-  postProcessEvents?: (seenEvents: AllEventsArray) => void,
+  ) => evtUtil.AllEventsArray | void,
+  postProcessEvents?: (seenEvents: evtUtil.AllEventsArray) => void,
 ) => {
   runTest(undefined);
-  const { seenEvents, emitter } = createTrackingEvents();
+  const { seenEvents, emitter } = evtUtil.createTrackingEvents();
   const expectedEvents = runTest(emitter) ?? [];
   postProcessEvents?.(seenEvents);
   t.deepEqual(seenEvents, expectedEvents);
@@ -736,11 +716,11 @@ const withoutAndWithEventsAsync = async (
   t: ExecutionContext,
   runTest: (
     emitter: evt.ServerEventEmitter<any, any> | undefined,
-  ) => Promise<AllEventsArray | void>,
-  postProcessEvents?: (seenEvents: AllEventsArray) => void,
+  ) => Promise<evtUtil.AllEventsArray | void>,
+  postProcessEvents?: (seenEvents: evtUtil.AllEventsArray) => void,
 ) => {
   await runTest(undefined);
-  const { seenEvents, emitter } = createTrackingEvents();
+  const { seenEvents, emitter } = evtUtil.createTrackingEvents();
   const expectedEvents = (await runTest(emitter)) ?? [];
   postProcessEvents?.(seenEvents);
   t.deepEqual(seenEvents, expectedEvents);

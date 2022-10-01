@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import test from "ava";
 import * as spec from "../flow";
+import * as evtUtil from "./events";
 import * as stream from "stream";
 import * as url from "url";
 
@@ -713,6 +714,57 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
 });
 
 test("Validate typicalServerFlow works with throwing callback", async (t) => {
+  t.plan(2);
+  const { seenCallbacks, callbacks } = createTrackingCallback();
+  const { seenEvents, emitter } = evtUtil.createTrackingEvents();
+  const thrownError = new ThrownError();
+  const regExp = /(?<group>path)/;
+  await spec.typicalServerFlow(
+    "Context",
+    {
+      url: regExp,
+      handler: () => {
+        throw thrownError;
+      },
+    },
+    emitter,
+    callbacks,
+  );
+  t.deepEqual(seenCallbacks, [
+    {
+      callbackName: "getURL",
+      args: ["Context"],
+      returnValue: dummyURL,
+    },
+    {
+      callbackName: "getState",
+      args: ["Context"],
+      returnValue: "State",
+    },
+    {
+      callbackName: "getMethod",
+      args: ["Context"],
+      returnValue: "GET",
+    },
+    {
+      callbackName: "setStatusCode",
+      args: ["Context", 500, false, thrownError],
+      returnValue: undefined,
+    },
+  ]);
+  t.deepEqual(seenEvents, [
+    {
+      eventName: "onException",
+      args: {
+        ctx: "Context",
+        regExp,
+        error: thrownError,
+      },
+    },
+  ]);
+});
+
+test("Validate typicalServerFlow works with throwing and throwing event emitter", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = createTrackingCallback();
   const thrownError = new ThrownError();
@@ -724,7 +776,11 @@ test("Validate typicalServerFlow works with throwing callback", async (t) => {
         throw thrownError;
       },
     },
-    undefined,
+    {
+      emit: () => {
+        throw new Error("This should be ignored");
+      },
+    },
     callbacks,
   );
   t.deepEqual(seenCallbacks, [

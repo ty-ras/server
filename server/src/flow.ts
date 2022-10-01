@@ -178,8 +178,13 @@ export const typicalServerFlow = async <TContext, TState>(
       // Not Found
       setStatusCode(ctx, 404, false);
     }
-  } catch (e) {
-    setStatusCode(ctx, 500, false, e);
+  } catch (error) {
+    try {
+      events?.emit("onException", { ctx, regExp, error });
+    } catch {
+      // Not that much we can do.
+    }
+    setStatusCode(ctx, 500, false, error);
   }
 };
 
