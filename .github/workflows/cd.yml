@@ -6,6 +6,8 @@ on:
     branches:
     - main
 
+concurrency: cd
+
 # Tbh, the most optimal way would be if I could reuse steps instead of jobs
 # I guess that is possible if I would create separate folder for the action, but right now it seems like too heavy approach.
 # Worth investigating later tho.

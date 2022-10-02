@@ -15,5 +15,6 @@ export type {
   ValidationErrorArgs,
   VirtualRequestProcessingEvents,
 } from "./events";
+export * from "./context-utils";
 export * from "./utils";
 export * from "./flow";

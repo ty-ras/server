@@ -4,5 +4,5 @@ build
 dist
 coverage
 .yarn
-*/.eslintrc.cjs
-*/tsconfig.json
+*/.eslintrc*.cjs
+*/tsconfig*.json

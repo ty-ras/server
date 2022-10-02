@@ -12,5 +12,7 @@ export default {
     "**/__test__/*.spec.ts"
   ],
   timeout: "10m",
-  verbose: true
+  verbose: true,
+  // The default is number of corse, which in CI I guess is 1
+  concurrency: 5
 }

@@ -1,3 +1,5 @@
+set -e
+
 TYRAS_ROOT_DIR="$(pwd)"
 
 # Always use Alpine-based image
