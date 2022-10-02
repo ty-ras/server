@@ -1,6 +1,6 @@
 {
   "name": "@ty-ras/server-test-support",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "author": {
     "name": "Stanislav Muhametsin",
     "email": "346799+stazz@users.noreply.github.com",
@@ -30,7 +30,7 @@
     }
   },
   "dependencies": {
-    "@ty-ras/endpoint": "0.10.0",
+    "@ty-ras/endpoint": "0.10.1",
     "@ava/get-port": "2.0.0"
   },
   "peerDependencies": {
