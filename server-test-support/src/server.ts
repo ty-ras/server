@@ -18,9 +18,9 @@ export const testServer = async (
   createServer: (
     endpoint: Array<ep.AppEndpoint<unknown, never>>,
   ) => AnyHttpServer,
-  info: ServerTestAdditionalInfo,
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  ...infos: ServerTestAdditionalInfo // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
+  const [info, contentTypeSuffix] = infos;
   const isError = typeof info === "object";
   const isProtocolError = info === 403;
   const state = "State";
@@ -75,7 +75,7 @@ export const testServer = async (
         t,
         requestOpts,
         responseData,
-        typeof info === "string" ? info : "",
+        contentTypeSuffix ?? "",
         isHttp2,
         responseIsStreamed,
       );
@@ -251,14 +251,17 @@ export type AnyHttpServer =
       customListen?: (host: string, port: number) => Promise<void>;
     };
 
-export type ServerTestAdditionalInfo =
-  | undefined
-  | {
-      regExp: RegExp;
-      expectedStatusCode: number;
-    }
-  | 204
-  | 200
-  | 403
-  | 500
-  | string; // suffix for value of content-type of response
+export type ServerTestAdditionalInfo = [
+  (
+    | undefined
+    | {
+        regExp: RegExp;
+        expectedStatusCode: number;
+      }
+    | 204
+    | 200
+    | 403
+    | 500
+  ),
+  string | undefined, // suffix for value of content-type of response
+];
