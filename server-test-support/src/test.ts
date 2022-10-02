@@ -6,28 +6,46 @@ import * as server from "./server";
 export const registerTests = (
   test: ava.TestFn,
   createServer: CreateServer,
-  httpVersion: number,
-  secure: boolean,
+  opts?: Partial<Omit<TestsInput, "createServer">>,
 ) => {
-  const titlePrefix = `Validate ${
-    secure ? "plain" : "secure"
-  } HTTP${httpVersion} Node server works for`;
-  test(`${titlePrefix} for 200`, test200, createServer, httpVersion, secure);
+  const input: TestsInput = {
+    createServer,
+    httpVersion: opts?.httpVersion ?? 1,
+    secure: opts?.secure === true,
+    ...(opts ?? {}),
+  };
+  const titlePrefix = `Validate ${input.secure ? "plain" : "secure"} HTTP${
+    input.httpVersion
+  } Node server works for`;
+  test(`${titlePrefix} for 200`, test200, input);
   test(
     `${titlePrefix} 200 with streaming response`,
     test200WithReadable,
-    createServer,
-    httpVersion,
-    secure,
+    input,
   );
-  test(`${titlePrefix} 404`, test404, createServer, httpVersion, secure);
-  test(`${titlePrefix} 204`, test204, createServer, httpVersion, secure);
-  test(`${titlePrefix} 403`, test403, createServer, httpVersion, secure);
-  test(`${titlePrefix} 500`, test500, createServer, httpVersion, secure);
+  test(`${titlePrefix} 404`, test404, input);
+  test(`${titlePrefix} 204`, test204, input);
+  test(`${titlePrefix} 403`, test403, input);
+  test(`${titlePrefix} 500`, test500, input);
 };
 
+export interface RegisterTestsInput {
+  test: ava.TestFn;
+  createServer: CreateServer;
+  contentTypeHeaderSuffix?: string | undefined;
+  httpVersion?: number | undefined;
+  secure?: boolean | undefined;
+}
+
+export interface TestsInput {
+  createServer: CreateServer;
+  contentTypeHeaderSuffix?: string | undefined;
+  httpVersion: number;
+  secure: boolean;
+}
+
 const test200: ParametrizedTest = async (...args) => {
-  await testServer(...args);
+  await testServer(...args, undefined);
 };
 
 const test200WithReadable: ParametrizedTest = async (...args) => {
@@ -55,29 +73,26 @@ const test500: ParametrizedTest = async (...args) => {
 
 export type CreateServer = (
   endpoints: ReadonlyArray<ep.AppEndpoint<unknown, Record<string, unknown>>>,
-  info: server.ServerTestAdditionalInfo,
+  info: server.ServerTestAdditionalInfo[0],
   httpVersion: number,
   secure: boolean,
 ) => server.AnyHttpServer;
 
 const testServer = (
   t: ava.ExecutionContext,
-  createServer: CreateServer,
-  httpVersion: number,
-  secure: boolean,
-  info?: server.ServerTestAdditionalInfo,
+  { createServer, contentTypeHeaderSuffix, httpVersion, secure }: TestsInput,
+  info?: server.ServerTestAdditionalInfo[0],
 ) =>
   server.testServer(
     t,
     (endpoints) => createServer(endpoints, info, httpVersion, secure),
     info,
+    contentTypeHeaderSuffix,
   );
 
 export type ParametrizedTest = (
   t: ava.ExecutionContext,
-  createServer: CreateServer,
-  httpVersion: number,
-  secure: boolean,
+  input: TestsInput,
 ) => Promise<void>;
 
 export type HTTPVersionBase = 1 | 2;
