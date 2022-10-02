@@ -54,12 +54,12 @@
   },
   "scripts": {
     "build:run": "yarn run lint && yarn run tsc",
-    "build:ci": "yarn run clear-build-artifacts && yarn run tsc && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS && yarn run format-output-files",
-    "clear-build-artifacts": "rm -rf dist build",
-    "format-output-files": "eslint --no-eslintrc --config '.eslintrc.output.cjs' --fix 'dist/*js'",
+    "build:ci": "yarn run clear-build-artifacts && yarn run tsc --outDir ./dist-mjs && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS --outDir ./dist-cjs && yarn run format-output-files",
+    "clear-build-artifacts": "rm -rf dist dist-cjs dist-mjs build",
+    "format-output-files": "eslint --no-eslintrc --config '.eslintrc.output.cjs' --fix 'dist-cjs/*js' 'dist-mjs/*js'",
     "lint": "eslint ./src --ext .ts,.tsx",
-    "rename-js-to-mjs": "find dist -name '*.js' -type f -exec sh -c 'for f in \"$@\"; do mv -- \"$f\" \"${f%.js}.mjs\"; done' -- {} +",
-    "tsc": "tsc --project tsconfig.build.json --skipLibCheck",
+    "rename-js-to-mjs": "find dist-mjs -name '*.js' -type f -exec sh -c 'for f in \"$@\"; do mv -- \"$f\" \"${f%.js}.mjs\"; done' -- {} +",
+    "tsc": "tsc --project tsconfig.build.json",
     "test:coverage": "echo 'No tests yet'",
     "test:run": "echo 'No tests yet'"
   }
