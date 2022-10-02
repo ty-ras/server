@@ -60,7 +60,7 @@
     "lint": "eslint ./src --ext .ts,.tsx",
     "rename-js-to-mjs": "find dist -name '*.js' -type f -exec sh -c 'for f in \"$@\"; do mv -- \"$f\" \"${f%.js}.mjs\"; done' -- {} +",
     "tsc": "tsc --project tsconfig.build.json",
-    "test:coverage": "c8 ava",
-    "test:run": "ava"
+    "test:coverage": "echo 'No tests yet'",
+    "test:run": "echo 'No tests yet'"
   }
 }
