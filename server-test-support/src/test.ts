@@ -6,13 +6,14 @@ import * as server from "./server";
 export const registerTests = (
   test: ava.TestFn,
   createServer: CreateServer,
-  opts?: Partial<Omit<TestsInput, "createServer">>,
+  opts?: RegisterTestsOptions,
 ) => {
+  const { run500Test, ...options } = opts ?? {};
   const input: TestsInput = {
     createServer,
     httpVersion: opts?.httpVersion ?? 1,
-    secure: opts?.secure === true,
-    ...(opts ?? {}),
+    secure: options.secure === true,
+    ...options,
   };
   const titlePrefix = `Validate ${input.secure ? "plain" : "secure"} HTTP${
     input.httpVersion
@@ -26,16 +27,16 @@ export const registerTests = (
   test(`${titlePrefix} 404`, test404, input);
   test(`${titlePrefix} 204`, test204, input);
   test(`${titlePrefix} 403`, test403, input);
-  test(`${titlePrefix} 500`, test500, input);
+  if (run500Test) {
+    test(`${titlePrefix} 500`, test500, input);
+  }
 };
 
-export interface RegisterTestsInput {
-  test: ava.TestFn;
-  createServer: CreateServer;
-  contentTypeHeaderSuffix?: string | undefined;
-  httpVersion?: number | undefined;
-  secure?: boolean | undefined;
-}
+export type RegisterTestsOptions = Partial<
+  Omit<TestsInput, "createServer"> & {
+    run500Test: boolean; // Only makes sense when there are extra code other than invoking typicalServerFlow.
+  }
+>;
 
 export interface TestsInput {
   createServer: CreateServer;
