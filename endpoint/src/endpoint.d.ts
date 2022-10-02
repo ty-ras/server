@@ -6,13 +6,17 @@ export interface AppEndpoint<
   TContext,
   TMetadata extends Record<string, unknown>,
 > {
-  getRegExpAndHandler: (groupNamePrefix: string) => {
-    url: RegExp;
-    handler: DynamicHandlerGetter<TContext>;
-  };
+  getRegExpAndHandler: (
+    groupNamePrefix: string,
+  ) => FinalizedAppEndpoint<TContext>;
   getMetadata: (urlPrefix: string) => {
     [P in keyof TMetadata]: Array<TMetadata[P]>;
   };
+}
+
+export interface FinalizedAppEndpoint<TContext> {
+  url: RegExp;
+  handler: DynamicHandlerGetter<TContext>;
 }
 
 export type DynamicHandlerGetter<TContext> = (
@@ -32,13 +36,19 @@ export type DynamicHandlerResponse<TContext> =
 
 export type StaticAppEndpointHandler<TContext> = {
   contextValidator: dataBE.ContextValidatorSpec<TContext, unknown, unknown>;
-  urlValidator?: {
-    groupNames: Record<string, string>;
-    validators: dataBE.URLParameterValidators<dataBE.RuntimeAnyURLData>;
-  };
-  headerValidator?: dataBE.RequestHeaderDataValidators<dataBE.RuntimeAnyHeaders>;
-  queryValidator?: dataBE.QueryDataValidators<dataBE.RuntimeAnyQuery>;
-  bodyValidator?: dataBE.DataValidatorRequestInput<unknown>;
+  urlValidator?:
+    | {
+        groupNames: Record<string, string>;
+        validators: dataBE.URLParameterValidators<dataBE.RuntimeAnyURLData>;
+      }
+    | undefined;
+  headerValidator?:
+    | dataBE.RequestHeaderDataValidators<dataBE.RuntimeAnyHeaders>
+    | undefined;
+  queryValidator?:
+    | dataBE.QueryDataValidators<dataBE.RuntimeAnyQuery>
+    | undefined;
+  bodyValidator?: dataBE.DataValidatorRequestInput<unknown> | undefined;
   handler: StaticAppEndpointHandlerFunction<TContext>;
 };
 
