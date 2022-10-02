@@ -15,10 +15,10 @@ export const registerTests = (
     secure: options.secure === true,
     ...options,
   };
-  const titlePrefix = `Validate ${input.secure ? "plain" : "secure"} HTTP${
+  const titlePrefix = `Validate ${input.secure ? "secure" : "plain"} HTTP${
     input.httpVersion
-  } Node server works for`;
-  test(`${titlePrefix} for 200`, test200, input);
+  } server works for`;
+  test(`${titlePrefix} 200`, test200, input);
   test(
     `${titlePrefix} 200 with streaming response`,
     test200WithReadable,
