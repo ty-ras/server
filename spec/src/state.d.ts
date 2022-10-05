@@ -43,16 +43,18 @@ export interface AppEndpointBuilderState<
     TState
   >;
   metadata: TMetadata;
-  urlValidation:
-    | {
-        args: ReadonlyArray<string>;
-        validation: data.URLParameterValidatorSpec<
-          data.RuntimeAnyURLData,
-          THeaderDecoder
-        >;
-      }
-    | undefined;
+  urlValidation: URLValidationInfo<THeaderDecoder>;
 }
+
+export type URLValidationInfo<TStringDecoder> =
+  | {
+      args: ReadonlyArray<string>;
+      validation: data.URLParameterValidatorSpec<
+        data.RuntimeAnyURLData,
+        TStringDecoder
+      >;
+    }
+  | undefined;
 
 export interface StaticAppEndpointBuilderSpec<
   TContext,
