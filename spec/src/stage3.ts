@@ -268,8 +268,8 @@ const constructMDResults = <
               requestHeadersSpec: methodInfo.requestHeadersSpec,
               responseHeadersSpec: methodInfo.responseHeadersSpec,
               querySpec: methodInfo.queryValidation,
-              inputSpec: methodInfo.inputValidation?.validatorSpec,
-              outputSpec: methodInfo.outputValidation.validatorSpec,
+              inputSpec: methodInfo.inputValidation,
+              outputSpec: methodInfo.outputValidation,
               metadataArguments: methodInfo.mdArgs[mdKey],
             },
           ];

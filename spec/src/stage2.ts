@@ -523,10 +523,10 @@ const createStaticEndpointSpec = <
         THeaderData,
         TStringEncoder
       >,
-  outputSpec: dataBE.DataValidatorResponseOutputSpec<
-    THandlerResult,
-    TOutputContents
-  >,
+  {
+    validator: outputValidator,
+    validatorSpec: outputSpec,
+  }: dataBE.DataValidatorResponseOutputSpec<THandlerResult, TOutputContents>,
   inputSpec?: dataBE.DataValidatorRequestInputSpec<unknown, TInputContents>,
 ) => {
   const isFunction = typeof endpointHandlerSpec === "function";
@@ -539,7 +539,7 @@ const createStaticEndpointSpec = <
   const handler = createStaticAppEndpointHandlerFunction(
     urlValidation,
     endpointHandler,
-    outputSpec.validator,
+    outputValidator,
     responseHeaders,
     ({ query, headers, body }) => ({
       ...getQueryEndpointArgs(query),
@@ -589,7 +589,7 @@ const createStaticEndpointSpec = <
     retVal.queryValidation = query.metadata;
   }
   if (inputSpec) {
-    retVal.inputValidation = inputSpec;
+    retVal.inputValidation = inputSpec?.validatorSpec;
   }
 
   return retVal;

@@ -85,14 +85,8 @@ export interface StaticAppEndpointBuilderSpec<
     TStringEncoder
   >;
   queryValidation?: data.QueryDataValidatorSpecMetadata<string, TStringDecoder>;
-  inputValidation?: Omit<
-    data.DataValidatorRequestInputSpec<unknown, TInputContents>,
-    "validator"
-  >;
-  outputValidation: Omit<
-    data.DataValidatorResponseOutputSpec<unknown, TOutputContents>,
-    "validator"
-  >;
+  inputValidation?: data.DataValidatorResponseInputValidatorSpec<TInputContents>;
+  outputValidation: data.DataValidatorResponseOutputValidatorSpec<TOutputContents>;
   mdArgs: {
     [P in keyof TMetadata]: TMetadata[P] extends md.MetadataBuilder<
       infer TArg,
