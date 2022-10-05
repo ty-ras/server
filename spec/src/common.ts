@@ -38,13 +38,13 @@ export type EndpointHandlerSpec<
   TArgs,
   THandlerResult,
   THeaderData extends data.RuntimeAnyHeaders,
-  THeaderEncoder,
+  TStringEncoder,
 > = {
   handler: EndpointHandler<
     TArgs,
     EndpointHandlerOutputWithHeaders<THandlerResult, THeaderData>
   >;
-  headers: data.ResponseHeaderDataValidatorSpec<THeaderData, THeaderEncoder>;
+  headers: data.ResponseHeaderDataValidatorSpec<THeaderData, TStringEncoder>;
 };
 
 export type EndpointHandler<TArgs, THandlerResult> = (
@@ -64,14 +64,14 @@ export const handlerWithHeaders = <
   TArgs,
   THandlerResult,
   THeaderData extends data.RuntimeAnyHeaders,
-  THeaderEncoder,
+  TStringEncoder,
 >(
   handler: EndpointHandler<
     TArgs,
     EndpointHandlerOutputWithHeaders<THandlerResult, THeaderData>
   >,
-  headers: data.ResponseHeaderDataValidatorSpec<THeaderData, THeaderEncoder>,
-): EndpointHandlerSpec<TArgs, THandlerResult, THeaderData, THeaderEncoder> => ({
+  headers: data.ResponseHeaderDataValidatorSpec<THeaderData, TStringEncoder>,
+): EndpointHandlerSpec<TArgs, THandlerResult, THeaderData, TStringEncoder> => ({
   handler,
   headers,
 });

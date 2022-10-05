@@ -9,10 +9,10 @@ export class AppEndpointBuilder<
   TContext,
   TRefinedContext,
   TState,
-  TArgsURL,
+  TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -23,8 +23,8 @@ export class AppEndpointBuilder<
       md.HKTArg,
       any,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -35,8 +35,8 @@ export class AppEndpointBuilder<
   TState,
   TArgsURL,
   TAllowedMethods,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents,
   TInputContents,
   TMetadataProviders
@@ -106,8 +106,8 @@ export class AppEndpointBuilder<
 
 const checkMethodsForHandler = <
   TContext,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -116,8 +116,8 @@ const checkMethodsForHandler = <
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -126,8 +126,8 @@ const checkMethodsForHandler = <
   state: {
     [key: string]: state.StaticAppEndpointBuilderSpec<
       TContext,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents,
       TMetadataProviders
@@ -198,8 +198,8 @@ const constructMDResults = <
   TContext,
   TRefinedContext,
   TState,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadata extends Record<
@@ -208,8 +208,8 @@ const constructMDResults = <
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -222,8 +222,8 @@ const constructMDResults = <
     TContext,
     TRefinedContext,
     TState,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadata

@@ -3,6 +3,7 @@ import * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
 import * as common from "./common";
 import type * as state from "./state";
+import type * as batch from "./batch";
 import {
   AppEndpointBuilderForMethods,
   AppEndpointBuilderForMethodsAndBody,
@@ -13,10 +14,10 @@ export class AppEndpointBuilderInitial<
   TContext,
   TRefinedContext,
   TState,
-  TArgsURL,
+  TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
   TInputContents extends data.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -27,8 +28,8 @@ export class AppEndpointBuilderInitial<
       md.HKTArg,
       any,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -39,8 +40,8 @@ export class AppEndpointBuilderInitial<
       TContext,
       TRefinedContext,
       TState,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents,
       TMetadataProviders
@@ -57,8 +58,8 @@ export class AppEndpointBuilderInitial<
     TMethods,
     common.EndpointHandlerArgs<TRefinedContext, TState>,
     common.EndpointHandlerArgs<TRefinedContext, TState>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -73,8 +74,8 @@ export class AppEndpointBuilderInitial<
     TMethods,
     common.EndpointHandlerArgs<TRefinedContext, TState>,
     common.EndpointHandlerArgs<TRefinedContext, TState>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -84,7 +85,7 @@ export class AppEndpointBuilderInitial<
     TQuery extends data.RuntimeAnyQuery,
   >(
     method: TMethods & ep.HttpMethodWithoutBody,
-    query: data.QueryValidatorSpec<TQuery, THeaderDecoder>,
+    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
   ): AppEndpointBuilderForMethods<
     TContext,
     TRefinedContext,
@@ -94,8 +95,8 @@ export class AppEndpointBuilderInitial<
     common.EndpointHandlerArgs<TRefinedContext, TState>,
     common.EndpointHandlerArgs<TRefinedContext, TState> &
       common.EndpointHandlerArgsWithQuery<TQuery>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -105,7 +106,7 @@ export class AppEndpointBuilderInitial<
     TQuery extends data.RuntimeAnyQuery,
   >(
     method: TMethods & ep.HttpMethodWithBody,
-    query: data.QueryValidatorSpec<TQuery, THeaderDecoder>,
+    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
   ): AppEndpointBuilderForMethodsAndBody<
     TContext,
     TRefinedContext,
@@ -115,8 +116,8 @@ export class AppEndpointBuilderInitial<
     common.EndpointHandlerArgs<TRefinedContext, TState>,
     common.EndpointHandlerArgs<TRefinedContext, TState> &
       common.EndpointHandlerArgsWithQuery<TQuery>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -127,9 +128,9 @@ export class AppEndpointBuilderInitial<
     THeaderData extends data.RuntimeAnyHeaders,
   >(
     method: TMethods,
-    query?: data.QueryValidatorSpec<TQuery, THeaderDecoder> | undefined,
+    query?: data.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers?:
-      | data.RequestHeaderDataValidatorSpec<THeaderData, THeaderDecoder>
+      | data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
     | AppEndpointBuilderForMethods<
@@ -142,8 +143,8 @@ export class AppEndpointBuilderInitial<
         | common.EndpointHandlerArgsWithHeaders<THeaderData>,
         | common.EndpointHandlerArgs<TRefinedContext, TState>
         | common.EndpointHandlerArgsWithQuery<TQuery>,
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         TMetadataProviders
@@ -158,8 +159,8 @@ export class AppEndpointBuilderInitial<
         | common.EndpointHandlerArgsWithHeaders<THeaderData>,
         | common.EndpointHandlerArgs<TRefinedContext, TState>
         | common.EndpointHandlerArgsWithQuery<TQuery>,
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         TMetadataProviders
@@ -173,9 +174,9 @@ export class AppEndpointBuilderInitial<
     THeaderData extends Record<string, unknown>,
   >(
     method: TMethods,
-    query: data.QueryValidatorSpec<TQuery, THeaderDecoder> | undefined,
+    query: data.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers:
-      | data.RequestHeaderDataValidatorSpec<THeaderData, THeaderDecoder>
+      | data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
     | AppEndpointBuilderForMethods<
@@ -188,8 +189,8 @@ export class AppEndpointBuilderInitial<
         | common.EndpointHandlerArgsWithHeaders<THeaderData>,
         | common.EndpointHandlerArgs<TRefinedContext, TState>
         | common.EndpointHandlerArgsWithQuery<TQuery>,
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         TMetadataProviders
@@ -204,8 +205,8 @@ export class AppEndpointBuilderInitial<
         | common.EndpointHandlerArgsWithHeaders<THeaderData>,
         | common.EndpointHandlerArgs<TRefinedContext, TState>
         | common.EndpointHandlerArgsWithQuery<TQuery>,
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         TMetadataProviders
@@ -225,7 +226,7 @@ export class AppEndpointBuilderInitial<
 
     const queryInfo: common.QueryInfo<
       common.EndpointHandlerArgsWithQuery<TQuery>,
-      THeaderDecoder
+      TStringDecoder
     > = {
       getEndpointArgs: (q) =>
         query
@@ -239,7 +240,7 @@ export class AppEndpointBuilderInitial<
 
     const headerInfo: common.HeaderDataInfo<
       common.EndpointHandlerArgsWithHeaders<THeaderData>,
-      THeaderDecoder
+      TStringDecoder
     > = {
       getEndpointArgs: (h) =>
         headers
@@ -269,7 +270,7 @@ export class AppEndpointBuilderInitial<
     TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
     TOutput,
   >(
-    spec: BatchSpecificationWithoutBody<
+    spec: batch.BatchSpecificationWithoutBody<
       TRefinedContext,
       TState,
       TArgsURL,
@@ -279,9 +280,9 @@ export class AppEndpointBuilderInitial<
       TOutputContents
     > & {
       [P in keyof (
-        | BatchSpecificationQueryArgs<never, never>
-        | BatchSpecificationHeaderArgs<never, never>
-        | BatchSpecificationResponseHeaderArgs<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     },
   ): AppEndpointBuilder<
@@ -290,8 +291,8 @@ export class AppEndpointBuilderInitial<
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -301,7 +302,7 @@ export class AppEndpointBuilderInitial<
     THeaderData extends data.RuntimeAnyHeaders,
     TOutput,
   >(
-    spec: BatchSpecificationWithoutBody<
+    spec: batch.BatchSpecificationWithoutBody<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithHeaders<THeaderData>,
@@ -311,18 +312,18 @@ export class AppEndpointBuilderInitial<
       TOutputContents
     > & {
       [P in keyof (
-        | BatchSpecificationQueryArgs<never, never>
-        | BatchSpecificationResponseHeaderArgs<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
-    } & BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>,
+    } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -332,7 +333,7 @@ export class AppEndpointBuilderInitial<
     TQuery extends data.RuntimeAnyQuery,
     TOutput,
   >(
-    spec: BatchSpecificationWithoutBody<
+    spec: batch.BatchSpecificationWithoutBody<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithQuery<TQuery>,
@@ -342,18 +343,18 @@ export class AppEndpointBuilderInitial<
       TOutputContents
     > & {
       [P in keyof (
-        | BatchSpecificationHeaderArgs<never, never>
-        | BatchSpecificationResponseHeaderArgs<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
-    } & BatchSpecificationQueryArgs<TQuery, THeaderDecoder>,
+    } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -364,7 +365,7 @@ export class AppEndpointBuilderInitial<
     THeaderData extends data.RuntimeAnyHeaders,
     TOutput,
   >(
-    spec: BatchSpecificationWithoutBody<
+    spec: batch.BatchSpecificationWithoutBody<
       TRefinedContext,
       TState,
       TArgsURL &
@@ -375,17 +376,20 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents
     > & {
-      [P in keyof BatchSpecificationResponseHeaderArgs<never, never>]?: never;
-    } & BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder> &
-      BatchSpecificationQueryArgs<TQuery, THeaderDecoder>,
+      [P in keyof batch.BatchSpecificationResponseHeaderArgs<
+        never,
+        never
+      >]?: never;
+    } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
+      batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -395,7 +399,7 @@ export class AppEndpointBuilderInitial<
     TInput,
     TOutput,
   >(
-    spec: BatchSpecificationWithBody<
+    spec: batch.BatchSpecificationWithBody<
       TRefinedContext,
       TState,
       TArgsURL,
@@ -407,9 +411,9 @@ export class AppEndpointBuilderInitial<
       TInputContents
     > & {
       [P in keyof (
-        | BatchSpecificationQueryArgs<never, never>
-        | BatchSpecificationHeaderArgs<never, never>
-        | BatchSpecificationResponseHeaderArgs<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     },
   ): AppEndpointBuilder<
@@ -418,8 +422,8 @@ export class AppEndpointBuilderInitial<
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -430,7 +434,7 @@ export class AppEndpointBuilderInitial<
     TInput,
     TOutput,
   >(
-    spec: BatchSpecificationWithBody<
+    spec: batch.BatchSpecificationWithBody<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithQuery<TQuery>,
@@ -442,18 +446,18 @@ export class AppEndpointBuilderInitial<
       TInputContents
     > & {
       [P in keyof (
-        | BatchSpecificationHeaderArgs<never, never>
-        | BatchSpecificationResponseHeaderArgs<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
-    } & BatchSpecificationQueryArgs<TQuery, THeaderDecoder>,
+    } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -464,7 +468,7 @@ export class AppEndpointBuilderInitial<
     TInput,
     TOutput,
   >(
-    spec: BatchSpecificationWithBody<
+    spec: batch.BatchSpecificationWithBody<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithHeaders<THeaderData>,
@@ -476,18 +480,18 @@ export class AppEndpointBuilderInitial<
       TInputContents
     > & {
       [P in keyof (
-        | BatchSpecificationQueryArgs<never, never>
-        | BatchSpecificationResponseHeaderArgs<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
-    } & BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>,
+    } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -499,7 +503,7 @@ export class AppEndpointBuilderInitial<
     TInput,
     TOutput,
   >(
-    spec: BatchSpecificationWithBody<
+    spec: batch.BatchSpecificationWithBody<
       TRefinedContext,
       TState,
       TArgsURL &
@@ -512,17 +516,20 @@ export class AppEndpointBuilderInitial<
       TInput,
       TInputContents
     > & {
-      [P in keyof BatchSpecificationResponseHeaderArgs<never, never>]?: never;
-    } & BatchSpecificationQueryArgs<TQuery, THeaderDecoder> &
-      BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>,
+      [P in keyof batch.BatchSpecificationResponseHeaderArgs<
+        never,
+        never
+      >]?: never;
+    } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder> &
+      batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -532,7 +539,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithoutBodyWithHeaders<
+    spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL,
@@ -541,11 +548,11 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder
+      TStringEncoder
     > & {
       [P in keyof (
-        | BatchSpecificationQueryArgs<never, never>
-        | BatchSpecificationHeaderArgs<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     },
   ): AppEndpointBuilder<
@@ -554,8 +561,8 @@ export class AppEndpointBuilderInitial<
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -566,7 +573,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithoutBodyWithHeaders<
+    spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithHeaders<THeaderData>,
@@ -575,18 +582,18 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder
+      TStringEncoder
     > & {
-      [P in keyof BatchSpecificationQueryArgs<never, never>]?: never;
-    } & BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>,
+      [P in keyof batch.BatchSpecificationQueryArgs<never, never>]?: never;
+    } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -597,7 +604,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithoutBodyWithHeaders<
+    spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithQuery<TQuery>,
@@ -606,18 +613,18 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder
+      TStringEncoder
     > & {
-      [P in keyof BatchSpecificationHeaderArgs<never, never>]?: never;
-    } & BatchSpecificationQueryArgs<TQuery, THeaderDecoder>,
+      [P in keyof batch.BatchSpecificationHeaderArgs<never, never>]?: never;
+    } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -629,7 +636,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithoutBodyWithHeaders<
+    spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL &
@@ -640,18 +647,18 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder
+      TStringEncoder
     > &
-      BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder> &
-      BatchSpecificationQueryArgs<TQuery, THeaderDecoder>,
+      batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
+      batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -662,7 +669,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithBodyWithHeaders<
+    spec: batch.BatchSpecificationWithBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL,
@@ -671,13 +678,13 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder,
+      TStringEncoder,
       TInput,
       TInputContents
     > & {
       [P in keyof (
-        | BatchSpecificationQueryArgs<never, never>
-        | BatchSpecificationHeaderArgs<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     },
   ): AppEndpointBuilder<
@@ -686,8 +693,8 @@ export class AppEndpointBuilderInitial<
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -699,7 +706,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithBodyWithHeaders<
+    spec: batch.BatchSpecificationWithBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithQuery<TQuery>,
@@ -708,20 +715,20 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder,
+      TStringEncoder,
       TInput,
       TInputContents
     > & {
-      [P in keyof BatchSpecificationHeaderArgs<never, never>]?: never;
-    } & BatchSpecificationQueryArgs<TQuery, THeaderDecoder>,
+      [P in keyof batch.BatchSpecificationHeaderArgs<never, never>]?: never;
+    } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -733,7 +740,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithBodyWithHeaders<
+    spec: batch.BatchSpecificationWithBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL & common.EndpointHandlerArgsWithHeaders<THeaderData>,
@@ -742,20 +749,20 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder,
+      TStringEncoder,
       TInput,
       TInputContents
     > & {
-      [P in keyof BatchSpecificationQueryArgs<never, never>]?: never;
-    } & BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>,
+      [P in keyof batch.BatchSpecificationQueryArgs<never, never>]?: never;
+    } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -768,7 +775,7 @@ export class AppEndpointBuilderInitial<
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
-    spec: BatchSpecificationWithBodyWithHeaders<
+    spec: batch.BatchSpecificationWithBodyWithHeaders<
       TRefinedContext,
       TState,
       TArgsURL &
@@ -779,20 +786,20 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents,
       TResponseHeaderData,
-      THeaderEncoder,
+      TStringEncoder,
       TInput,
       TInputContents
     > &
-      BatchSpecificationQueryArgs<TQuery, THeaderDecoder> &
-      BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>,
+      batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder> &
+      batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -806,7 +813,7 @@ export class AppEndpointBuilderInitial<
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
     spec: (
-      | BatchSpecificationWithoutBody<
+      | batch.BatchSpecificationWithoutBody<
           TRefinedContext,
           TState,
           // TODO figure out non-any type which would not cause signature mismatch
@@ -816,7 +823,7 @@ export class AppEndpointBuilderInitial<
           TOutput,
           TOutputContents
         >
-      | BatchSpecificationWithBody<
+      | batch.BatchSpecificationWithBody<
           TRefinedContext,
           TState,
           // TODO figure out non-any type which would not cause signature mismatch
@@ -828,7 +835,7 @@ export class AppEndpointBuilderInitial<
           TInput,
           TInputContents
         >
-      | BatchSpecificationWithoutBodyWithHeaders<
+      | batch.BatchSpecificationWithoutBodyWithHeaders<
           TRefinedContext,
           TState,
           any,
@@ -837,9 +844,9 @@ export class AppEndpointBuilderInitial<
           TOutput,
           TOutputContents,
           TResponseHeaderData,
-          THeaderEncoder
+          TStringEncoder
         >
-      | BatchSpecificationWithBodyWithHeaders<
+      | batch.BatchSpecificationWithBodyWithHeaders<
           TRefinedContext,
           TState,
           any,
@@ -848,23 +855,23 @@ export class AppEndpointBuilderInitial<
           TOutput,
           TOutputContents,
           TResponseHeaderData,
-          THeaderEncoder,
+          TStringEncoder,
           TInput,
           TInputContents
         >
     ) &
       // eslint-disable-next-line @typescript-eslint/ban-types
-      ({} | BatchSpecificationQueryArgs<TQuery, THeaderDecoder>) &
+      ({} | batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>) &
       // eslint-disable-next-line @typescript-eslint/ban-types
-      ({} | BatchSpecificationHeaderArgs<THeaderData, THeaderDecoder>),
+      ({} | batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>),
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
     Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -900,348 +907,4 @@ export class AppEndpointBuilderInitial<
         )
       : builder.withoutBody(spec.endpointHandler, spec.output, spec.mdArgs);
   }
-}
-
-export type BatchSpecificationWithoutBody<
-  TRefinedContext,
-  TState,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      never
-    >
-  >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-> = BatchSpecificationWithoutBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
-  TMethod,
-  undefined,
-  TOutput,
-  TOutputContentTypes
-> &
-  EndpointSpecArgsWithHandler<TRefinedContext, TState, TEndpointArgs, TOutput>;
-
-export type BatchSpecificationWithBody<
-  TRefinedContext,
-  TState,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-  >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
-> = BatchSpecificationWithBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
-  TMethod,
-  undefined,
-  TOutput,
-  TOutputContentTypes,
-  TInput,
-  TInputContentTypes
-> &
-  EndpointSpecArgsWithHandler<
-    TRefinedContext,
-    TState,
-    TEndpointArgs & common.EndpointHandlerArgsWithBody<TInput>,
-    TOutput
-  >;
-
-export type BatchSpecificationWithoutBodyWithHeaders<
-  TRefinedContext,
-  TState,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      never
-    >
-  >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  THeaderData extends data.RuntimeAnyHeaders,
-  THeaderDecoder,
-> = BatchSpecificationWithoutBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
-  TMethod,
-  THeaderData,
-  TOutput,
-  TOutputContentTypes
-> &
-  EndpointSpecArgsWithHandler<
-    TRefinedContext,
-    TState,
-    TEndpointArgs,
-    common.EndpointHandlerOutputWithHeaders<TOutput, THeaderData>
-  > &
-  BatchSpecificationResponseHeaderArgs<THeaderData, THeaderDecoder>;
-
-export type BatchSpecificationWithBodyWithHeaders<
-  TRefinedContext,
-  TState,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-  >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  THeaderData extends data.RuntimeAnyHeaders,
-  THeaderDecoder,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
-> = BatchSpecificationWithBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
-  TMethod,
-  THeaderData,
-  TOutput,
-  TOutputContentTypes,
-  TInput,
-  TInputContentTypes
-> &
-  EndpointSpecArgsWithHandler<
-    TRefinedContext,
-    TState,
-    TEndpointArgs & common.EndpointHandlerArgsWithBody<TInput>,
-    common.EndpointHandlerOutputWithHeaders<TOutput, THeaderData>
-  > &
-  BatchSpecificationResponseHeaderArgs<THeaderData, THeaderDecoder>;
-
-export type BatchSpecificationWithoutBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      never
-    >
-  >,
-  TMethod,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-> = {
-  method: TMethod;
-} & EndpointSpecArgsWithoutBody<
-  TEndpointArgs,
-  TMetadataProviders,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes
->;
-
-export type BatchSpecificationWithBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-  >,
-  TMethod,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
-> = {
-  method: TMethod;
-} & EndpointSpecArgsWithBody<
-  TEndpointArgs,
-  TMetadataProviders,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes,
-  TInput,
-  TInputContentTypes
->;
-
-export interface BatchSpecificationQueryArgs<
-  TQueryData extends data.RuntimeAnyQuery,
-  TStringDecoder,
-> {
-  query: data.QueryValidatorSpec<TQueryData, TStringDecoder>;
-}
-
-export interface BatchSpecificationHeaderArgs<
-  THeaderData extends Record<string, unknown>,
-  THeaderDecoder,
-> {
-  headers: data.RequestHeaderDataValidatorSpec<THeaderData, THeaderDecoder>;
-}
-
-export interface BatchSpecificationResponseHeaderArgs<
-  THeaderData extends Record<string, unknown>,
-  THeaderDecoder,
-> {
-  responseHeaders: data.ResponseHeaderDataValidatorSpec<
-    THeaderData,
-    THeaderDecoder
-  >;
-}
-
-export interface EndpointSpecArgsWithoutBody<
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      never
-    >
-  >,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-> {
-  output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
-  mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-      infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-      unknown,
-      infer _0,
-      infer _1,
-      TOutputContentTypes,
-      never
-    >
-      ? md.Kind<
-          TArg,
-          TEndpointArgs extends common.EndpointHandlerArgsWithURL<unknown>
-            ? { [P in keyof TEndpointArgs["url"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithQuery<unknown>
-            ? { [P in keyof TEndpointArgs["query"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithHeaders<unknown>
-            ? { [P in keyof TEndpointArgs["headers"]]: unknown }
-            : undefined,
-          undefined extends TResponseHeaders
-            ? undefined
-            : { [P in keyof TResponseHeaders]: unknown },
-          undefined,
-          { [P in keyof TOutputContentTypes]: TOutput }
-        >
-      : never;
-  };
-}
-
-export interface EndpointSpecArgsWithBody<
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-  >,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
-> {
-  input: data.DataValidatorRequestInputSpec<TInput, TInputContentTypes>;
-  output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
-  mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-      infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-      unknown,
-      infer _0,
-      infer _1,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-      ? md.Kind<
-          TArg,
-          TEndpointArgs extends common.EndpointHandlerArgsWithURL<unknown>
-            ? { [P in keyof TEndpointArgs["url"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithQuery<unknown>
-            ? { [P in keyof TEndpointArgs["query"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithHeaders<unknown>
-            ? { [P in keyof TEndpointArgs["headers"]]: unknown }
-            : undefined,
-          undefined extends TResponseHeaders
-            ? undefined
-            : { [P in keyof TResponseHeaders]: unknown },
-          { [P in keyof TInputContentTypes]: TInput },
-          { [P in keyof TOutputContentTypes]: TOutput }
-        >
-      : never;
-  };
-}
-
-export interface EndpointSpecArgsWithHandler<
-  TRefinedContext,
-  TState,
-  TEndpointArgs,
-  TOutput,
-> {
-  endpointHandler: common.EndpointHandler<
-    TEndpointArgs & common.EndpointHandlerArgs<TRefinedContext, TState>,
-    TOutput
-  >;
 }

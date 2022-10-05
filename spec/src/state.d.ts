@@ -6,8 +6,8 @@ export interface AppEndpointBuilderState<
   TContext,
   TRefinedContext,
   TState,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
   TInputContents extends data.TInputContentsBase,
   TMetadata extends Record<
@@ -16,8 +16,8 @@ export interface AppEndpointBuilderState<
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -29,8 +29,8 @@ export interface AppEndpointBuilderState<
       ep.HttpMethod,
       StaticAppEndpointBuilderSpec<
         TContext,
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         TMetadata
@@ -43,7 +43,7 @@ export interface AppEndpointBuilderState<
     TState
   >;
   metadata: TMetadata;
-  urlValidation: URLValidationInfo<THeaderDecoder>;
+  urlValidation: URLValidationInfo<TStringDecoder>;
 }
 
 export type URLValidationInfo<TStringDecoder> =
@@ -58,8 +58,8 @@ export type URLValidationInfo<TStringDecoder> =
 
 export interface StaticAppEndpointBuilderSpec<
   TContext,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
   TInputContents extends data.TInputContentsBase,
   TMetadata extends Record<
@@ -68,8 +68,8 @@ export interface StaticAppEndpointBuilderSpec<
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -78,13 +78,13 @@ export interface StaticAppEndpointBuilderSpec<
   builder: StaticAppEndpointBuilder<TContext>;
   requestHeadersSpec?: data.RequestHeaderDataValidatorSpecMetadata<
     string,
-    THeaderDecoder
+    TStringDecoder
   >;
   responseHeadersSpec?: data.ResponseHeaderDataValidatorSpecMetadata<
     string,
-    THeaderEncoder
+    TStringEncoder
   >;
-  queryValidation?: data.QueryDataValidatorSpecMetadata<string, THeaderDecoder>;
+  queryValidation?: data.QueryDataValidatorSpecMetadata<string, TStringDecoder>;
   inputValidation?: Omit<
     data.DataValidatorRequestInputSpec<unknown, TInputContents>,
     "validator"

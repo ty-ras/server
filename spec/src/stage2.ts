@@ -10,12 +10,12 @@ export class AppEndpointBuilderForMethods<
   TContext,
   TRefinedContext,
   TState,
-  TArgsURL,
+  TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
-  TArgsHeaders,
-  TArgsQuery,
-  THeaderDecoder,
-  THeaderEncoder,
+  TArgsHeaders extends object,
+  TArgsQuery extends object,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -24,8 +24,8 @@ export class AppEndpointBuilderForMethods<
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -36,17 +36,17 @@ export class AppEndpointBuilderForMethods<
       TContext,
       TRefinedContext,
       TState,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents,
       TMetadataProviders
     >,
     protected readonly _methods: Set<TAllowedMethods>,
-    protected readonly _queryInfo: common.QueryInfo<TArgsQuery, THeaderDecoder>,
+    protected readonly _queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
     protected readonly _headerInfo: common.HeaderDataInfo<
       TArgsHeaders,
-      THeaderDecoder
+      TStringDecoder
     >,
   ) {}
 
@@ -57,7 +57,7 @@ export class AppEndpointBuilderForMethods<
         common.EndpointHandlerArgs<TRefinedContext, TState>,
       TOutput,
       THeaderData,
-      THeaderEncoder
+      TStringEncoder
     >,
     {
       validator,
@@ -96,8 +96,8 @@ export class AppEndpointBuilderForMethods<
     TState,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -146,8 +146,8 @@ export class AppEndpointBuilderForMethods<
     TState,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -166,12 +166,12 @@ export class AppEndpointBuilderForMethods<
             common.EndpointHandlerArgs<TRefinedContext, TState>,
           TOutput,
           THeaderData,
-          THeaderEncoder
+          TStringEncoder
         >,
-    {
-      validator,
-      ...outputSpec
-    }: dataBE.DataValidatorResponseOutputSpec<TOutput, TOutputContents>,
+    outputSpec: dataBE.DataValidatorResponseOutputSpec<
+      TOutput,
+      TOutputContents
+    >,
     mdArgs: {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
         infer TArg,
@@ -205,127 +205,31 @@ export class AppEndpointBuilderForMethods<
     TState,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
   > {
-    const isFunction = typeof endpointHandlerSpec === "function";
-    const endpointHandler = isFunction
-      ? async (
-          args: TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState>,
-        ) => ({ body: await endpointHandlerSpec(args) })
-      : endpointHandlerSpec.handler;
-    const responseHeaders = isFunction
-      ? undefined
-      : endpointHandlerSpec.headers;
-    const { query, getEndpointArgs: getQueryEndpointArgs } = this._queryInfo;
-    const { headers, getEndpointArgs: getHeaderEndpointArgs } =
-      this._headerInfo;
-    const { contextTransform, urlValidation } = this._state;
     const handler: state.StaticAppEndpointBuilderSpec<
       TContext,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents,
       TMetadataProviders
     > = {
-      outputValidation: outputSpec,
-      builder: (groupNamePrefix) => {
-        const retVal: ep.StaticAppEndpointHandler<TContext> = {
-          // TODO use runtime pick props for contextValidator!
-          contextValidator:
-            contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
-          urlValidator: urlValidation
-            ? {
-                groupNames: Object.fromEntries(
-                  urlValidation.args.map((parameterName) => [
-                    parameterName,
-                    `${groupNamePrefix}${parameterName}`,
-                  ]),
-                ),
-                validators: urlValidation.validation.validators,
-              }
-            : undefined,
-          queryValidator: query?.validators,
-          headerValidator: headers?.validators,
-          handler: async ({ context, state, url, headers, query }) => {
-            const handlerArgs = {
-              ...getQueryEndpointArgs(query),
-              ...getHeaderEndpointArgs(headers),
-              context,
-              state,
-            };
-            if (urlValidation) {
-              (
-                handlerArgs as unknown as common.EndpointHandlerArgsWithURL<unknown>
-              ).url = url;
-            }
-            const handlerResult = await endpointHandler(
-              handlerArgs as unknown as Parameters<typeof endpointHandler>[0],
-            );
-            const validatorResult = validator(handlerResult.body);
-            let outputResult:
-              | data.DataValidatorResultError
-              | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>;
-            if (validatorResult.error === "none") {
-              if (responseHeaders) {
-                if (!("headers" in handlerResult)) {
-                  outputResult = data.exceptionAsValidationError(
-                    "Internal error: response headers returned when no headers expected.",
-                  );
-                } else {
-                  const [proceed, validatedHeaders, errors] =
-                    dataBE.checkHeaders(
-                      responseHeaders.validators,
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-                      (hdrName) => handlerResult.headers[hdrName] as any,
-                      false,
-                    );
-                  outputResult = proceed
-                    ? {
-                        error: "none",
-                        data: {
-                          ...validatorResult.data,
-                          headers: validatedHeaders as Exclude<
-                            dataBE.DataValidatorResponseOutputSuccess["headers"],
-                            undefined
-                          >,
-                        },
-                      }
-                    : data.combineErrorObjects(Object.values(errors));
-                }
-              } else {
-                outputResult = {
-                  error: "none",
-                  data: validatorResult.data,
-                };
-              }
-            } else {
-              outputResult = validatorResult;
-            }
-            return outputResult;
-          },
-        };
-
-        return retVal;
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      ...createStaticEndpointSpec(
+        this._state.contextTransform,
+        this._state.urlValidation,
+        this._queryInfo,
+        this._headerInfo,
+        endpointHandlerSpec,
+        outputSpec,
+      ),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mdArgs: mdArgs as any,
     };
-    if (headers) {
-      handler.requestHeadersSpec = headers.metadata;
-    }
-    if (responseHeaders) {
-      handler.responseHeadersSpec = responseHeaders.metadata;
-    }
-    if (query) {
-      handler.queryValidation = query.metadata;
-    }
     return new AppEndpointBuilder({
       ...this._state,
       methods: Object.assign(
@@ -337,205 +241,18 @@ export class AppEndpointBuilderForMethods<
       ),
     });
   }
-
-  private _getStage1State<
-    TOutput,
-    THeaderData extends dataBE.RuntimeAnyHeaders,
-  >(
-    endpointHandlerSpec:
-      | common.EndpointHandler<
-          TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState>,
-          TOutput
-        >
-      | common.EndpointHandlerSpec<
-          TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState>,
-          TOutput,
-          THeaderData,
-          THeaderEncoder
-        >,
-    {
-      validator,
-      ...outputSpec
-    }: dataBE.DataValidatorResponseOutputSpec<TOutput, TOutputContents>,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _1,
-        infer _2,
-        infer _3,
-        infer _4
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            { [P in keyof THeaderData]: unknown } | undefined,
-            undefined,
-            { [P in keyof TOutputContents]: TOutput }
-          >
-        : never;
-    },
-  ): state.AppEndpointBuilderState<
-    TContext,
-    TRefinedContext,
-    TState,
-    THeaderDecoder,
-    THeaderEncoder,
-    TOutputContents,
-    TInputContents,
-    TMetadataProviders
-  > {
-    const isFunction = typeof endpointHandlerSpec === "function";
-    const endpointHandler = isFunction
-      ? async (
-          args: TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState>,
-        ) => ({ body: await endpointHandlerSpec(args) })
-      : endpointHandlerSpec.handler;
-    const responseHeaders = isFunction
-      ? undefined
-      : endpointHandlerSpec.headers;
-    const { query, getEndpointArgs: getQueryEndpointArgs } = this._queryInfo;
-    const { headers, getEndpointArgs: getHeaderEndpointArgs } =
-      this._headerInfo;
-    const { contextTransform, urlValidation } = this._state;
-    const handler: state.StaticAppEndpointBuilderSpec<
-      TContext,
-      THeaderDecoder,
-      THeaderEncoder,
-      TOutputContents,
-      TInputContents,
-      TMetadataProviders
-    > = {
-      outputValidation: outputSpec,
-      builder: (groupNamePrefix) => {
-        const retVal: ep.StaticAppEndpointHandler<TContext> = {
-          // TODO use runtime pick props for contextValidator!
-          contextValidator:
-            contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
-          urlValidator: urlValidation
-            ? {
-                groupNames: Object.fromEntries(
-                  urlValidation.args.map((parameterName) => [
-                    parameterName,
-                    `${groupNamePrefix}${parameterName}`,
-                  ]),
-                ),
-                validators: urlValidation.validation.validators,
-              }
-            : undefined,
-          queryValidator: query?.validators,
-          headerValidator: headers?.validators,
-          handler: async ({ context, state, url, headers, query }) => {
-            const handlerArgs = {
-              ...getQueryEndpointArgs(query),
-              ...getHeaderEndpointArgs(headers),
-              context,
-              state,
-            };
-            if (urlValidation) {
-              (
-                handlerArgs as unknown as common.EndpointHandlerArgsWithURL<unknown>
-              ).url = url;
-            }
-            const handlerResult = await endpointHandler(
-              handlerArgs as unknown as Parameters<typeof endpointHandler>[0],
-            );
-            const validatorResult = validator(handlerResult.body);
-            let outputResult:
-              | data.DataValidatorResultError
-              | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>;
-            if (validatorResult.error === "none") {
-              if (responseHeaders) {
-                if (!("headers" in handlerResult)) {
-                  outputResult = data.exceptionAsValidationError(
-                    "Internal error: response headers returned when no headers expected.",
-                  );
-                } else {
-                  const [proceed, validatedHeaders, errors] =
-                    dataBE.checkHeaders(
-                      responseHeaders.validators,
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-                      (hdrName) => handlerResult.headers[hdrName] as any,
-                      false,
-                    );
-                  outputResult = proceed
-                    ? {
-                        error: "none",
-                        data: {
-                          ...validatorResult.data,
-                          headers: validatedHeaders as Exclude<
-                            dataBE.DataValidatorResponseOutputSuccess["headers"],
-                            undefined
-                          >,
-                        },
-                      }
-                    : data.combineErrorObjects(Object.values(errors));
-                }
-              } else {
-                outputResult = {
-                  error: "none",
-                  data: validatorResult.data,
-                };
-              }
-            } else {
-              outputResult = validatorResult;
-            }
-            return outputResult;
-          },
-        };
-
-        return retVal;
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-      mdArgs: mdArgs as any,
-    };
-    if (headers) {
-      handler.requestHeadersSpec = headers.metadata;
-    }
-    if (responseHeaders) {
-      handler.responseHeadersSpec = responseHeaders.metadata;
-    }
-    if (query) {
-      handler.queryValidation = query.metadata;
-    }
-    return {
-      ...this._state,
-      methods: Object.assign(
-        {},
-        Object.fromEntries(
-          Array.from(this._methods.values()).map((method) => [method, handler]),
-        ),
-        this._state.methods,
-      ),
-    };
-  }
 }
 
 export class AppEndpointBuilderForMethodsAndBody<
   TContext,
   TRefinedContext,
   TState,
-  TArgsURL,
+  TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
-  TArgsHeaders,
-  TArgsQuery,
-  THeaderDecoder,
-  THeaderEncoder,
+  TArgsHeaders extends object,
+  TArgsQuery extends object,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -544,8 +261,8 @@ export class AppEndpointBuilderForMethodsAndBody<
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -558,8 +275,8 @@ export class AppEndpointBuilderForMethodsAndBody<
   TAllowedMethods,
   TArgsHeaders,
   TArgsQuery,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents,
   TInputContents,
   TMetadataProviders
@@ -610,8 +327,8 @@ export class AppEndpointBuilderForMethodsAndBody<
     TState,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -629,7 +346,7 @@ export class AppEndpointBuilderForMethodsAndBody<
         common.EndpointHandlerArgsWithBody<TBody>,
       THandlerResult,
       THeaderData,
-      THeaderEncoder
+      TStringEncoder
     >,
     output: dataBE.DataValidatorResponseOutputSpec<
       THandlerResult,
@@ -668,8 +385,8 @@ export class AppEndpointBuilderForMethodsAndBody<
     TState,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -679,10 +396,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     TBody,
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
-    {
-      validator: inputValidator,
-      ...inputSpec
-    }: dataBE.DataValidatorRequestInputSpec<TBody, TInputContents>,
+    inputSpec: dataBE.DataValidatorRequestInputSpec<TBody, TInputContents>,
     endpointHandlerSpec:
       | common.EndpointHandler<
           TArgsURL &
@@ -698,12 +412,12 @@ export class AppEndpointBuilderForMethodsAndBody<
             common.EndpointHandlerArgsWithBody<TBody>,
           THandlerResult,
           THeaderData,
-          THeaderEncoder
+          TStringEncoder
         >,
-    {
-      validator: outputValidator,
-      ...outputSpec
-    }: dataBE.DataValidatorResponseOutputSpec<THandlerResult, TOutputContents>,
+    outputSpec: dataBE.DataValidatorResponseOutputSpec<
+      THandlerResult,
+      TOutputContents
+    >,
     mdArgs: {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
         infer TArg,
@@ -737,129 +451,32 @@ export class AppEndpointBuilderForMethodsAndBody<
     TState,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
   > {
-    const isFunction = typeof endpointHandlerSpec === "function";
-    const endpointHandler = isFunction
-      ? async (
-          args: TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState> &
-            common.EndpointHandlerArgsWithBody<TBody>,
-        ) => ({ body: await endpointHandlerSpec(args) })
-      : endpointHandlerSpec.handler;
-    const responseHeaders = isFunction
-      ? undefined
-      : endpointHandlerSpec.headers;
-    const { query, getEndpointArgs: getQueryEndpointArgs } = this._queryInfo;
-    const { headers, getEndpointArgs: getHeaderEndpointArgs } =
-      this._headerInfo;
-    const { contextTransform, urlValidation } = this._state;
     const handler: state.StaticAppEndpointBuilderSpec<
       TContext,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents,
       TMetadataProviders
     > = {
-      inputValidation: inputSpec,
-      outputValidation: outputSpec,
-      builder: (groupNamePrefix) => {
-        const retVal: ep.StaticAppEndpointHandler<TContext> = {
-          contextValidator:
-            contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
-          urlValidator: urlValidation
-            ? {
-                groupNames: Object.fromEntries(
-                  urlValidation.args.map((parameterName) => [
-                    parameterName,
-                    `${groupNamePrefix}${parameterName}`,
-                  ]),
-                ),
-                validators: urlValidation.validation.validators,
-              }
-            : undefined,
-          headerValidator: headers?.validators,
-          queryValidator: query?.validators,
-          bodyValidator: inputValidator,
-          handler: async ({ context, state, url, headers, body, query }) => {
-            const handlerArgs = {
-              ...getQueryEndpointArgs(query),
-              ...getHeaderEndpointArgs(headers),
-              context,
-              state,
-              body: body as TBody,
-            };
-            if (urlValidation) {
-              (
-                handlerArgs as unknown as common.EndpointHandlerArgsWithURL<unknown>
-              ).url = url;
-            }
-            const handlerResult = await endpointHandler(
-              handlerArgs as unknown as Parameters<typeof endpointHandler>[0],
-            );
-            const validatorResult = outputValidator(handlerResult.body);
-            let outputResult:
-              | data.DataValidatorResultError
-              | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>;
-            if (validatorResult.error === "none") {
-              if (responseHeaders) {
-                if (!("headers" in handlerResult)) {
-                  outputResult = data.exceptionAsValidationError(
-                    "Internal error: response headers returned when no headers expected.",
-                  );
-                } else {
-                  const [proceed, validatedHeaders, errors] =
-                    dataBE.checkHeaders(
-                      responseHeaders.validators,
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-                      (hdrName) => handlerResult.headers[hdrName] as any,
-                      false,
-                    );
-                  outputResult = proceed
-                    ? {
-                        error: "none",
-                        data: {
-                          ...validatorResult.data,
-                          headers: validatedHeaders as Exclude<
-                            dataBE.DataValidatorResponseOutputSuccess["headers"],
-                            undefined
-                          >,
-                        },
-                      }
-                    : data.combineErrorObjects(Object.values(errors));
-                }
-              } else {
-                outputResult = {
-                  error: "none",
-                  data: validatorResult.data,
-                };
-              }
-            } else {
-              outputResult = validatorResult;
-            }
-            return outputResult;
-          },
-        };
-        return retVal;
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      ...createStaticEndpointSpec(
+        this._state.contextTransform,
+        this._state.urlValidation,
+        this._queryInfo,
+        this._headerInfo,
+        endpointHandlerSpec,
+        outputSpec,
+        inputSpec,
+      ),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mdArgs: mdArgs as any,
     };
-    if (headers) {
-      handler.requestHeadersSpec = headers.metadata;
-    }
-    if (responseHeaders) {
-      handler.responseHeadersSpec = responseHeaders.metadata;
-    }
-    if (query) {
-      handler.queryValidation = query.metadata;
-    }
     return new AppEndpointBuilder({
       ...this._state,
       methods: Object.assign(
@@ -873,20 +490,139 @@ export class AppEndpointBuilderForMethodsAndBody<
   }
 }
 
-const createStaticAppEndpointHandlerFunction =
-  <TContext, TRefinedContext, TState, TStringDecoder, TArgs, THandlerResult>(
-    contextTransform: dataBE.ContextValidatorSpec<
-      TContext,
-      TRefinedContext,
-      TState
-    >,
-    urlValidation: state.URLValidationInfo<TStringDecoder>,
-    endpointHandler: common.EndpointHandler<TArgs, THandlerResult>,
-  ): ep.StaticAppEndpointHandlerFunction<TContext> =>
-  async ({ context, state, url, headers, query }) => {
-    const handlerArgs = {
+const createStaticEndpointSpec = <
+  TContext,
+  TRefinedContext,
+  TState,
+  TStringDecoder,
+  TStringEncoder,
+  THeaderData extends dataBE.RuntimeAnyHeaders,
+  TArgsURL extends object,
+  TArgsQuery extends object,
+  TArgsHeaders extends object,
+  TEndpointArgs extends TArgsURL &
+    TArgsQuery &
+    common.EndpointHandlerArgs<TRefinedContext, TState>,
+  THandlerResult,
+  TOutputContents extends dataBE.TOutputContentsBase,
+  TInputContents extends dataBE.TInputContentsBase,
+>(
+  contextTransform: dataBE.ContextValidatorSpec<
+    TContext,
+    TRefinedContext,
+    TState
+  >,
+  urlValidation: state.URLValidationInfo<TStringDecoder>,
+  queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
+  headerInfo: common.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
+  endpointHandlerSpec:
+    | common.EndpointHandler<TEndpointArgs, THandlerResult>
+    | common.EndpointHandlerSpec<
+        TEndpointArgs,
+        THandlerResult,
+        THeaderData,
+        TStringEncoder
+      >,
+  outputSpec: dataBE.DataValidatorResponseOutputSpec<
+    THandlerResult,
+    TOutputContents
+  >,
+  inputSpec?: dataBE.DataValidatorRequestInputSpec<unknown, TInputContents>,
+) => {
+  const isFunction = typeof endpointHandlerSpec === "function";
+  const endpointHandler = isFunction
+    ? async (args: TEndpointArgs) => ({ body: await endpointHandlerSpec(args) })
+    : endpointHandlerSpec.handler;
+  const responseHeaders = isFunction ? undefined : endpointHandlerSpec.headers;
+  const { query, getEndpointArgs: getQueryEndpointArgs } = queryInfo;
+  const { headers, getEndpointArgs: getHeaderEndpointArgs } = headerInfo;
+  const handler = createStaticAppEndpointHandlerFunction(
+    urlValidation,
+    endpointHandler,
+    outputSpec.validator,
+    responseHeaders,
+    ({ query, headers, body }) => ({
       ...getQueryEndpointArgs(query),
       ...getHeaderEndpointArgs(headers),
+      ...(inputSpec ? { body } : {}),
+    }),
+  );
+  const retVal: Omit<
+    state.StaticAppEndpointBuilderSpec<
+      TContext,
+      TStringDecoder,
+      TStringEncoder,
+      TOutputContents,
+      TInputContents,
+      never
+    >,
+    "mdArgs"
+  > = {
+    outputValidation: outputSpec,
+    builder: (groupNamePrefix) => ({
+      contextValidator:
+        contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
+      urlValidator: urlValidation
+        ? {
+            groupNames: Object.fromEntries(
+              urlValidation.args.map((parameterName) => [
+                parameterName,
+                `${groupNamePrefix}${parameterName}`,
+              ]),
+            ),
+            validators: urlValidation.validation.validators,
+          }
+        : undefined,
+      handler,
+      headerValidator: headers?.validators,
+      queryValidator: query?.validators,
+      bodyValidator: inputSpec?.validator,
+    }),
+  };
+  if (headers) {
+    retVal.requestHeadersSpec = headers.metadata;
+  }
+  if (responseHeaders) {
+    retVal.responseHeadersSpec = responseHeaders.metadata;
+  }
+  if (query) {
+    retVal.queryValidation = query.metadata;
+  }
+  if (inputSpec) {
+    retVal.inputValidation = inputSpec;
+  }
+
+  return retVal;
+};
+
+const createStaticAppEndpointHandlerFunction =
+  <
+    TContext,
+    TStringDecoder,
+    TStringEncoder,
+    TArgs,
+    THandlerResult,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
+  >(
+    urlValidation: state.URLValidationInfo<TStringDecoder>,
+    endpointHandler: common.EndpointHandler<
+      TArgs,
+      { body: THandlerResult; headers?: THeaderData }
+    >,
+    validator: dataBE.DataValidatorResponseOutput<THandlerResult>,
+    responseHeadersSpec:
+      | dataBE.ResponseHeaderDataValidatorSpec<THeaderData, TStringEncoder>
+      | undefined,
+    getAdditionalArgs: (
+      args: Omit<
+        Parameters<ep.StaticAppEndpointHandlerFunction<TContext>>[0],
+        "context" | "state" | "url"
+      >,
+    ) => object,
+  ): ep.StaticAppEndpointHandlerFunction<TContext> =>
+  async ({ context, state, url, ...args }) => {
+    const handlerArgs = {
+      ...getAdditionalArgs(args),
       context,
       state,
     };
@@ -895,24 +631,24 @@ const createStaticAppEndpointHandlerFunction =
         handlerArgs as unknown as common.EndpointHandlerArgsWithURL<unknown>
       ).url = url;
     }
-    const handlerResult = await endpointHandler(
+    const { body, headers: responseHeaders } = await endpointHandler(
       handlerArgs as unknown as Parameters<typeof endpointHandler>[0],
     );
-    const validatorResult = validator(handlerResult.body);
+    const validatorResult = validator(body);
     let outputResult:
       | data.DataValidatorResultError
       | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>;
     if (validatorResult.error === "none") {
-      if (responseHeaders) {
-        if (!("headers" in handlerResult)) {
+      if (responseHeadersSpec) {
+        if (!responseHeaders) {
           outputResult = data.exceptionAsValidationError(
             "Internal error: response headers returned when no headers expected.",
           );
         } else {
           const [proceed, validatedHeaders, errors] = dataBE.checkHeaders(
-            responseHeaders.validators,
+            responseHeadersSpec.validators,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-            (hdrName) => handlerResult.headers[hdrName] as any,
+            (hdrName) => responseHeaders[hdrName] as any,
             false,
           );
           outputResult = proceed

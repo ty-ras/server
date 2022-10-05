@@ -33,8 +33,8 @@ export class AppEndpointBuilderProvider<
   TContext,
   TRefinedContext,
   TState,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -46,8 +46,8 @@ export class AppEndpointBuilderProvider<
       any,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents,
       unknown,
@@ -70,8 +70,8 @@ export class AppEndpointBuilderProvider<
     TState,
     {}, // eslint-disable-line @typescript-eslint/ban-types
     ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     {
@@ -88,8 +88,8 @@ export class AppEndpointBuilderProvider<
     TRefinedContext,
     TState,
     TArgs[number],
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     {
@@ -108,8 +108,8 @@ export class AppEndpointBuilderProvider<
         TState,
         {}, // eslint-disable-line @typescript-eslint/ban-types
         ep.HttpMethod,
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         {
@@ -123,8 +123,8 @@ export class AppEndpointBuilderProvider<
         TRefinedContext,
         TState,
         TArgs[number],
-        THeaderDecoder,
-        THeaderEncoder,
+        TStringDecoder,
+        TStringEncoder,
         TOutputContents,
         TInputContents,
         {
@@ -184,8 +184,8 @@ export class AppEndpointBuilderProvider<
     TContext,
     TNewContext,
     TNewState,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
@@ -371,8 +371,8 @@ export interface URLDataNames<
   TRefinedContext,
   TState,
   TNames extends string,
-  THeaderDecoder,
-  THeaderEncoder,
+  TStringDecoder,
+  TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends Record<
@@ -381,8 +381,8 @@ export interface URLDataNames<
       md.HKTArg,
       unknown,
       unknown,
-      THeaderDecoder,
-      THeaderEncoder,
+      TStringDecoder,
+      TStringEncoder,
       TOutputContents,
       TInputContents
     >
@@ -393,15 +393,15 @@ export interface URLDataNames<
       [P in TNames]: unknown;
     },
   >(
-    validation: dataBE.URLParameterValidatorSpec<TValidation, THeaderDecoder>,
+    validation: dataBE.URLParameterValidatorSpec<TValidation, TStringDecoder>,
   ) => AppEndpointBuilderInitial<
     TContext,
     TRefinedContext,
     TState,
     common.EndpointHandlerArgsWithURL<TValidation>,
     ep.HttpMethod,
-    THeaderDecoder,
-    THeaderEncoder,
+    TStringDecoder,
+    TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
