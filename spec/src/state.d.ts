@@ -23,7 +23,7 @@ export interface AppEndpointBuilderState<
     >
   >,
 > {
-  fragments: TemplateStringsArray;
+  fragments: ReadonlyArray<string>;
   methods: Partial<
     Record<
       ep.HttpMethod,

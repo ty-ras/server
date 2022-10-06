@@ -64,7 +64,9 @@ export class AppEndpointBuilderProvider<
     private readonly _mdProviders: TMetadataProviders,
   ) {}
 
-  public atURL(fragments: TemplateStringsArray): AppEndpointBuilderInitial<
+  public atURL(
+    fragments: TemplateStringsArray | string,
+  ): AppEndpointBuilderInitial<
     TContext,
     TRefinedContext,
     TState,
@@ -99,7 +101,7 @@ export class AppEndpointBuilderProvider<
     }
   >;
   public atURL<TArgs extends [string, ...Array<string>]>(
-    fragments: TemplateStringsArray,
+    fragmentsOrString: TemplateStringsArray | string,
     ...args: TArgs
   ):
     | AppEndpointBuilderInitial<
@@ -133,6 +135,10 @@ export class AppEndpointBuilderProvider<
           >;
         }
       > {
+    const fragments: ReadonlyArray<string> =
+      typeof fragmentsOrString === "string"
+        ? [fragmentsOrString]
+        : fragmentsOrString;
     if (args.length > 0) {
       // URL template has arguments -> return URL data validator which allows to build endpoints
       return {

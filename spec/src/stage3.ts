@@ -147,7 +147,7 @@ const checkMethodsForHandler = <
       };
 
 function* getURLItemsInOrder<TStringDecoder>(
-  fragments: TemplateStringsArray,
+  fragments: ReadonlyArray<string>,
   names: ReadonlyArray<string>,
   validation: dataBE.URLParameterValidatorSpec<
     dataBE.RuntimeAnyURLData,
@@ -172,7 +172,7 @@ function* getURLItemsInOrder<TStringDecoder>(
 // "/api/(?<ep_prefix_id>X)"
 // Don't add start/end marks ^/$, since we want to allow prefixing URLs.
 const buildURLRegExp = <TStringDecoder>(
-  fragments: TemplateStringsArray,
+  fragments: ReadonlyArray<string>,
   names: ReadonlyArray<string>,
   validation: dataBE.URLParameterValidatorSpec<
     dataBE.RuntimeAnyURLData,

@@ -59,37 +59,21 @@ export class AppEndpointBuilderForMethods<
       THeaderData,
       TStringEncoder
     >,
-    {
-      validator,
-      ...outputSpec
-    }: dataBE.DataValidatorResponseOutputSpec<TOutput, TOutputContents>,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _1,
-        infer _2,
-        infer _3,
-        infer _4
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            { [P in keyof THeaderData]: unknown },
-            undefined,
-            { [P in keyof TOutputContents]: TOutput }
-          >
-        : never;
-    },
+    outputSpec: dataBE.DataValidatorResponseOutputSpec<
+      TOutput,
+      TOutputContents
+    >,
+    mdArgs: MetadataArguments<
+      TArgsURL,
+      TArgsHeaders,
+      TArgsQuery,
+      keyof TOutputContents,
+      TMetadataProviders,
+      TOutput,
+      keyof THeaderData,
+      never,
+      never
+    >,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
@@ -109,37 +93,21 @@ export class AppEndpointBuilderForMethods<
         common.EndpointHandlerArgs<TRefinedContext, TState>,
       TOutput
     >,
-    {
-      validator,
-      ...outputSpec
-    }: dataBE.DataValidatorResponseOutputSpec<TOutput, TOutputContents>,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _1,
-        infer _2,
-        infer _3,
-        infer _4
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            undefined,
-            undefined,
-            { [P in keyof TOutputContents]: TOutput }
-          >
-        : never;
-    },
+    outputSpec: dataBE.DataValidatorResponseOutputSpec<
+      TOutput,
+      TOutputContents
+    >,
+    mdArgs: MetadataArguments<
+      TArgsURL,
+      TArgsHeaders,
+      TArgsQuery,
+      keyof TOutputContents,
+      TMetadataProviders,
+      TOutput,
+      never,
+      never,
+      never
+    >,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
@@ -172,33 +140,17 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       TOutputContents
     >,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _1,
-        infer _2,
-        infer _3,
-        infer _4
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            { [P in keyof THeaderData]: unknown } | undefined,
-            undefined,
-            { [P in keyof TOutputContents]: TOutput }
-          >
-        : never;
-    },
+    mdArgs: MetadataArguments<
+      TArgsURL,
+      TArgsHeaders,
+      TArgsQuery,
+      keyof TOutputContents,
+      TMetadataProviders,
+      TOutput,
+      keyof THeaderData,
+      never,
+      never
+    >,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
@@ -290,37 +242,21 @@ export class AppEndpointBuilderForMethodsAndBody<
         common.EndpointHandlerArgsWithBody<TBody>,
       THandlerResult
     >,
-    output: dataBE.DataValidatorResponseOutputSpec<
+    outputSpec: dataBE.DataValidatorResponseOutputSpec<
       THandlerResult,
       TOutputContents
     >,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _0,
-        infer _1,
-        infer _2,
-        infer _3
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            undefined,
-            { [P in keyof TInputContents]: TBody },
-            { [P in keyof TOutputContents]: THandlerResult }
-          >
-        : never;
-    },
+    mdArgs: MetadataArguments<
+      TArgsURL,
+      TArgsHeaders,
+      TArgsQuery,
+      keyof TOutputContents,
+      TMetadataProviders,
+      THandlerResult,
+      never,
+      keyof TInputContents,
+      TBody
+    >,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
@@ -348,37 +284,21 @@ export class AppEndpointBuilderForMethodsAndBody<
       THeaderData,
       TStringEncoder
     >,
-    output: dataBE.DataValidatorResponseOutputSpec<
+    outputSpec: dataBE.DataValidatorResponseOutputSpec<
       THandlerResult,
       TOutputContents
     >,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _0,
-        infer _1,
-        infer _2,
-        infer _3
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            { [P in keyof THeaderData]: unknown },
-            { [P in keyof TInputContents]: TBody },
-            { [P in keyof TOutputContents]: THandlerResult }
-          >
-        : never;
-    },
+    mdArgs: MetadataArguments<
+      TArgsURL,
+      TArgsHeaders,
+      TArgsQuery,
+      keyof TOutputContents,
+      TMetadataProviders,
+      THandlerResult,
+      keyof THeaderData,
+      keyof TInputContents,
+      TBody
+    >,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
@@ -418,33 +338,17 @@ export class AppEndpointBuilderForMethodsAndBody<
       THandlerResult,
       TOutputContents
     >,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer TArg,
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        unknown,
-        infer _0,
-        infer _1,
-        infer _2,
-        infer _3
-      >
-        ? md.Kind<
-            TArg,
-            TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
-              ? { [P in keyof TArgsURL["url"]]: unknown }
-              : undefined,
-            TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
-              ? { [P in keyof TArgsQuery["query"]]: unknown }
-              : undefined,
-            TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
-              ? { [P in keyof TArgsHeaders["headers"]]: unknown }
-              : undefined,
-            { [P in keyof THeaderData]: unknown } | undefined,
-            { [P in keyof TInputContents]: TBody },
-            { [P in keyof TOutputContents]: THandlerResult }
-          >
-        : never;
-    },
+    mdArgs: MetadataArguments<
+      TArgsURL,
+      TArgsHeaders,
+      TArgsQuery,
+      keyof TOutputContents,
+      TMetadataProviders,
+      THandlerResult,
+      keyof THeaderData,
+      keyof TInputContents,
+      TBody
+    >,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
@@ -675,3 +579,45 @@ const createStaticAppEndpointHandlerFunction =
     }
     return outputResult;
   };
+
+export type MetadataArguments<
+  TArgsURL extends object,
+  TArgsHeaders extends object,
+  TArgsQuery extends object,
+  TOutputContentsKeys extends PropertyKey,
+  TMetadataProviders,
+  THandlerResult,
+  TResponseHeaderKeys extends PropertyKey,
+  TInputContentsKeys extends PropertyKey,
+  TBody,
+> = {
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    infer TArg,
+    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _0,
+    infer _1,
+    infer _2,
+    infer _3,
+    infer _4
+  >
+    ? md.Kind<
+        TArg,
+        TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
+          ? { [P in keyof TArgsURL["url"]]: unknown }
+          : undefined,
+        TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
+          ? { [P in keyof TArgsQuery["query"]]: unknown }
+          : undefined,
+        TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
+          ? { [P in keyof TArgsHeaders["headers"]]: unknown }
+          : undefined,
+        never extends TResponseHeaderKeys
+          ? undefined
+          : { [P in TResponseHeaderKeys]: unknown },
+        never extends TInputContentsKeys
+          ? undefined
+          : { [P in TInputContentsKeys]: TBody },
+        { [P in TOutputContentsKeys]: THandlerResult }
+      >
+    : never;
+};
