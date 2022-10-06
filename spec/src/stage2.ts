@@ -463,25 +463,26 @@ const createStaticEndpointSpec = <
     "mdArgs"
   > = {
     outputValidation: outputSpec,
-    builder: (groupNamePrefix) => ({
-      contextValidator:
-        contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
-      urlValidator: urlValidation
-        ? {
-            groupNames: Object.fromEntries(
-              urlValidation.args.map((parameterName) => [
-                parameterName,
-                `${groupNamePrefix}${parameterName}`,
-              ]),
-            ),
-            validators: urlValidation.validation.validators,
-          }
-        : undefined,
-      handler,
-      headerValidator: headers?.validators,
-      queryValidator: query?.validators,
-      bodyValidator: inputSpec?.validator,
-    }),
+    builder: (groupNamePrefix) =>
+      stripUndefineds({
+        contextValidator:
+          contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
+        urlValidator: urlValidation
+          ? {
+              groupNames: Object.fromEntries(
+                urlValidation.args.map((parameterName) => [
+                  parameterName,
+                  `${groupNamePrefix}${parameterName}`,
+                ]),
+              ),
+              validators: urlValidation.validation.validators,
+            }
+          : undefined,
+        handler,
+        headerValidator: headers?.validators,
+        queryValidator: query?.validators,
+        bodyValidator: inputSpec?.validator,
+      }),
   };
   if (headers) {
     retVal.requestHeadersSpec = headers.metadata;
@@ -620,4 +621,15 @@ export type MetadataArguments<
         { [P in TOutputContentsKeys]: THandlerResult }
       >
     : never;
+};
+
+// TODO this is duplicate from metadata-openapi
+// Move to @ty-ras/data
+const stripUndefineds = <T extends Record<string, unknown>>(val: T): T => {
+  for (const key of Object.keys(val)) {
+    if (val[key] === undefined) {
+      delete val[key];
+    }
+  }
+  return val;
 };

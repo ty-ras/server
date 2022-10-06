@@ -64,9 +64,7 @@ export class AppEndpointBuilderProvider<
     private readonly _mdProviders: TMetadataProviders,
   ) {}
 
-  public atURL(
-    fragments: TemplateStringsArray | string,
-  ): AppEndpointBuilderInitial<
+  public atURL(fragments: TemplateStringsArray): AppEndpointBuilderInitial<
     TContext,
     TRefinedContext,
     TState,
