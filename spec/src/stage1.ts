@@ -122,6 +122,52 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+  public forMethod<
+    TMethods extends TAllowedMethods,
+    TQuery extends data.RuntimeAnyQuery,
+    THeaderData extends data.RuntimeAnyHeaders,
+  >(
+    method: TMethods & ep.HttpMethodWithoutBody,
+    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
+    headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
+  ): AppEndpointBuilderForMethods<
+    TContext,
+    TRefinedContext,
+    TState,
+    TArgsURL,
+    TMethods,
+    common.EndpointHandlerArgs<TRefinedContext, TState>,
+    common.EndpointHandlerArgs<TRefinedContext, TState> &
+      common.EndpointHandlerArgsWithQuery<TQuery>,
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents,
+    TMetadataProviders
+  >;
+  public forMethod<
+    TMethods extends TAllowedMethods,
+    TQuery extends data.RuntimeAnyQuery,
+    THeaderData extends data.RuntimeAnyHeaders,
+  >(
+    method: TMethods & ep.HttpMethodWithBody,
+    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
+    headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
+  ): AppEndpointBuilderForMethodsAndBody<
+    TContext,
+    TRefinedContext,
+    TState,
+    TArgsURL,
+    TMethods,
+    common.EndpointHandlerArgs<TRefinedContext, TState>,
+    common.EndpointHandlerArgs<TRefinedContext, TState> &
+      common.EndpointHandlerArgsWithQuery<TQuery>,
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents,
+    TMetadataProviders
+  >;
   forMethod<
     TMethods extends TAllowedMethods,
     TQuery extends data.RuntimeAnyQuery,
