@@ -1,6 +1,5 @@
 import * as ep from "@ty-ras/endpoint";
 import * as data from "@ty-ras/data-backend";
-import type * as md from "@ty-ras/metadata";
 import * as common from "./common";
 import type * as state from "./state";
 import type * as batch from "./batch";
@@ -20,19 +19,11 @@ export class AppEndpointBuilderInitial<
   TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
   TInputContents extends data.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilderInitial with specific TMetadataProviders type as parameter to functions.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadataProviders extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 > {
   public constructor(
@@ -259,14 +250,14 @@ export class AppEndpointBuilderInitial<
         TInputContents,
         TMetadataProviders
       > {
-    const overlappingMehods = new Set(
+    const overlappingMethods = new Set(
       Object.keys(this._state.methods).filter(
         (existingMethod) => existingMethod === method,
       ),
     );
-    if (overlappingMehods.size > 0) {
+    if (overlappingMethods.size > 0) {
       throw new Error(
-        `The methods ${Array.from(overlappingMehods).join(
+        `The methods ${Array.from(overlappingMethods).join(
           ", ",
         )} are already specified`,
       );

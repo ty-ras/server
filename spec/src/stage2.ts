@@ -18,17 +18,11 @@ export class AppEndpointBuilderForMethods<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadataProviders extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 > {
   public constructor(
@@ -63,16 +57,14 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       TOutputContents
     >,
-    mdArgs: MetadataArguments<
+    mdArgs: MetadataArgumentsWithHeaders<
       TArgsURL,
       TArgsHeaders,
       TArgsQuery,
       keyof TOutputContents,
       TMetadataProviders,
       TOutput,
-      keyof THeaderData,
-      never,
-      never
+      keyof THeaderData
     >,
   ): AppEndpointBuilder<
     TContext,
@@ -103,10 +95,7 @@ export class AppEndpointBuilderForMethods<
       TArgsQuery,
       keyof TOutputContents,
       TMetadataProviders,
-      TOutput,
-      never,
-      never,
-      never
+      TOutput
     >,
   ): AppEndpointBuilder<
     TContext,
@@ -140,16 +129,14 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       TOutputContents
     >,
-    mdArgs: MetadataArguments<
+    mdArgs: MetadataArgumentsWithHeaders<
       TArgsURL,
       TArgsHeaders,
       TArgsQuery,
       keyof TOutputContents,
       TMetadataProviders,
       TOutput,
-      keyof THeaderData,
-      never,
-      never
+      keyof THeaderData
     >,
   ): AppEndpointBuilder<
     TContext,
@@ -207,17 +194,11 @@ export class AppEndpointBuilderForMethodsAndBody<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadataProviders extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 > extends AppEndpointBuilderForMethods<
   TContext,
@@ -246,14 +227,13 @@ export class AppEndpointBuilderForMethodsAndBody<
       THandlerResult,
       TOutputContents
     >,
-    mdArgs: MetadataArguments<
+    mdArgs: MetadataArgumentsWithBody<
       TArgsURL,
       TArgsHeaders,
       TArgsQuery,
       keyof TOutputContents,
       TMetadataProviders,
       THandlerResult,
-      never,
       keyof TInputContents,
       TBody
     >,
@@ -288,7 +268,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       THandlerResult,
       TOutputContents
     >,
-    mdArgs: MetadataArguments<
+    mdArgs: MetadataArgumentsWithBodyAndHeaders<
       TArgsURL,
       TArgsHeaders,
       TArgsQuery,
@@ -338,7 +318,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       THandlerResult,
       TOutputContents
     >,
-    mdArgs: MetadataArguments<
+    mdArgs: MetadataArgumentsWithBodyAndHeaders<
       TArgsURL,
       TArgsHeaders,
       TArgsQuery,
@@ -581,7 +561,122 @@ const createStaticAppEndpointHandlerFunction =
     return outputResult;
   };
 
+// Threr used to be just one MetadataArguments.
+// However, the TS compiler couldn't get far enough to fully resolve all types, causing compilation errors when using various versions of withBody/withoutBody above.
+// Therefore, it was split into 4 versions:
+// - Without request body, without response headers: MetadataArguments
+// - Without request body, with response headers MetadataArgumentsWithHeaders
+// - With request body, without response headers: MetadataArgumentsWithBody
+// - With request body, with response headers: MetadataArgumentsWithBodyAndHeaders
 export type MetadataArguments<
+  TArgsURL extends object,
+  TArgsHeaders extends object,
+  TArgsQuery extends object,
+  TOutputContentsKeys extends PropertyKey,
+  TMetadataProviders,
+  THandlerResult,
+> = {
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    infer TArg,
+    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _0,
+    infer _1,
+    infer _2,
+    infer _3,
+    infer _4
+  >
+    ? md.Kind<
+        TArg,
+        TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
+          ? { [P in keyof TArgsURL["url"]]: unknown }
+          : undefined,
+        TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
+          ? { [P in keyof TArgsQuery["query"]]: unknown }
+          : undefined,
+        TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
+          ? { [P in keyof TArgsHeaders["headers"]]: unknown }
+          : undefined,
+        undefined,
+        undefined,
+        { [P in TOutputContentsKeys]: THandlerResult }
+      >
+    : never;
+};
+
+export type MetadataArgumentsWithHeaders<
+  TArgsURL extends object,
+  TArgsHeaders extends object,
+  TArgsQuery extends object,
+  TOutputContentsKeys extends PropertyKey,
+  TMetadataProviders,
+  THandlerResult,
+  TResponseHeaderKeys extends PropertyKey,
+> = {
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    infer TArg,
+    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _0,
+    infer _1,
+    infer _2,
+    infer _3,
+    infer _4
+  >
+    ? md.Kind<
+        TArg,
+        TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
+          ? { [P in keyof TArgsURL["url"]]: unknown }
+          : undefined,
+        TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
+          ? { [P in keyof TArgsQuery["query"]]: unknown }
+          : undefined,
+        TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
+          ? { [P in keyof TArgsHeaders["headers"]]: unknown }
+          : undefined,
+        { [P in TResponseHeaderKeys]: unknown },
+        undefined,
+        { [P in TOutputContentsKeys]: THandlerResult }
+      >
+    : never;
+};
+
+export type MetadataArgumentsWithBody<
+  TArgsURL extends object,
+  TArgsHeaders extends object,
+  TArgsQuery extends object,
+  TOutputContentsKeys extends PropertyKey,
+  TMetadataProviders,
+  THandlerResult,
+  TInputContentsKeys extends PropertyKey,
+  TBody,
+> = {
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    infer TArg,
+    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _0,
+    infer _1,
+    infer _2,
+    infer _3,
+    infer _4
+  >
+    ? md.Kind<
+        TArg,
+        TArgsURL extends common.EndpointHandlerArgsWithURL<unknown>
+          ? { [P in keyof TArgsURL["url"]]: unknown }
+          : undefined,
+        TArgsQuery extends common.EndpointHandlerArgsWithQuery<unknown>
+          ? { [P in keyof TArgsQuery["query"]]: unknown }
+          : undefined,
+        TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
+          ? { [P in keyof TArgsHeaders["headers"]]: unknown }
+          : undefined,
+        undefined,
+        { [P in TInputContentsKeys]: TBody },
+        { [P in TOutputContentsKeys]: THandlerResult }
+      >
+    : never;
+};
+
+export type MetadataArgumentsWithBodyAndHeaders<
   TArgsURL extends object,
   TArgsHeaders extends object,
   TArgsQuery extends object,
@@ -612,10 +707,8 @@ export type MetadataArguments<
         TArgsHeaders extends common.EndpointHandlerArgsWithHeaders<unknown>
           ? { [P in keyof TArgsHeaders["headers"]]: unknown }
           : undefined,
-        never extends TResponseHeaderKeys
-          ? undefined
-          : { [P in TResponseHeaderKeys]: unknown },
-        never extends TBody ? undefined : { [P in TInputContentsKeys]: TBody },
+        { [P in TResponseHeaderKeys]: unknown },
+        { [P in TInputContentsKeys]: TBody },
         { [P in TOutputContentsKeys]: THandlerResult }
       >
     : never;

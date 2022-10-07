@@ -1,4 +1,48 @@
 import type * as data from "@ty-ras/data-backend";
+import type * as md from "@ty-ras/metadata";
+
+export type MetadataProvidersBase<
+  TStringDecoder,
+  TStringEncoder,
+  TOutputContents extends data.TOutputContentsBase,
+  TInputContents extends data.TInputContentsBase,
+> = Record<
+  string,
+  // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilderProvider with specific TMetadataProviders type as parameter to functions.
+  md.MetadataProvider<
+    md.HKTArg,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    unknown,
+    unknown,
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents,
+    unknown,
+    unknown
+  >
+>;
+
+export type MetadataBuilderBase<
+  TStringDecoder,
+  TStringEncoder,
+  TOutputContents extends data.TOutputContentsBase,
+  TInputContents extends data.TInputContentsBase,
+> = Record<
+  string,
+  // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilderInitial with specific TMetadataProviders type as parameter to functions.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  md.MetadataBuilder<
+    md.HKTArg,
+    any,
+    unknown,
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
+  >
+>;
 
 export interface EndpointHandlerArgs<TContext, TState> {
   context: TContext;

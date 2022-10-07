@@ -1,22 +1,34 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as data from "@ty-ras/data";
 import type * as dataBE from "@ty-ras/data-backend";
 import * as rawBody from "raw-body";
+import * as spec from "..";
 
 export const outputSpec = <TValue>(
   value: TValue,
+  returnHeaders = false,
 ): dataBE.DataValidatorResponseOutputSpec<TValue, { string: string }> => {
   return {
     validator: data.transitiveDataValidation(
       stringifierValidator(value),
-      (data) => ({
-        error: "none",
-        data: {
-          contentType: CONTENT_TYPE,
-          output: data,
-        },
-      }),
+      (data) => {
+        const retVal: data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess> =
+          {
+            error: "none",
+            data: {
+              contentType: CONTENT_TYPE,
+              output: data,
+            },
+          };
+        if (returnHeaders) {
+          retVal.data.headers = {
+            responseHeaderName: "responseHeaderValue",
+          };
+        }
+        return retVal;
+      },
     ),
     validatorSpec: {
       contents: {
@@ -100,8 +112,77 @@ export const stringDecoderSpec = <
   };
 };
 
+export const stringEncoderSpec = <
+  TValue extends Record<string, unknown>,
+  TAdditionalInfo extends Record<string, unknown>,
+>(
+  values: TValue,
+  getAdditionalInfo: (
+    value: TValue[keyof TValue],
+    key: keyof TValue,
+  ) => TAdditionalInfo,
+): dataBE.StringDataValidatorSpec<
+  TValue,
+  { encoder: string },
+  data.HeaderValue | data.QueryValue,
+  TAdditionalInfo
+> => {
+  return {
+    validators: data.transformEntries(values, (value) =>
+      stringValidatorFromValue(value),
+    ) as any,
+    metadata: data.transformEntries(values, (value, key) => ({
+      ...getAdditionalInfo(value, key),
+      encoder: `${value}`,
+    })),
+  };
+};
+
 export const getHumanReadableMessage = () => "";
 
 export const CONTENT_TYPE = "string";
 
 export const INITIAL_STATE = "InitialState";
+
+export const RESPONSE_BODY = "ResponseBody";
+
+export const createSimpleEndpointHandler =
+  <TRefinedContext, TState>(
+    seenArgs: Array<spec.EndpointHandlerArgs<TRefinedContext, TState>>,
+  ): spec.EndpointHandler<
+    spec.EndpointHandlerArgs<TRefinedContext, TState>,
+    string
+  > =>
+  (args) => (seenArgs.push(args), RESPONSE_BODY);
+
+export const createComplexEndpointHandler = <TRefinedContext, TState>(
+  seenArgs: Array<spec.EndpointHandlerArgs<TRefinedContext, TState>>,
+): spec.EndpointHandlerSpec<
+  spec.EndpointHandlerArgsWithURL<{
+    urlParam: string;
+  }> &
+    spec.EndpointHandlerArgs<TRefinedContext, TState> &
+    spec.EndpointHandlerArgsWithQuery<{}> &
+    spec.EndpointHandlerArgsWithBody<{}>,
+  string,
+  {
+    responseHeaderParam: string;
+  },
+  string
+> => ({
+  handler: (args) => (
+    seenArgs.push(args),
+    {
+      body: RESPONSE_BODY,
+      headers: {
+        responseHeaderParam: "responseHeaderParamValue",
+      },
+    }
+  ),
+  headers: stringEncoderSpec(
+    {
+      responseHeaderParam: "responseHeaderParamValue",
+    },
+    () => ({ required: true }),
+  ),
+});

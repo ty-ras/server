@@ -1,39 +1,56 @@
-import test from "ava";
+import test, { ExecutionContext } from "ava";
 import * as spec from "..";
 import * as common from "./common";
 import * as md from "@ty-ras/metadata";
 
 // These tests validate metadata aspects of all 4 stages of the builders.
 
-test("Validate that simple endpoint metadata works.", (t) => {
+const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.plan(1);
   const responseBody = "ResponseBody";
   const initialState = "InitialState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
+  const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
   const builder = spec
     .bindNecessaryTypes(() => initialState)
     .withMetadataProvider("string", new MetadataProvider());
-  const endpoint = builder.atURL`/path`
-    .forMethod("GET")
-    .withoutBody<typeof responseBody>(
-      (args) => (seenArgs.push(args), responseBody),
-      common.outputSpec(responseBody),
-      {
-        string: {
-          url: undefined,
-          query: undefined,
-          requestHeaders: undefined,
-          requestBody: undefined,
-          responseBody: {
-            string: responseBody,
+  const starter = builder.atURL`/path`;
+  const endpoint = (
+    useBatch
+      ? starter.batchSpec({
+          method: "GET",
+          endpointHandler,
+          output: common.outputSpec(responseBody),
+          mdArgs: {
+            string: {
+              url: undefined,
+              query: undefined,
+              requestHeaders: undefined,
+              requestBody: undefined,
+              responseBody: {
+                string: responseBody,
+              },
+              responseHeaders: undefined,
+            },
           },
-          responseHeaders: undefined,
-        },
-      },
-    )
-    .createEndpoint({
-      string: "SingleEndpointMetadata",
-    });
+        })
+      : starter
+          .forMethod("GET")
+          .withoutBody(endpointHandler, common.outputSpec(responseBody), {
+            string: {
+              url: undefined,
+              query: undefined,
+              requestHeaders: undefined,
+              requestBody: undefined,
+              responseBody: {
+                string: responseBody,
+              },
+              responseHeaders: undefined,
+            },
+          })
+  ).createEndpoint({
+    string: "SingleEndpointMetadata",
+  });
   const mdResult = builder.getMetadataFinalResult(
     {
       string: "FinalResultArg",
@@ -54,7 +71,7 @@ test("Validate that simple endpoint metadata works.", (t) => {
           requestBody: undefined,
           requestHeaders: undefined,
           responseBody: {
-            string: "ResponseBodyMetadata",
+            string: "ResponseBody",
           },
           responseHeaders: undefined,
           url: undefined,
@@ -72,71 +89,105 @@ test("Validate that simple endpoint metadata works.", (t) => {
       "FinalResultArg",
     ],
   });
-});
+};
 
-test("Validate that complex endpoint metadata works.", (t) => {
+const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.plan(1);
   const requestBody = "RequestBody";
   const responseBody = "ResponseBody";
   const initialState = "InitialState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
+  const endpointHandler = common.createComplexEndpointHandler(seenArgs);
   const builder = spec
     .bindNecessaryTypes(() => initialState)
     .withMetadataProvider("string", new MetadataProvider());
-  const endpoint = builder.atURL`/path/${"urlParam"}`
-    .validateURLData(
-      common.stringDecoderSpec(
-        {
-          urlParam: "urlParamValue",
-        },
-        () => ({
-          regExp: /.*/,
-        }),
-      ),
-    )
-    .forMethod(
-      "POST",
-      common.stringDecoderSpec(
-        {
-          queryParam: "queryParamValue",
-        },
-        () => ({ required: true }),
-      ),
-      common.stringDecoderSpec(
-        {
-          headerParam: "headerParamValue",
-        },
-        () => ({ required: true }),
-      ),
-    )
-    .withBody<typeof responseBody, typeof requestBody>(
-      common.inputSpec(requestBody),
-      (args) => (seenArgs.push(args), responseBody),
-      common.outputSpec(responseBody),
+  const starter = builder.atURL`/path/${"urlParam"}`.validateURLData(
+    common.stringDecoderSpec(
       {
-        string: {
-          url: {
-            urlParam: "",
-          },
-          query: {
-            queryParam: "",
-          },
-          requestHeaders: {
-            headerParam: "",
-          },
-          requestBody: {
-            string: requestBody,
-          },
-          responseBody: {
-            string: responseBody,
-          },
-          responseHeaders: undefined,
-        },
+        urlParam: "urlParamValue",
       },
-    )
-    .createEndpoint({
-      string: "SingleEndpointMetadata",
-    });
+      () => ({
+        regExp: /.*/,
+      }),
+    ),
+  );
+  const query = common.stringDecoderSpec(
+    {
+      queryParam: "queryParamValue",
+    },
+    () => ({ required: true }),
+  );
+  const headers = common.stringDecoderSpec(
+    {
+      headerParam: "headerParamValue",
+    },
+    () => ({ required: true }),
+  );
+  const endpoint = (
+    useBatch
+      ? starter.batchSpec({
+          method: "POST",
+          endpointHandler: endpointHandler.handler,
+          query,
+          headers,
+          input: common.inputSpec(requestBody),
+          responseHeaders: endpointHandler.headers,
+          output: common.outputSpec(responseBody, true),
+          mdArgs: {
+            string: {
+              url: {
+                urlParam: "URLParameterMetadata",
+              },
+              query: {
+                queryParam: "QueryParameterMetadata",
+              },
+              requestHeaders: {
+                headerParam: "HeaderParameterMetadata",
+              },
+              requestBody: {
+                string: requestBody,
+              },
+              responseBody: {
+                string: responseBody,
+              },
+              responseHeaders: {
+                responseHeaderParam: "ResponseHeaderParameterMetadata",
+              },
+            },
+          },
+        })
+      : starter
+          .forMethod("POST", query, headers)
+          .withBody(
+            common.inputSpec(requestBody),
+            endpointHandler,
+            common.outputSpec(responseBody, true),
+            {
+              string: {
+                url: {
+                  urlParam: "URLParameterMetadata",
+                },
+                query: {
+                  queryParam: "QueryParameterMetadata",
+                },
+                requestHeaders: {
+                  headerParam: "HeaderParameterMetadata",
+                },
+                requestBody: {
+                  string: requestBody,
+                },
+                responseBody: {
+                  string: responseBody,
+                },
+                responseHeaders: {
+                  responseHeaderParam: "ResponseHeaderParameterMetadata",
+                },
+              },
+            },
+          )
+  ).createEndpoint({
+    string: "SingleEndpointMetadata",
+  });
   const mdResult = builder.getMetadataFinalResult(
     {
       string: "FinalResultArg",
@@ -148,34 +199,87 @@ test("Validate that complex endpoint metadata works.", (t) => {
       "URLPrefix",
       "InitialContext",
       "SingleEndpointMetadata",
-      "/path",
-      "GET",
+      "/path/",
+      "urlParam",
+      "",
+      "POST",
       {
-        inputSpec: undefined,
-        metadataArguments: {
-          query: undefined,
-          requestBody: undefined,
-          requestHeaders: undefined,
-          responseBody: {
-            string: "ResponseBodyMetadata",
+        inputSpec: {
+          contents: {
+            string: "RequestBody",
           },
-          responseHeaders: undefined,
-          url: undefined,
+        },
+        metadataArguments: {
+          query: {
+            queryParam: "QueryParameterMetadata",
+          },
+          requestBody: {
+            string: "RequestBody",
+          },
+          requestHeaders: {
+            headerParam: "HeaderParameterMetadata",
+          },
+          responseBody: {
+            string: "ResponseBody",
+          },
+          responseHeaders: {
+            responseHeaderParam: "ResponseHeaderParameterMetadata",
+          },
+          url: {
+            urlParam: "URLParameterMetadata",
+          },
         },
         outputSpec: {
           contents: {
             string: "ResponseBody",
           },
         },
-        querySpec: undefined,
-        requestHeadersSpec: undefined,
-        responseHeadersSpec: undefined,
+        querySpec: {
+          queryParam: {
+            decoder: "queryParamValue",
+            required: true,
+          },
+        },
+        requestHeadersSpec: {
+          headerParam: {
+            decoder: "headerParamValue",
+            required: true,
+          },
+        },
+        responseHeadersSpec: {
+          responseHeaderParam: {
+            encoder: "responseHeaderParamValue",
+            required: true,
+          },
+        },
       },
       "InitialContext",
       "FinalResultArg",
     ],
   });
-});
+};
+
+test(
+  "Metadata: Validate that simple adhoc flow works",
+  testWithSimpleEndpoint,
+  false,
+);
+test(
+  "Metadata: Validate that simple batch flow works",
+  testWithSimpleEndpoint,
+  true,
+);
+
+test(
+  "Metadata: Validate that complex adhoc flow works",
+  testWithComplexEndpoint,
+  false,
+);
+test(
+  "Metadata: Validate that complex batch flow works",
+  testWithComplexEndpoint,
+  true,
+);
 
 interface MetadataHKT extends md.HKTArg {
   readonly type: MetadataConcrete<

@@ -3,6 +3,7 @@ import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
 import type * as md from "@ty-ras/metadata";
 import type * as state from "./state";
+import type * as common from "./common";
 import { AppEndpointBuilderInitial } from ".";
 
 export class AppEndpointBuilder<
@@ -15,19 +16,11 @@ export class AppEndpointBuilder<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilder with specific TMetadataProviders type as parameter to functions.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    md.MetadataBuilder<
-      md.HKTArg,
-      any,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadataProviders extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 > extends AppEndpointBuilderInitial<
   TContext,
@@ -110,17 +103,11 @@ const checkMethodsForHandler = <
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadataProviders extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 >(
   state: {
@@ -202,17 +189,11 @@ const constructMDResults = <
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadata extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadata extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 >(
   {

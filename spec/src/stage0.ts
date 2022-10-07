@@ -37,22 +37,11 @@ export class AppEndpointBuilderProvider<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilderProvider with specific TMetadataProviders type as parameter to functions.
-    md.MetadataProvider<
-      md.HKTArg,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      any,
-      unknown,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents,
-      unknown,
-      unknown
-    >
+  TMetadataProviders extends common.MetadataProvidersBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 > {
   public constructor(
@@ -379,17 +368,11 @@ export interface URLDataNames<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataBuilder<
-      md.HKTArg,
-      unknown,
-      unknown,
-      TStringDecoder,
-      TStringEncoder,
-      TOutputContents,
-      TInputContents
-    >
+  TMetadataProviders extends common.MetadataBuilderBase<
+    TStringDecoder,
+    TStringEncoder,
+    TOutputContents,
+    TInputContents
   >,
 > {
   validateURLData: <

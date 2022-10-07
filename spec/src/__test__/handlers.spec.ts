@@ -1,23 +1,34 @@
-import test from "ava";
+/* eslint-disable @typescript-eslint/ban-types */
+import test, { ExecutionContext } from "ava";
 import * as spec from "..";
 import * as common from "./common";
 import * as data from "@ty-ras/data";
 import type * as ep from "@ty-ras/endpoint";
 
-// 'Adhoc' flow of using the library - as opposed to using batch specifications.
+// 'Adhoc' flow of using the library - as opposed to typical flow which uses batch specifications.
 
-test("Validate that basic adhoc flow works", async (t) => {
+const testWithSimpleEndpoint = async (
+  t: ExecutionContext,
+  useBatch: boolean,
+) => {
   t.plan(5);
   const responseBody = "ResponseBody";
   const initialState = "InitialState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
-  const maybeHandler = spec.bindNecessaryTypes(() => initialState).atURL`/path`
-    .forMethod("GET")
-    .withoutBody(
-      (args) => (seenArgs.push(args), responseBody),
-      common.outputSpec(responseBody),
-      {},
-    )
+  const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
+  const starter = spec.bindNecessaryTypes(() => initialState).atURL`/path`;
+  const maybeHandler = (
+    useBatch
+      ? starter.batchSpec({
+          method: "GET",
+          endpointHandler,
+          output: common.outputSpec(responseBody),
+          mdArgs: {},
+        })
+      : starter
+          .forMethod("GET")
+          .withoutBody(endpointHandler, common.outputSpec(responseBody), {})
+  )
     .createEndpoint({})
     .getRegExpAndHandler("")
     .handler("GET", {});
@@ -45,15 +56,19 @@ test("Validate that basic adhoc flow works", async (t) => {
       },
     });
   }
-});
+};
 
-test("Validate that complex adhoc flow works", async (t) => {
+const testWithComplexEndpoint = async (
+  t: ExecutionContext,
+  useBatch: boolean,
+) => {
   t.plan(10);
   const responseBody = "ResponseBody";
   const initialState = "InitialState";
   const refinedState = "RefinedState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
-  const maybeHandler = spec
+  const endpointHandler = common.createComplexEndpointHandler(seenArgs);
+  const starter = spec
     .bindNecessaryTypes(() => initialState)
     .refineContext(
       {
@@ -61,38 +76,49 @@ test("Validate that complex adhoc flow works", async (t) => {
         getState: () => refinedState,
       },
       {},
-    ).atURL`/path/${"urlParam"}`
-    .validateURLData(
-      common.stringDecoderSpec(
-        {
-          urlParam: "urlParamValue",
-        },
-        () => ({
-          regExp: /.*/,
-        }),
-      ),
-    )
-    .forMethod(
-      "POST",
-      common.stringDecoderSpec(
-        {
-          queryParam: "queryParamValue",
-        },
-        () => ({ required: true }),
-      ),
-      common.stringDecoderSpec(
-        {
-          headerParam: "headerParamValue",
-        },
-        () => ({ required: true }),
-      ),
-    )
-    .withBody(
-      common.inputSpec(""),
-      (args) => (seenArgs.push(args), responseBody),
-      common.outputSpec(responseBody),
-      {},
-    )
+    ).atURL`/path/${"urlParam"}`.validateURLData(
+    common.stringDecoderSpec(
+      {
+        urlParam: "urlParamValue",
+      },
+      () => ({
+        regExp: /.*/,
+      }),
+    ),
+  );
+  const query = common.stringDecoderSpec(
+    {
+      queryParam: "queryParamValue",
+    },
+    () => ({ required: true }),
+  );
+  const headers = common.stringDecoderSpec(
+    {
+      headerParam: "headerParamValue",
+    },
+    () => ({ required: true }),
+  );
+  const maybeHandler = (
+    useBatch
+      ? starter.batchSpec({
+          method: "POST",
+          endpointHandler: endpointHandler.handler,
+          query,
+          headers,
+          input: common.inputSpec(""),
+          responseHeaders: endpointHandler.headers,
+          output: common.outputSpec(responseBody, true),
+          mdArgs: {},
+        })
+      : starter
+          .forMethod("POST", query, headers)
+          .withBody(
+            common.inputSpec(""),
+            endpointHandler,
+            common.outputSpec(responseBody, true),
+            {},
+          )
+  )
     .createEndpoint({})
     .getRegExpAndHandler("")
     .handler("POST", {});
@@ -139,7 +165,32 @@ test("Validate that complex adhoc flow works", async (t) => {
       data: {
         contentType: common.CONTENT_TYPE,
         output: responseBody,
+        headers: {
+          responseHeaderParam: "responseHeaderParamValue",
+        },
       },
     });
   }
-});
+};
+
+test(
+  "Handlers: Validate that simple adhoc flow works",
+  testWithSimpleEndpoint,
+  false,
+);
+test(
+  "Handlers: Validate that simple batch flow works",
+  testWithSimpleEndpoint,
+  true,
+);
+
+test(
+  "Handlers: Validate that complex adhoc flow works",
+  testWithComplexEndpoint,
+  false,
+);
+test(
+  "Handlers: Validate that complex batch flow works",
+  testWithComplexEndpoint,
+  true,
+);
