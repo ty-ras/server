@@ -301,10 +301,7 @@ export class AppEndpointBuilderInitial<
         );
   }
 
-  public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
-    TOutput,
-  >(
+  public batchSpec<TMethod extends TAllowedMethods, TOutput>(
     spec: batch.BatchSpecificationWithoutBody<
       TRefinedContext,
       TState,
@@ -334,7 +331,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     THeaderData extends data.RuntimeAnyHeaders,
     TOutput,
   >(
@@ -366,7 +363,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     TQuery extends data.RuntimeAnyQuery,
     TOutput,
   >(
@@ -398,7 +395,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     TQuery extends data.RuntimeAnyQuery,
     THeaderData extends data.RuntimeAnyHeaders,
     TOutput,
@@ -573,7 +570,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
   >(
@@ -607,7 +604,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     THeaderData extends data.RuntimeAnyHeaders,
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
@@ -641,7 +638,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     TQuery extends data.RuntimeAnyQuery,
     TOutput,
     TResponseHeaderData extends data.RuntimeAnyHeaders,
@@ -675,7 +672,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithoutBody,
+    TMethod extends TAllowedMethods,
     TQuery extends data.RuntimeAnyQuery,
     THeaderData extends data.RuntimeAnyHeaders,
     TOutput,

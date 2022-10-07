@@ -198,32 +198,6 @@ test(
 
 test("Handlers: Validate all batch spec combinations", (t) => {
   t.plan(1);
-  const debug: spec.BatchSpecificationWithoutBodyWithHeaders<
-    unknown,
-    unknown,
-    {},
-    {},
-    "DELETE",
-    string,
-    { string: string },
-    {},
-    string
-  > & {
-    [P in keyof (
-      | spec.EndpointSpecArgsJustBody<never, never>
-      | spec.BatchSpecificationQueryArgs<never, never>
-      | spec.BatchSpecificationHeaderArgs<never, never>
-    )]?: never;
-  } = {
-    method: "DELETE",
-    endpointHandler: () => ({
-      body: "",
-      headers: {},
-    }),
-    output: common.outputSpec(""),
-    responseHeaders: common.stringEncoderSpec({}, () => ({ required: true })),
-    mdArgs: {},
-  };
   spec.bindNecessaryTypes(() => "").atURL`/path`
     .batchSpec({
       method: "POST",
@@ -239,7 +213,16 @@ test("Handlers: Validate all batch spec combinations", (t) => {
       headers: common.stringEncoderSpec({}, () => ({ required: true })),
       mdArgs: {},
     })
-    .batchSpec(debug);
+    .batchSpec({
+      method: "DELETE",
+      endpointHandler: () => ({
+        body: "",
+        headers: {},
+      }),
+      output: common.outputSpec(""),
+      responseHeaders: common.stringEncoderSpec({}, () => ({ required: true })),
+      mdArgs: {},
+    });
   t.pass(
     "This only exists to make sure typical usecases compile successfully.",
   );
