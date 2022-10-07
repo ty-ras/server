@@ -615,9 +615,7 @@ export type MetadataArguments<
         never extends TResponseHeaderKeys
           ? undefined
           : { [P in TResponseHeaderKeys]: unknown },
-        never extends TInputContentsKeys
-          ? undefined
-          : { [P in TInputContentsKeys]: TBody },
+        never extends TBody ? undefined : { [P in TInputContentsKeys]: TBody },
         { [P in TOutputContentsKeys]: THandlerResult }
       >
     : never;

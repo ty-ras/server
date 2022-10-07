@@ -136,7 +136,8 @@ export class AppEndpointBuilderInitial<
     TState,
     TArgsURL,
     TMethods,
-    common.EndpointHandlerArgs<TRefinedContext, TState>,
+    common.EndpointHandlerArgs<TRefinedContext, TState> &
+      common.EndpointHandlerArgsWithHeaders<THeaderData>,
     common.EndpointHandlerArgs<TRefinedContext, TState> &
       common.EndpointHandlerArgsWithQuery<TQuery>,
     TStringDecoder,
@@ -159,7 +160,8 @@ export class AppEndpointBuilderInitial<
     TState,
     TArgsURL,
     TMethods,
-    common.EndpointHandlerArgs<TRefinedContext, TState>,
+    common.EndpointHandlerArgs<TRefinedContext, TState> &
+      common.EndpointHandlerArgsWithHeaders<THeaderData>,
     common.EndpointHandlerArgs<TRefinedContext, TState> &
       common.EndpointHandlerArgsWithQuery<TQuery>,
     TStringDecoder,

@@ -103,3 +103,5 @@ export const stringDecoderSpec = <
 export const getHumanReadableMessage = () => "";
 
 export const CONTENT_TYPE = "string";
+
+export const INITIAL_STATE = "InitialState";
