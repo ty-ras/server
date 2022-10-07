@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/ban-types */
 import test, { ExecutionContext } from "ava";
 import * as spec from "..";
@@ -12,7 +13,7 @@ const testWithSimpleEndpoint = async (
   useBatch: boolean,
 ) => {
   t.plan(5);
-  const responseBody = "ResponseBody";
+  const responseBody = common.RESPONSE_BODY;
   const initialState = "InitialState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
   const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
@@ -63,7 +64,7 @@ const testWithComplexEndpoint = async (
   useBatch: boolean,
 ) => {
   t.plan(10);
-  const responseBody = "ResponseBody";
+  const responseBody = common.RESPONSE_BODY;
   const initialState = "InitialState";
   const refinedState = "RefinedState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
@@ -194,3 +195,52 @@ test(
   testWithComplexEndpoint,
   true,
 );
+
+test("Handlers: Validate all batch spec combinations", (t) => {
+  t.plan(1);
+  const debug: spec.BatchSpecificationWithoutBodyWithHeaders<
+    unknown,
+    unknown,
+    {},
+    {},
+    "DELETE",
+    string,
+    { string: string },
+    {},
+    string
+  > & {
+    [P in keyof (
+      | spec.EndpointSpecArgsJustBody<never, never>
+      | spec.BatchSpecificationQueryArgs<never, never>
+      | spec.BatchSpecificationHeaderArgs<never, never>
+    )]?: never;
+  } = {
+    method: "DELETE",
+    endpointHandler: () => ({
+      body: "",
+      headers: {},
+    }),
+    output: common.outputSpec(""),
+    responseHeaders: common.stringEncoderSpec({}, () => ({ required: true })),
+    mdArgs: {},
+  };
+  spec.bindNecessaryTypes(() => "").atURL`/path`
+    .batchSpec({
+      method: "POST",
+      endpointHandler: () => "",
+      output: common.outputSpec(""),
+      input: common.inputSpec(""),
+      mdArgs: {},
+    })
+    .batchSpec({
+      method: "GET",
+      endpointHandler: () => "",
+      output: common.outputSpec(""),
+      headers: common.stringEncoderSpec({}, () => ({ required: true })),
+      mdArgs: {},
+    })
+    .batchSpec(debug);
+  t.pass(
+    "This only exists to make sure typical usecases compile successfully.",
+  );
+});

@@ -421,10 +421,10 @@ const createStaticEndpointSpec = <
   const { query, getEndpointArgs: getQueryEndpointArgs } = queryInfo;
   const { headers, getEndpointArgs: getHeaderEndpointArgs } = headerInfo;
   const handler = createStaticAppEndpointHandlerFunction(
-    urlValidation,
+    !!urlValidation,
     endpointHandler,
     outputValidator,
-    responseHeaders,
+    responseHeaders?.validators,
     ({ query, headers, body }) => ({
       ...getQueryEndpointArgs(query),
       ...getHeaderEndpointArgs(headers),
@@ -483,20 +483,18 @@ const createStaticEndpointSpec = <
 const createStaticAppEndpointHandlerFunction =
   <
     TContext,
-    TStringDecoder,
-    TStringEncoder,
     TArgs,
     THandlerResult,
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
-    urlValidation: state.URLValidationInfo<TStringDecoder>,
+    setURL: boolean,
     endpointHandler: common.EndpointHandler<
       TArgs,
       { body: THandlerResult; headers?: THeaderData }
     >,
     validator: dataBE.DataValidatorResponseOutput<THandlerResult>,
-    responseHeadersSpec:
-      | dataBE.ResponseHeaderDataValidatorSpec<THeaderData, TStringEncoder>
+    responseHeadersValidators:
+      | dataBE.ResponseHeaderDataValidators<THeaderData>
       | undefined,
     getAdditionalArgs: (
       args: Omit<
@@ -511,7 +509,7 @@ const createStaticAppEndpointHandlerFunction =
       context,
       state,
     };
-    if (urlValidation) {
+    if (setURL) {
       (
         handlerArgs as unknown as common.EndpointHandlerArgsWithURL<unknown>
       ).url = url;
@@ -524,14 +522,14 @@ const createStaticAppEndpointHandlerFunction =
       | data.DataValidatorResultError
       | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>;
     if (validatorResult.error === "none") {
-      if (responseHeadersSpec) {
+      if (responseHeadersValidators) {
         if (!responseHeaders) {
           outputResult = data.exceptionAsValidationError(
             "Internal error: response headers returned when no headers expected.",
           );
         } else {
           const [proceed, validatedHeaders, errors] = dataBE.checkHeaders(
-            responseHeadersSpec.validators,
+            responseHeadersValidators,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
             (hdrName) => responseHeaders[hdrName] as any,
             false,

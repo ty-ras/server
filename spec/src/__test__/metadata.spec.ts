@@ -7,7 +7,7 @@ import * as md from "@ty-ras/metadata";
 
 const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.plan(1);
-  const responseBody = "ResponseBody";
+  const responseBody = common.RESPONSE_BODY;
   const initialState = "InitialState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
   const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
@@ -94,7 +94,7 @@ const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
 const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.plan(1);
   const requestBody = "RequestBody";
-  const responseBody = "ResponseBody";
+  const responseBody = common.RESPONSE_BODY;
   const initialState = "InitialState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
   const endpointHandler = common.createComplexEndpointHandler(seenArgs);

@@ -256,11 +256,7 @@ export class AppEndpointBuilderInitial<
       ),
     );
     if (overlappingMethods.size > 0) {
-      throw new Error(
-        `The methods ${Array.from(overlappingMethods).join(
-          ", ",
-        )} are already specified`,
-      );
+      throw new InvalidMethodError(method);
     }
 
     const queryInfo: common.QueryInfo<
@@ -319,6 +315,7 @@ export class AppEndpointBuilderInitial<
       TOutputContents
     > & {
       [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
         | batch.BatchSpecificationQueryArgs<never, never>
         | batch.BatchSpecificationHeaderArgs<never, never>
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
@@ -329,7 +326,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -351,6 +348,7 @@ export class AppEndpointBuilderInitial<
       TOutputContents
     > & {
       [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
         | batch.BatchSpecificationQueryArgs<never, never>
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
@@ -360,7 +358,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -382,6 +380,7 @@ export class AppEndpointBuilderInitial<
       TOutputContents
     > & {
       [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
         | batch.BatchSpecificationHeaderArgs<never, never>
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
@@ -391,7 +390,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -415,10 +414,10 @@ export class AppEndpointBuilderInitial<
       TOutput,
       TOutputContents
     > & {
-      [P in keyof batch.BatchSpecificationResponseHeaderArgs<
-        never,
-        never
-      >]?: never;
+      [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
+        | batch.BatchSpecificationResponseHeaderArgs<never, never>
+      )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
@@ -426,7 +425,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -460,7 +459,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -494,7 +493,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -528,7 +527,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -566,7 +565,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -590,6 +589,7 @@ export class AppEndpointBuilderInitial<
       TStringEncoder
     > & {
       [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
         | batch.BatchSpecificationQueryArgs<never, never>
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
@@ -599,7 +599,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -623,14 +623,17 @@ export class AppEndpointBuilderInitial<
       TResponseHeaderData,
       TStringEncoder
     > & {
-      [P in keyof batch.BatchSpecificationQueryArgs<never, never>]?: never;
+      [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
+        | batch.BatchSpecificationQueryArgs<never, never>
+      )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -654,14 +657,17 @@ export class AppEndpointBuilderInitial<
       TResponseHeaderData,
       TStringEncoder
     > & {
-      [P in keyof batch.BatchSpecificationHeaderArgs<never, never>]?: never;
+      [P in keyof (
+        | batch.EndpointSpecArgsJustBody<never, never>
+        | batch.BatchSpecificationHeaderArgs<never, never>
+      )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -687,15 +693,16 @@ export class AppEndpointBuilderInitial<
       TOutputContents,
       TResponseHeaderData,
       TStringEncoder
-    > &
-      batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
+    > & {
+      [P in keyof batch.EndpointSpecArgsJustBody<never, never>]?: never;
+    } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
   ): AppEndpointBuilder<
     TContext,
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -731,7 +738,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -765,7 +772,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -799,7 +806,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -836,7 +843,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -855,7 +862,7 @@ export class AppEndpointBuilderInitial<
       | batch.BatchSpecificationWithoutBody<
           TRefinedContext,
           TState,
-          // TODO figure out non-any type which would not cause signature mismatch
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           any,
           TMetadataProviders,
           TMethod & ep.HttpMethodWithoutBody,
@@ -865,7 +872,7 @@ export class AppEndpointBuilderInitial<
       | batch.BatchSpecificationWithBody<
           TRefinedContext,
           TState,
-          // TODO figure out non-any type which would not cause signature mismatch
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           any,
           TMetadataProviders,
           TMethod & ep.HttpMethodWithBody,
@@ -877,6 +884,7 @@ export class AppEndpointBuilderInitial<
       | batch.BatchSpecificationWithoutBodyWithHeaders<
           TRefinedContext,
           TState,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           any,
           TMetadataProviders,
           TMethod & ep.HttpMethodWithoutBody,
@@ -888,6 +896,7 @@ export class AppEndpointBuilderInitial<
       | batch.BatchSpecificationWithBodyWithHeaders<
           TRefinedContext,
           TState,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           any,
           TMetadataProviders,
           TMethod & ep.HttpMethodWithBody,
@@ -908,7 +917,7 @@ export class AppEndpointBuilderInitial<
     TRefinedContext,
     TState,
     TArgsURL,
-    Omit<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -945,5 +954,11 @@ export class AppEndpointBuilderInitial<
           spec.mdArgs,
         )
       : builder.withoutBody(spec.endpointHandler, spec.output, spec.mdArgs);
+  }
+}
+
+export class InvalidMethodError extends Error {
+  public constructor(method: string) {
+    super(`Invalid method specified: "${method}"`);
   }
 }

@@ -281,7 +281,7 @@ export interface EndpointSpecArgsWithoutBody<
   };
 }
 
-export interface EndpointSpecArgsWithBody<
+export type EndpointSpecArgsWithBody<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -300,8 +300,7 @@ export interface EndpointSpecArgsWithBody<
   TOutputContentTypes extends Record<string, unknown>,
   TInput,
   TInputContentTypes extends Record<string, unknown>,
-> {
-  input: data.DataValidatorRequestInputSpec<TInput, TInputContentTypes>;
+> = EndpointSpecArgsJustBody<TInput, TInputContentTypes> & {
   output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
   mdArgs: {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
@@ -332,6 +331,13 @@ export interface EndpointSpecArgsWithBody<
         >
       : never;
   };
+};
+
+export interface EndpointSpecArgsJustBody<
+  TInput,
+  TInputContentTypes extends Record<string, unknown>,
+> {
+  input: data.DataValidatorRequestInputSpec<TInput, TInputContentTypes>;
 }
 
 export interface EndpointSpecArgsWithHandler<

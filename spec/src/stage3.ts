@@ -90,9 +90,7 @@ export class AppEndpointBuilder<
         },
       };
     } else {
-      throw new Error(
-        "Please specify at least one method before building endpoint",
-      );
+      throw new NoMethodsForEndpointError();
     }
   }
 }
@@ -259,3 +257,9 @@ const constructMDResults = <
     ),
   );
 };
+
+export class NoMethodsForEndpointError extends Error {
+  public constructor() {
+    super("Please specify at least one method before building endpoint");
+  }
+}
