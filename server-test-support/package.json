@@ -56,8 +56,9 @@
   },
   "scripts": {
     "build:run": "yarn run lint && yarn run tsc",
-    "build:ci": "yarn run clear-build-artifacts && yarn run tsc --removeComments false --emitDeclarationOnly --declaration --declarationDir ./dist-ts && yarn run tsc --outDir ./dist-mjs && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS --outDir ./dist-cjs && yarn run format-output-files",
+    "build:ci": "yarn run clear-build-artifacts && yarn run tsc --removeComments false --emitDeclarationOnly --declaration --declarationDir ./dist-ts && yarn run copy-d-ts-files && yarn run tsc --outDir ./dist-mjs && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS --outDir ./dist-cjs && yarn run format-output-files",
     "clear-build-artifacts": "rm -rf dist dist-ts dist-cjs dist-mjs build",
+    "copy-d-ts-files": "cp src/*.d.ts dist-ts",
     "format-output-files": "eslint --no-eslintrc --config '.eslintrc.output.cjs' --fix 'dist-cjs/*js' 'dist-mjs/*js'",
     "lint": "eslint ./src --ext .ts,.tsx",
     "rename-js-to-mjs": "find dist-mjs -name '*.js' -type f -exec sh -c 'for f in \"$@\"; do mv -- \"$f\" \"${f%.js}.mjs\"; done' -- {} +",
