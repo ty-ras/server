@@ -86,6 +86,7 @@ jobs:
           cat '${{ matrix.dir }}/package.json' | jq -M 'del(.type)' > '${{ matrix.dir }}/package.json.new'
           mv '${{ matrix.dir }}/package.json.new' '${{ matrix.dir }}/package.json'
           ./scripts/build.sh '${{ matrix.dir }}' ci
+          ls -al '${{ matrix.dir }}/dist-ts'
           ls -al '${{ matrix.dir }}/dist-cjs' || echo 'No dist folder - TS-only package!'
           ls -al '${{ matrix.dir }}/dist-mjs' || echo 'No dist folder - TS-only package!'
 

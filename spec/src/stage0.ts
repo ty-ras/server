@@ -5,6 +5,11 @@ import type * as md from "@ty-ras/metadata";
 import type * as common from "./common";
 import { AppEndpointBuilderInitial } from ".";
 
+/**
+ * This function begins the process of building AppEndpoints.
+ * @param getInitialState The callback to get initial state from context.
+ * @returns The `AppEndpointBuilderProvider` which can be used to refine URL and HTTP method parameters for the endpoint
+ */
 export const bindNecessaryTypes = <TContext, TState>(
   getInitialState: (ctx: TContext) => TState,
 ): AppEndpointBuilderProvider<

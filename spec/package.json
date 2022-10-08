@@ -13,6 +13,7 @@
   },
   "files": [
     "./src",
+    "./dist-ts",
     "./dist-mjs",
     "./dist-cjs",
     "README.md",
@@ -21,10 +22,10 @@
   "type": "module",
   "main": "./dist-cjs/index.js",
   "module": "./dist-mjs/index.mjs",
-  "types": "./src/index.ts",
+  "types": "./dist-ts/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist-ts/index.d.ts",
       "import": "./dist-mjs/index.mjs",
       "require": "./dist-cjs/index.js"
     }
@@ -53,8 +54,8 @@
   },
   "scripts": {
     "build:run": "yarn run lint && yarn run tsc",
-    "build:ci": "yarn run clear-build-artifacts && yarn run tsc --outDir ./dist-mjs && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS --outDir ./dist-cjs && yarn run format-output-files",
-    "clear-build-artifacts": "rm -rf dist dist-cjs dist-mjs build",
+    "build:ci": "yarn run clear-build-artifacts && yarn run tsc --removeComments false --emitDeclarationOnly --declaration --declarationDir ./dist-ts && yarn run tsc --outDir ./dist-mjs && yarn run rename-js-to-mjs && yarn run tsc --module CommonJS --outDir ./dist-cjs && yarn run format-output-files",
+    "clear-build-artifacts": "rm -rf dist dist-ts dist-cjs dist-mjs build",
     "format-output-files": "eslint --no-eslintrc --config '.eslintrc.output.cjs' --fix 'dist-cjs/*js' 'dist-mjs/*js'",
     "lint": "eslint ./src --ext .ts,.tsx",
     "rename-js-to-mjs": "find dist-mjs -name '*.js' -type f -exec sh -c 'for f in \"$@\"; do mv -- \"$f\" \"${f%.js}.mjs\"; done' -- {} +",
