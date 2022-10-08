@@ -259,27 +259,11 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   });
 };
 
-test(
-  "Metadata: Validate that simple adhoc flow works",
-  testWithSimpleEndpoint,
-  false,
-);
-test(
-  "Metadata: Validate that simple batch flow works",
-  testWithSimpleEndpoint,
-  true,
-);
+test("Validate that simple adhoc flow works", testWithSimpleEndpoint, false);
+test("Validate that simple batch flow works", testWithSimpleEndpoint, true);
 
-test(
-  "Metadata: Validate that complex adhoc flow works",
-  testWithComplexEndpoint,
-  false,
-);
-test(
-  "Metadata: Validate that complex batch flow works",
-  testWithComplexEndpoint,
-  true,
-);
+test("Validate that complex adhoc flow works", testWithComplexEndpoint, false);
+test("Validate that complex batch flow works", testWithComplexEndpoint, true);
 
 interface MetadataHKT extends md.HKTArg {
   readonly type: MetadataConcrete<

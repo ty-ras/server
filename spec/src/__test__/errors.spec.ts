@@ -4,6 +4,7 @@
 import test from "ava";
 import * as spec from "..";
 import * as common from "./common";
+import type * as data from "@ty-ras/data";
 
 test("Validate that can not re-specify existing method for same URL", (t) => {
   t.plan(1);
@@ -124,6 +125,98 @@ test("Validate that endpoint returns handlers only for methods that are specifie
       .handler("POST", {}),
     { found: "invalid-method", allowedMethods: ["GET"] },
   );
+});
+
+test("Validate that if response headers validation doesn't pass, the whole output is considered failed", async (t) => {
+  t.plan(1);
+  const maybeHandler = spec.bindNecessaryTypes(getInitialState).atURL`/path`
+    .batchSpec({
+      method: "GET",
+      endpointHandler: () => ({
+        body: "",
+        headers: {},
+      }),
+      responseHeaders: common.stringEncoderSpec(
+        { responseHeaderParam: "responseHeaderParamValue" },
+        () => ({ required: true }),
+      ),
+      output: common.outputSpec(""),
+      mdArgs: {},
+    })
+    .createEndpoint({})
+    .getRegExpAndHandler("")
+    .handler("GET", {});
+  if (maybeHandler.found === "handler") {
+    // .like because can't customize function comparison
+    t.like(
+      await maybeHandler.handler.handler({
+        context: "",
+        state: "",
+        url: "",
+        query: {},
+        body: "",
+        headers: {},
+      }),
+      {
+        error: "error",
+        errorInfo: [
+          {
+            error: "error",
+            errorInfo: undefined,
+            getHumanReadableMessage: common.getHumanReadableMessage,
+          },
+        ],
+      },
+    );
+  }
+});
+
+// TODO this is unnecessary once https://github.com/ty-ras/data/issues/19 is done
+test("Validate that if context transform callback returns error, that error is returned as-is", (t) => {
+  t.plan(1);
+  const returnedError: data.DataValidatorResultError = {
+    error: "error",
+    errorInfo: "",
+    getHumanReadableMessage,
+  };
+  const maybeHandler = spec
+    .bindNecessaryTypes(getInitialState)
+    .refineContext(
+      {
+        getState: () => {
+          throw new Error("This should never be called");
+        },
+        validator: () => returnedError,
+      },
+      {},
+    )
+    .refineContext(
+      {
+        getState: () => {
+          throw new Error("This should never be called");
+        },
+        validator: () => ({
+          error: "none",
+          data: "ThisShouldNeverBeSeen",
+        }),
+      },
+      {},
+    ).atURL`/path`
+    .batchSpec({
+      method: "GET",
+      endpointHandler: () => "",
+      output: common.outputSpec(""),
+      mdArgs: {},
+    })
+    .createEndpoint({})
+    .getRegExpAndHandler("")
+    .handler("GET", {});
+  if (maybeHandler.found === "handler") {
+    t.deepEqual(
+      maybeHandler.handler.contextValidator.validator(""),
+      returnedError,
+    );
+  }
 });
 
 const getInitialState = () => "";

@@ -88,7 +88,7 @@ export class AppEndpointBuilderProvider<
     }
   >;
   public atURL<TArgs extends [string, ...Array<string>]>(
-    fragmentsOrString: TemplateStringsArray | string,
+    fragments: TemplateStringsArray,
     ...args: TArgs
   ):
     | AppEndpointBuilderInitial<
@@ -122,10 +122,6 @@ export class AppEndpointBuilderProvider<
           >;
         }
       > {
-    const fragments: ReadonlyArray<string> =
-      typeof fragmentsOrString === "string"
-        ? [fragmentsOrString]
-        : fragmentsOrString;
     if (args.length > 0) {
       // URL template has arguments -> return URL data validator which allows to build endpoints
       return {
@@ -186,6 +182,8 @@ export class AppEndpointBuilderProvider<
     return new AppEndpointBuilderProvider(
       {
         ...transform,
+        // TODO we can't use data.transitiveDataValidation here, because our error type is customized.
+        // Extend the data.transitiveDataValidation so that it would also work for custom error types
         validator: (ctx) => {
           const transformed = this._contextTransform.validator(ctx);
           return transformed.error === "none"

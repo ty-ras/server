@@ -174,56 +174,8 @@ const testWithComplexEndpoint = async (
   }
 };
 
-test(
-  "Handlers: Validate that simple adhoc flow works",
-  testWithSimpleEndpoint,
-  false,
-);
-test(
-  "Handlers: Validate that simple batch flow works",
-  testWithSimpleEndpoint,
-  true,
-);
+test("Validate that simple adhoc flow works", testWithSimpleEndpoint, false);
+test("Validate that simple batch flow works", testWithSimpleEndpoint, true);
 
-test(
-  "Handlers: Validate that complex adhoc flow works",
-  testWithComplexEndpoint,
-  false,
-);
-test(
-  "Handlers: Validate that complex batch flow works",
-  testWithComplexEndpoint,
-  true,
-);
-
-test("Handlers: Validate all batch spec combinations", (t) => {
-  t.plan(1);
-  spec.bindNecessaryTypes(() => "").atURL`/path`
-    .batchSpec({
-      method: "POST",
-      endpointHandler: () => "",
-      output: common.outputSpec(""),
-      input: common.inputSpec(""),
-      mdArgs: {},
-    })
-    .batchSpec({
-      method: "GET",
-      endpointHandler: () => "",
-      output: common.outputSpec(""),
-      headers: common.stringEncoderSpec({}, () => ({ required: true })),
-      mdArgs: {},
-    })
-    .batchSpec({
-      method: "DELETE",
-      endpointHandler: () => ({
-        body: "",
-        headers: {},
-      }),
-      output: common.outputSpec(""),
-      responseHeaders: common.stringEncoderSpec({}, () => ({ required: true })),
-      mdArgs: {},
-    });
-  t.pass(
-    "This only exists to make sure typical usecases compile successfully.",
-  );
-});
+test("Validate that complex adhoc flow works", testWithComplexEndpoint, false);
+test("Validate that complex batch flow works", testWithComplexEndpoint, true);

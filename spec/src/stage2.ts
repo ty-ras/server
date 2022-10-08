@@ -559,7 +559,7 @@ const createStaticAppEndpointHandlerFunction =
     return outputResult;
   };
 
-// Threr used to be just one MetadataArguments.
+// There used to be just one MetadataArguments.
 // However, the TS compiler couldn't get far enough to fully resolve all types, causing compilation errors when using various versions of withBody/withoutBody above.
 // Therefore, it was split into 4 versions:
 // - Without request body, without response headers: MetadataArguments
