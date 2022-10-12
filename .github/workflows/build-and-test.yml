@@ -20,7 +20,12 @@ on:
         default: |
           tyras_post_run ()
           {
-            echo 'No post-run.'
+            cd "$1"
+            cp ../LICENSE ./LICENSE.txt
+            # Note - yarn doesn't have functionality to install package without saving it to package.json (!)
+            # So we use global install instead.
+            yarn global add "@jsdevtools/npm-publish@$(cat ../versions/npm-publish)"
+            npm-publish --dry-run --access public
           }
     secrets:
       npm-publish-token:
@@ -86,9 +91,6 @@ jobs:
           cat '${{ matrix.dir }}/package.json' | jq -M 'del(.type)' > '${{ matrix.dir }}/package.json.new'
           mv '${{ matrix.dir }}/package.json.new' '${{ matrix.dir }}/package.json'
           ./scripts/build.sh '${{ matrix.dir }}' ci
-          ls -al '${{ matrix.dir }}/dist-ts'
-          ls -al '${{ matrix.dir }}/dist-cjs' || echo 'No dist folder - TS-only package!'
-          ls -al '${{ matrix.dir }}/dist-mjs' || echo 'No dist folder - TS-only package!'
 
       - id: coverage
         name: Upload coverage for '${{ matrix.dir }}'

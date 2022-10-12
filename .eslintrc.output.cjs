@@ -1,3 +1,4 @@
+// ESLint config for formatting the resulting .[m]js files (<project name>/dist-(cjs|mjs)/**/*.[m]js) that end up in NPM package.
 module.exports = {
   root: true,
   extends: [

@@ -1,3 +1,4 @@
+// ESLint config for formatting the <project name>/src/**/*.ts files.
 module.exports = {
   root: true,
   extends: [

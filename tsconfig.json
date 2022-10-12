@@ -1,3 +1,4 @@
+// Base TS config file for all other TS configs in repo.
 {
   "compilerOptions": {
     "module": "es2022",
@@ -12,7 +13,7 @@
     "sourceMap": false,
     "strict": true,
     "exactOptionalPropertyTypes": true,
-    // We export dist-ts folder separately, so no need to include declaration files to dist folder.
+    // We export whole src folder, so no need to include declaration files to dist folder.
     "declaration": false,
     "noErrorTruncation": true,
     "incremental": true,

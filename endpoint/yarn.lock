@@ -350,17 +350,17 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.3.tgz#472eaab5f15c1ffdd7f8628bd4c4f753995ec79e"
   integrity sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==
 
-"@ty-ras/data-backend@0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-0.10.1.tgz#842f82bf856f066d7524ca658a974ba424736f1f"
-  integrity sha512-MEDQqo2fvtQZPQYIq8gDN9m56hRpN21vErsdgqHLmgpJAtnwVbD604cK4DdwHOzhFtSJbT95b8si03bz2VpkhA==
+"@ty-ras/data-backend@0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-0.11.0.tgz#a0e95e70a1053e8f7572082341029836a2682a1c"
+  integrity sha512-a1R4yAUk0hEqPs09eeGV1TxupJCMxeAJkPv0S2cjm/0SHhLUz5ouMfj055VwumYiPEAGiA5f26rlHudisVhtyw==
   dependencies:
-    "@ty-ras/data" "0.10.2"
+    "@ty-ras/data" "0.11.1"
 
-"@ty-ras/data@0.10.2":
-  version "0.10.2"
-  resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.10.2.tgz#0b0d7667b4dd42f18f54f6035da70302b4e96885"
-  integrity sha512-/EbZppTUUJCPBvvCEwcJTNZrxd4FYON4ZzGqVBvRe9r+4Kr79dfx2+ewkxtx2gTMMiBNxRc6bw+MRt4/DHhiSg==
+"@ty-ras/data@0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.11.1.tgz#23d4bb890273ebb917c384371dbc5f2e49bbcde5"
+  integrity sha512-sq5Qutpt0S7Ab9clkWi44Jo8XSyDtWDV4ZvTqUUSQH5ef6VWKiXqB9Nw2uttrEaIHP32hDdl1VAbyD6sb3P/SQ==
 
 "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"

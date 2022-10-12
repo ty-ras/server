@@ -21,9 +21,8 @@ const testCORSedEP = async (
   const response: ep.DynamicHandlerResponse<unknown> = {
     found: "handler",
     handler: {
-      contextValidator: {
-        validator: () => ({ error: "none", data: {} }),
-        getState: () => undefined,
+      stateValidator: {
+        validator: () => ({ error: "none", data: undefined }),
       },
       handler: () => ({
         error: "none",
@@ -92,17 +91,17 @@ const validateCORSedResponse = async (
 ) => {
   if (handlerResponse.found === "handler") {
     t.deepEqual(
-      data.omit(handlerResponse.handler, "contextValidator", "handler"),
+      data.omit(handlerResponse.handler, "stateValidator", "handler"),
       {},
       "Returned handler must have only context and output callbacks.",
     );
     t.deepEqual(
-      handlerResponse.handler.contextValidator.validator(undefined).error,
+      handlerResponse.handler.stateValidator.validator(undefined as any).error,
       "none",
       "CORSed EP must pass any context validation",
     );
     t.notThrows(
-      () => handlerResponse.handler.contextValidator.getState(undefined),
+      () => handlerResponse.handler.stateValidator.validator(undefined as any),
       "CORSed EP must not throw on context state extraction",
     );
     const maybePromise = handlerResponse.handler.handler({} as any);

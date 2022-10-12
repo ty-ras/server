@@ -35,7 +35,7 @@ export type DynamicHandlerResponse<TContext> =
     };
 
 export type StaticAppEndpointHandler<TContext> = {
-  contextValidator: dataBE.ContextValidatorSpec<TContext, unknown, unknown>;
+  stateValidator: EndpointStateValidator<TContext, unknown, unknown>;
   urlValidator?:
     | {
         groupNames: Record<string, string>;
@@ -64,3 +64,11 @@ export type StaticAppEndpointHandlerFunction<TContext> = (args: {
 >;
 
 export type MaybePromise<T> = T | Promise<T>;
+
+export interface EndpointStateValidator<TContext, TStateInfo, TState> {
+  getStateInfo?: (context: TContext) => MaybePromise<TStateInfo>;
+  validator: dataBE.StateValidator<
+    { context: TContext; stateInfo: TStateInfo },
+    TState
+  >;
+}
