@@ -18,14 +18,13 @@ export const typicalServerFlow = async <TContext, TState>(
   events: evt.ServerEventEmitter<TContext, TState> | undefined,
   {
     getURL,
-    getState,
     getMethod,
     getHeader,
     getRequestBody,
     setHeader,
     setStatusCode,
     sendContent,
-  }: ServerFlowCallbacks<TContext, TState>, // eslint-disable-next-line sonarjs/cognitive-complexity
+  }: ServerFlowCallbacks<TContext>, // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
   try {
     const maybeURL = getURL(ctx);
@@ -35,7 +34,6 @@ export const typicalServerFlow = async <TContext, TState>(
         : new url.URL(maybeURL ?? "", "http://example.com");
     const maybeEventArgs = server.checkURLPathNameForHandler(
       ctx,
-      getState(ctx),
       events,
       parsedUrl,
       regExp,
@@ -180,7 +178,7 @@ export const typicalServerFlow = async <TContext, TState>(
     }
   } catch (error) {
     try {
-      events?.emit("onException", { ctx, regExp, error });
+      events?.("onException", { ctx, regExp, error });
     } catch {
       // Not that much we can do.
     }
@@ -188,9 +186,8 @@ export const typicalServerFlow = async <TContext, TState>(
   }
 };
 
-export interface ServerFlowCallbacks<TContext, TState> {
+export interface ServerFlowCallbacks<TContext> {
   getURL: (ctx: TContext) => url.URL | string | undefined;
-  getState: (ctx: TContext) => TState;
   getMethod: (ctx: TContext) => string;
   getHeader: (ctx: TContext, headerName: string) => data.HeaderValue;
   getRequestBody: (ctx: TContext) => stream.Readable | undefined;
