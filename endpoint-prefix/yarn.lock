@@ -362,10 +362,10 @@
   resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.11.1.tgz#23d4bb890273ebb917c384371dbc5f2e49bbcde5"
   integrity sha512-sq5Qutpt0S7Ab9clkWi44Jo8XSyDtWDV4ZvTqUUSQH5ef6VWKiXqB9Nw2uttrEaIHP32hDdl1VAbyD6sb3P/SQ==
 
-"@ty-ras/endpoint@0.11.1":
-  version "0.11.1"
-  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-0.11.1.tgz#1e8b719ce9dd008e6440160612853db652e625f9"
-  integrity sha512-Tp3XDqR9/Ch0yllsr/HQB+huscY/NglU0vblMDgyY5MXTADOzJb3/9sAEln/C6flvj6qhcK8zA5TdDYTJA09BQ==
+"@ty-ras/endpoint@0.11.2":
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-0.11.2.tgz#92ab74f5f59d11d6078686a143c5cb799e2d986d"
+  integrity sha512-tplhJUILF6VgKr2MVQ+WjtteNm3QnOI0FeI74gIrBolrrSVdCvO6UpXJrAxsNvso3KpZy/q1ZTmMtZ/QPFibzw==
   dependencies:
     "@ty-ras/data-backend" "0.11.0"
 

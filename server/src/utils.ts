@@ -48,22 +48,19 @@ export const checkMethodForHandler = <TContext, TState>(
   return foundHandler;
 };
 
-export const checkContextForHandler = <TContext, TState>(
+export const checkStateForHandler = <TContext, TState>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events:
     | evt.ServerEventEmitter<TContext, TState, "onInvalidContext">
     | undefined,
-  {
-    validator,
-    getState,
-  }: ep.StaticAppEndpointHandler<TContext>["contextValidator"],
+  validator: dataBE.StateValidator<unknown, TState>,
+  state: unknown,
 ) => {
-  const validationResult = validator(eventArgs.ctx);
+  const validationResult = validator(state);
   let validatedContextOrError:
     | {
-        result: "context";
-        context: unknown;
-        state: ReturnType<typeof getState>;
+        result: "state";
+        state: TState;
       }
     | {
         result: "error";
@@ -72,9 +69,8 @@ export const checkContextForHandler = <TContext, TState>(
       };
   if (validationResult.error === "none") {
     validatedContextOrError = {
-      result: "context",
-      context: validationResult.data,
-      state: getState(validationResult.data),
+      result: "state",
+      state: validationResult.data,
     };
   } else {
     const isProtocolError = validationResult.error === "protocol-error";

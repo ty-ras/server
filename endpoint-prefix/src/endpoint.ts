@@ -3,13 +3,14 @@ import * as ep from "@ty-ras/endpoint";
 
 export class PrefixedEndpoint<
   TContext,
-  TMetadata extends Record<string, unknown>,
-> implements ep.AppEndpoint<TContext, TMetadata>
+  TStateInfo,
+  TMetadata extends ep.TMetadataBase,
+> implements ep.AppEndpoint<TContext, TStateInfo, TMetadata>
 {
   public constructor(
     public readonly prefix: string,
     private readonly allEndpoints: ReadonlyArray<
-      ep.AppEndpoint<TContext, TMetadata>
+      ep.AppEndpoint<TContext, TStateInfo, TMetadata>
     >,
   ) {
     // We have to use properties instead of instance method because the AppEndpoint interface specifies them like that.
@@ -43,16 +44,18 @@ export class PrefixedEndpoint<
   }
   public getRegExpAndHandler: (
     groupNamePrefix: string,
-  ) => ep.FinalizedAppEndpoint<TContext>;
-  public getMetadata: (urlPrefix: string) => {
-    [P in keyof TMetadata]: Array<TMetadata[P]>;
-  };
+  ) => ep.FinalizedAppEndpoint<TContext, TStateInfo>;
+  public getMetadata: (urlPrefix: string) => ep.BuiltMetadata<TMetadata>;
 }
 
-const buildEndpoints = <TContext, TMetadata extends Record<string, unknown>>(
-  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TMetadata>>,
+const buildEndpoints = <
+  TContext,
+  TStateInfo,
+  TMetadata extends ep.TMetadataBase,
+>(
+  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>,
   regExpGroupNamePrefix?: string,
-): PrefixedAppEndpointsInfo<TContext> => {
+): PrefixedAppEndpointsInfo<TContext, TStateInfo> => {
   const isTopLevel = !regExpGroupNamePrefix;
   const groupNamePrefix = isTopLevel ? "e_" : regExpGroupNamePrefix;
   // TODO maybe throw if multiple endpoints have same regex?
@@ -106,9 +109,12 @@ function findFirstMatching<T, U>(
 }
 
 const createPrefixedHandlerImpl =
-  <TContext>(
-    builtEndpoints: PrefixedAppEndpointsInfo<TContext>["builtEndpoints"],
-  ): ep.DynamicHandlerGetter<TContext> =>
+  <TContext, TStateInfo>(
+    builtEndpoints: PrefixedAppEndpointsInfo<
+      TContext,
+      TStateInfo
+    >["builtEndpoints"],
+  ): ep.DynamicHandlerGetter<TContext, TStateInfo> =>
   (method, groups) => {
     const matchingHandler = findFirstMatching(
       builtEndpoints,
@@ -127,10 +133,10 @@ const createPrefixedHandlerImpl =
     );
   };
 
-interface PrefixedAppEndpointsInfo<TContext> {
+interface PrefixedAppEndpointsInfo<TContext, TStateInfo> {
   builtEndpoints: {
     regExpGroupName: string;
-    handler: ep.DynamicHandlerGetter<TContext>;
+    handler: ep.DynamicHandlerGetter<TContext, TStateInfo>;
   }[];
   regExpSource: string;
 }

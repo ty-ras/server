@@ -1,23 +1,35 @@
 import * as ep from "@ty-ras/endpoint";
 import * as prefixedEndpoint from "./endpoint";
 
-export function atPrefix<TContext, TMetadata extends Record<string, unknown>>(
+export function atPrefix<
+  TContext,
+  TStateInfo,
+  TMetadata extends ep.TMetadataBase,
+>(
   prefix: string,
-  ...endpoints: Array<ep.AppEndpoint<TContext, TMetadata>>
-): ep.AppEndpoint<TContext, TMetadata>;
-export function atPrefix<TContext, TMetadata extends Record<string, unknown>>(
+  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>
+): ep.AppEndpoint<TContext, TStateInfo, TMetadata>;
+export function atPrefix<
+  TContext,
+  TStateInfo,
+  TMetadata extends ep.TMetadataBase,
+>(
   prefix: string,
   regexpGroupNamePrefix: string,
-  ...endpoints: Array<ep.AppEndpoint<TContext, TMetadata>>
-): ep.AppEndpoint<TContext, TMetadata>;
-export function atPrefix<TContext, TMetadata extends Record<string, unknown>>(
+  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>
+): ep.AppEndpoint<TContext, TStateInfo, TMetadata>;
+export function atPrefix<
+  TContext,
+  TStateInfo,
+  TMetadata extends ep.TMetadataBase,
+>(
   prefix: string,
   endpointOrGroupNamePrefix:
-    | ep.AppEndpoint<TContext, TMetadata>
+    | ep.AppEndpoint<TContext, TStateInfo, TMetadata>
     | string
     | undefined,
-  ...endpoints: Array<ep.AppEndpoint<TContext, TMetadata>>
-): ep.AppEndpoint<TContext, TMetadata> {
+  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>
+): ep.AppEndpoint<TContext, TStateInfo, TMetadata> {
   const allEndpoints =
     typeof endpointOrGroupNamePrefix === "string" || !endpointOrGroupNamePrefix
       ? endpoints
@@ -33,9 +45,10 @@ export function atPrefix<TContext, TMetadata extends Record<string, unknown>>(
 
 export const tryGetPrefix = <
   TContext,
-  TMetadata extends Record<string, unknown>,
+  TStateInfo,
+  TMetadata extends ep.TMetadataBase,
 >(
-  endpoint: ep.AppEndpoint<TContext, TMetadata>,
+  endpoint: ep.AppEndpoint<TContext, TStateInfo, TMetadata>,
 ) =>
   endpoint instanceof prefixedEndpoint.PrefixedEndpoint
     ? endpoint.prefix
