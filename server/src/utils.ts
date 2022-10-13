@@ -9,7 +9,7 @@ import * as u from "url";
 
 export const checkURLPathNameForHandler = <TContext>(
   ctx: TContext,
-  events: evt.ServerEventEmitter<TContext, never, "onInvalidUrl"> | undefined,
+  events: evt.ServerEventEmitter<TContext, never> | undefined,
   url: u.URL | string,
   regExp: RegExp,
 ): evt.EventArgumentsWithoutState<TContext> | undefined => {
@@ -32,9 +32,7 @@ export const checkURLPathNameForHandler = <TContext>(
 
 export const checkMethodForHandler = <TContext, TStateInfo>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
-  events:
-    | evt.ServerEventEmitter<TContext, never, "onInvalidMethod">
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, never> | undefined,
   method: ep.HttpMethod,
   handler: ep.DynamicHandlerGetter<TContext, TStateInfo>,
 ) => {
@@ -50,9 +48,7 @@ export const checkMethodForHandler = <TContext, TStateInfo>(
 
 export const checkStateForHandler = <TContext, TState>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
-  events:
-    | evt.ServerEventEmitter<TContext, TState, "onInvalidContext">
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, TState> | undefined,
   validator: dataBE.StateValidator<unknown, TState>,
   state: unknown,
 ) => {
@@ -92,9 +88,7 @@ export const checkStateForHandler = <TContext, TState>(
 
 export const checkURLParametersForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
-  events:
-    | evt.ServerEventEmitter<TContext, TState, "onInvalidUrlParameters">
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, TState> | undefined,
   urlValidation: ep.StaticAppEndpointHandler<TContext, never>["urlValidator"],
   // This is not really that complex...
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -141,9 +135,7 @@ export const checkURLParametersForHandler = <TContext, TState>(
 
 export const checkQueryForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
-  events:
-    | evt.ServerEventEmitter<TContext, TState, "onInvalidQuery">
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, TState> | undefined,
   queryValidation: ep.StaticAppEndpointHandler<
     TContext,
     never
@@ -171,9 +163,7 @@ export const checkQueryForHandler = <TContext, TState>(
 
 export const checkHeadersForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
-  events:
-    | evt.ServerEventEmitter<TContext, TState, "onInvalidRequestHeaders">
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, TState> | undefined,
   headersValidation:
     | dataBE.RequestHeaderDataValidators<Record<string, unknown>>
     | undefined,
@@ -201,13 +191,7 @@ export const checkHeadersForHandler = <TContext, TState>(
 
 export const checkBodyForHandler = async <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
-  events:
-    | evt.ServerEventEmitter<
-        TContext,
-        TState,
-        "onInvalidBody" | "onInvalidContentType"
-      >
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, TState> | undefined,
   isBodyValid: ep.StaticAppEndpointHandler<TContext, never>["bodyValidator"],
   contentType: string,
   bodyStream: stream.Readable | undefined,
@@ -255,15 +239,7 @@ export const checkBodyForHandler = async <TContext, TState>(
 
 export const invokeHandler = async <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
-  events:
-    | evt.ServerEventEmitter<
-        TContext,
-        TState,
-        | "onInvalidResponse"
-        | "onSuccessfulInvocationStart"
-        | "onSuccessfulInvocationEnd"
-      >
-    | undefined,
+  events: evt.ServerEventEmitter<TContext, TState> | undefined,
   handler: ep.StaticAppEndpointHandler<TContext, never>["handler"],
   ...handlerParameters: Parameters<typeof handler>
 ) => {

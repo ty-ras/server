@@ -9,16 +9,7 @@ import * as stream from "stream";
 
 export const typicalServerFlow = async <TContext, TStateInfo, TState>(
   ctx: TContext,
-  {
-    url: regExp,
-    handler,
-  }: ReturnType<
-    ep.AppEndpoint<
-      TContext,
-      TStateInfo,
-      ep.TMetadataBase
-    >["getRegExpAndHandler"]
-  >,
+  { url: regExp, handler }: ep.FinalizedAppEndpoint<TContext, TStateInfo>,
   events: evt.ServerEventEmitter<TContext, TState> | undefined,
   {
     getURL,
