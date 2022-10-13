@@ -7,9 +7,9 @@ import type * as evt from "./events";
 import * as stream from "stream";
 import * as u from "url";
 
-export const checkURLPathNameForHandler = <TContext, TState>(
+export const checkURLPathNameForHandler = <TContext>(
   ctx: TContext,
-  events: evt.ServerEventEmitter<TContext, TState, "onInvalidUrl"> | undefined,
+  events: evt.ServerEventEmitter<TContext, never, "onInvalidUrl"> | undefined,
   url: u.URL | string,
   regExp: RegExp,
 ): evt.EventArgumentsWithoutState<TContext> | undefined => {
@@ -30,13 +30,13 @@ export const checkURLPathNameForHandler = <TContext, TState>(
     : undefined;
 };
 
-export const checkMethodForHandler = <TContext, TState>(
+export const checkMethodForHandler = <TContext, TStateInfo>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events:
-    | evt.ServerEventEmitter<TContext, TState, "onInvalidMethod">
+    | evt.ServerEventEmitter<TContext, never, "onInvalidMethod">
     | undefined,
   method: ep.HttpMethod,
-  handler: ep.DynamicHandlerGetter<TContext>,
+  handler: ep.DynamicHandlerGetter<TContext, TStateInfo>,
 ) => {
   const foundHandler = handler(method, eventArgs.groups);
   const foundSuccess = foundHandler.found === "handler";
@@ -95,7 +95,7 @@ export const checkURLParametersForHandler = <TContext, TState>(
   events:
     | evt.ServerEventEmitter<TContext, TState, "onInvalidUrlParameters">
     | undefined,
-  urlValidation: ep.StaticAppEndpointHandler<TContext>["urlValidator"],
+  urlValidation: ep.StaticAppEndpointHandler<TContext, never>["urlValidator"],
   // This is not really that complex...
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
@@ -144,7 +144,10 @@ export const checkQueryForHandler = <TContext, TState>(
   events:
     | evt.ServerEventEmitter<TContext, TState, "onInvalidQuery">
     | undefined,
-  queryValidation: ep.StaticAppEndpointHandler<TContext>["queryValidator"],
+  queryValidation: ep.StaticAppEndpointHandler<
+    TContext,
+    never
+  >["queryValidator"],
   queryObject: Record<string, data.QueryValue>,
 ) => {
   let query: dataBE.RuntimeAnyQuery = {};
@@ -205,7 +208,7 @@ export const checkBodyForHandler = async <TContext, TState>(
         "onInvalidBody" | "onInvalidContentType"
       >
     | undefined,
-  isBodyValid: ep.StaticAppEndpointHandler<TContext>["bodyValidator"],
+  isBodyValid: ep.StaticAppEndpointHandler<TContext, never>["bodyValidator"],
   contentType: string,
   bodyStream: stream.Readable | undefined,
 ) => {
@@ -261,7 +264,7 @@ export const invokeHandler = async <TContext, TState>(
         | "onSuccessfulInvocationEnd"
       >
     | undefined,
-  handler: ep.StaticAppEndpointHandler<TContext>["handler"],
+  handler: ep.StaticAppEndpointHandler<TContext, never>["handler"],
   ...handlerParameters: Parameters<typeof handler>
 ) => {
   events?.("onSuccessfulInvocationStart", { ...eventArgs });

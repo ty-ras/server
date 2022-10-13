@@ -13,7 +13,11 @@ export const typicalServerFlow = async <TContext, TStateInfo, TState>(
     url: regExp,
     handler,
   }: ReturnType<
-    ep.AppEndpoint<TContext, Record<string, unknown>>["getRegExpAndHandler"]
+    ep.AppEndpoint<
+      TContext,
+      TStateInfo,
+      ep.TMetadataBase
+    >["getRegExpAndHandler"]
   >,
   events: evt.ServerEventEmitter<TContext, TState> | undefined,
   {
@@ -66,7 +70,7 @@ export const typicalServerFlow = async <TContext, TStateInfo, TState>(
           maybeEventArgs,
           events,
           stateValidator.validator,
-          await getState(ctx, stateValidator.stateInfo as TStateInfo),
+          await getState(ctx, stateValidator.stateInfo),
         );
         if (stateValidation.result === "state") {
           const eventArgs = {

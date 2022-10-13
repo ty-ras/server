@@ -60,7 +60,7 @@ test("Validate checkURLPathNameForHandler works for invalid input", (t) => {
 test("Validate checkMethodForHandler works for valid input", (t) => {
   t.plan(3);
   withoutAndWithEvents(t, (emitter) => {
-    const handler: ep.DynamicHandlerResponse<any> = {
+    const handler: ep.DynamicHandlerResponse<any, any> = {
       found: "handler",
       handler: {} as any,
     };
@@ -76,7 +76,7 @@ test("Validate checkMethodForHandler works for valid input", (t) => {
 test("Validate checkMethodForHandler works for invalid input", (t) => {
   t.plan(3);
   withoutAndWithEvents(t, (emitter) => {
-    const handler: ep.DynamicHandlerResponse<any> = {
+    const handler: ep.DynamicHandlerResponse<any, any> = {
       found: "invalid-method",
       allowedMethods: [],
     };
@@ -96,10 +96,10 @@ test("Validate checkMethodForHandler works for invalid input", (t) => {
   });
 });
 
-test("Validate checkContextForHandler works for valid input", (t) => {
+test("Validate checkStateForHandler works for valid input", (t) => {
   t.plan(7);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkContextForHandler(EVENT_ARGS_NO_STATE, emitter, {
+    const retVal = spec.checkStateForHandler(EVENT_ARGS_NO_STATE, emitter, {
       validator: (ctx) => {
         t.deepEqual(ctx, "Context");
         return { error: "none", data: "Context2" };
@@ -116,10 +116,10 @@ test("Validate checkContextForHandler works for valid input", (t) => {
     });
   });
 });
-test("Validate checkContextForHandler works for invalid data input", (t) => {
+test("Validate checkStateForHandler works for invalid data input", (t) => {
   t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkContextForHandler(EVENT_ARGS_NO_STATE, emitter, {
+    const retVal = spec.checkStateForHandler(EVENT_ARGS_NO_STATE, emitter, {
       validator: (ctx) => {
         t.deepEqual(ctx, "Context");
         return {
@@ -152,10 +152,10 @@ test("Validate checkContextForHandler works for invalid data input", (t) => {
     ];
   });
 });
-test("Validate checkContextForHandler works for invalid state input", (t) => {
+test("Validate checkStateForHandler works for invalid state input", (t) => {
   t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkContextForHandler(EVENT_ARGS_NO_STATE, emitter, {
+    const retVal = spec.checkStateForHandler(EVENT_ARGS_NO_STATE, emitter, {
       validator: (ctx) => {
         t.deepEqual(ctx, "Context");
         return {

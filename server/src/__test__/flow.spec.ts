@@ -739,7 +739,7 @@ const createTrackingCallback = (
   headerMode: "arg" | "array" | "undefined" = "arg",
 ) => {
   const seenCallbacks: AllCallbacksArray = [];
-  const callbacks: spec.ServerFlowCallbacks<unknown> = {
+  const callbacks: spec.ServerFlowCallbacks<unknown, unknown> = {
     getURL: (...args) => {
       const returnValue =
         headerMode === "arg"
@@ -753,6 +753,11 @@ const createTrackingCallback = (
     getMethod: (...args) => {
       const returnValue = "GET";
       seenCallbacks.push({ callbackName: "getMethod", args, returnValue });
+      return returnValue;
+    },
+    getState: (...args) => {
+      const returnValue = "StateInfo";
+      seenCallbacks.push({ callbackName: "getState", args, returnValue });
       return returnValue;
     },
     getHeader: (...args) => {
@@ -805,7 +810,7 @@ const createTrackingCallback = (
 };
 
 type AllCallbacksArray = Array<
-  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown>>
+  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown, unknown>>
 >;
 
 type KeysAndValuesAsUnion<T extends object> = {
