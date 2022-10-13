@@ -8,16 +8,16 @@ import * as md from "@ty-ras/metadata";
 const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.plan(1);
   const responseBody = common.RESPONSE_BODY;
-  const initialState = "InitialState";
-  const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
+  const seenArgs: Array<spec.EndpointHandlerArgs<unknown, unknown>> = [];
   const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
   const builder = spec
-    .bindNecessaryTypes(() => initialState)
+    .startBuildingAPI()
     .withMetadataProvider("string", new MetadataProvider());
   const starter = builder.atURL`/path`;
   const endpoint = (
     useBatch
       ? starter.batchSpec({
+          state: common.state,
           method: "GET",
           endpointHandler,
           output: common.outputSpec(responseBody),
@@ -35,7 +35,7 @@ const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
           },
         })
       : starter
-          .forMethod("GET")
+          .forMethod("GET", common.state)
           .withoutBody(endpointHandler, common.outputSpec(responseBody), {
             string: {
               url: undefined,
@@ -95,11 +95,10 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.plan(1);
   const requestBody = "RequestBody";
   const responseBody = common.RESPONSE_BODY;
-  const initialState = "InitialState";
-  const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
+  const seenArgs: Array<spec.EndpointHandlerArgs<unknown, unknown>> = [];
   const endpointHandler = common.createComplexEndpointHandler(seenArgs);
   const builder = spec
-    .bindNecessaryTypes(() => initialState)
+    .startBuildingAPI()
     .withMetadataProvider("string", new MetadataProvider());
   const starter = builder.atURL`/path/${"urlParam"}`.validateURLData(
     common.stringDecoderSpec(
@@ -126,6 +125,7 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   const endpoint = (
     useBatch
       ? starter.batchSpec({
+          state: common.state,
           method: "POST",
           endpointHandler: endpointHandler.handler,
           query,
@@ -157,7 +157,7 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
           },
         })
       : starter
-          .forMethod("POST", query, headers)
+          .forMethod("POST", common.state, query, headers)
           .withBody(
             common.inputSpec(requestBody),
             endpointHandler,

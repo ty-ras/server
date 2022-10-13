@@ -24,8 +24,9 @@ const testOneURLWithPrefix = (
   t.plan(7);
 
   const url = /url/;
-  const singleEP: ep.StaticAppEndpointHandler<unknown> = {
+  const singleEP: ep.StaticAppEndpointHandler<unknown, unknown> = {
     stateValidator: {
+      stateInfo: undefined,
       validator: () => ({ error: "none", data: {} }),
     },
     handler: () => ({
@@ -37,7 +38,7 @@ const testOneURLWithPrefix = (
     }),
   };
   const responses: Partial<
-    Record<ep.HttpMethod, ep.DynamicHandlerResponse<unknown>>
+    Record<ep.HttpMethod, ep.DynamicHandlerResponse<unknown, unknown>>
   > = {
     // Create copies of singleEP because using t.is below
     GET: {
@@ -137,8 +138,9 @@ const testTwoURLsWithPrefix = (
 ) => {
   t.plan(12);
 
-  const singleEP: ep.StaticAppEndpointHandler<unknown> = {
+  const singleEP: ep.StaticAppEndpointHandler<unknown, unknown> = {
     stateValidator: {
+      stateInfo: undefined,
       validator: () => ({ error: "none", data: {} }),
     },
     handler: () => ({
@@ -150,7 +152,7 @@ const testTwoURLsWithPrefix = (
     }),
   };
   const responses: Partial<
-    Record<ep.HttpMethod, ep.DynamicHandlerResponse<unknown>>
+    Record<ep.HttpMethod, ep.DynamicHandlerResponse<unknown, unknown>>
   > = {
     // Create copies of singleEP because using t.is below
     GET: {

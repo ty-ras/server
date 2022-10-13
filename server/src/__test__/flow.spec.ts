@@ -15,11 +15,11 @@ test("Validate typicalServerFlow works", async (t) => {
       handler: (method, groups) => ({
         found: "handler",
         handler: {
-          contextValidator: {
-            getState: (ctx) => ({ method, groups, ctx, state: "State" }),
-            validator: () => ({
+          stateValidator: {
+            stateInfo: undefined,
+            validator: (state) => ({
               error: "none",
-              data: "Context2",
+              data: { method, groups, state },
             }),
           },
           handler: () => ({
@@ -50,33 +50,38 @@ test("Validate typicalServerFlow works", async (t) => {
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "getHeader",
-      args: ["Context2", contentType],
+      args: ["Context", contentType],
       returnValue: contentType,
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context2"],
+      args: ["Context"],
       returnValue: dummyBody,
     },
     {
       callbackName: "setHeader",
-      args: ["Context2", "response-header-name", "response-header-value"],
+      args: ["Context", "response-header-name", "response-header-value"],
       returnValue: undefined,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context2", 200, true],
+      args: ["Context", 200, true],
       returnValue: undefined,
     },
     {
       callbackName: "setHeader",
-      args: ["Context2", "Content-Type", "contentType"],
+      args: ["Context", "Content-Type", "contentType"],
       returnValue: undefined,
     },
     {
       callbackName: "sendContent",
-      args: ["Context2", "output"],
+      args: ["Context", "output"],
       returnValue: undefined,
     },
   ]);
@@ -92,11 +97,11 @@ test("Validate typicalServerFlow works with special values", async (t) => {
       handler: (method, groups) => ({
         found: "handler",
         handler: {
-          contextValidator: {
-            getState: (ctx) => ({ method, groups, ctx, state: "State" }),
-            validator: () => ({
+          stateValidator: {
+            stateInfo: undefined,
+            validator: (state) => ({
               error: "none",
-              data: "Context2",
+              data: { method, groups, state },
             }),
           },
           handler: () => ({
@@ -124,18 +129,23 @@ test("Validate typicalServerFlow works with special values", async (t) => {
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "getHeader",
-      args: ["Context2", contentType],
+      args: ["Context", contentType],
       returnValue: undefined,
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context2"],
+      args: ["Context"],
       returnValue: dummyBody,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context2", 204, false],
+      args: ["Context", 204, false],
       returnValue: undefined,
     },
   ]);
@@ -151,11 +161,11 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
       handler: (method, groups) => ({
         found: "handler",
         handler: {
-          contextValidator: {
-            getState: (ctx) => ({ method, groups, ctx, state: "State" }),
-            validator: () => ({
+          stateValidator: {
+            stateInfo: undefined,
+            validator: (state) => ({
               error: "none",
-              data: "Context2",
+              data: { method, groups, state },
             }),
           },
           handler: () => ({
@@ -183,18 +193,23 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "getHeader",
-      args: ["Context2", contentType],
+      args: ["Context", contentType],
       returnValue: [contentType],
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context2"],
+      args: ["Context"],
       returnValue: dummyBody,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context2", 204, false],
+      args: ["Context", 204, false],
       returnValue: undefined,
     },
   ]);
@@ -267,7 +282,7 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
   ]);
 });
 
-test("Validate typicalServerFlow works with invalid context", async (t) => {
+test("Validate typicalServerFlow works with invalid state", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = createTrackingCallback();
   await spec.typicalServerFlow(
@@ -277,15 +292,13 @@ test("Validate typicalServerFlow works with invalid context", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "error",
               errorInfo: "Info",
               getHumanReadableMessage,
             }),
-            getState: () => {
-              throw new Error(errorMessage);
-            },
           },
           handler: () => {
             throw new Error(errorMessage);
@@ -306,6 +319,11 @@ test("Validate typicalServerFlow works with invalid context", async (t) => {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
+    },
+    {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
     },
     {
       callbackName: "setStatusCode",
@@ -330,15 +348,13 @@ test("Validate typicalServerFlow works with invalid context and custom error", a
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "protocol-error",
               body: "Body",
               statusCode: 403,
             }),
-            getState: () => {
-              throw new Error(errorMessage);
-            },
           },
           handler: () => {
             throw new Error(errorMessage);
@@ -359,6 +375,11 @@ test("Validate typicalServerFlow works with invalid context and custom error", a
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
+    },
+    {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
     },
     {
       callbackName: "setStatusCode",
@@ -383,12 +404,12 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "none",
-              data: "Context2",
+              data: "Context",
             }),
-            getState: () => "State",
           },
           handler: () => {
             throw new Error(errorMessage);
@@ -419,8 +440,13 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "setStatusCode",
-      args: ["Context2", 400, false],
+      args: ["Context", 400, false],
       returnValue: undefined,
     },
   ]);
@@ -436,12 +462,12 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "none",
-              data: "Context2",
+              data: "Context",
             }),
-            getState: () => "State",
           },
           handler: () => {
             throw new Error(errorMessage);
@@ -471,8 +497,13 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "setStatusCode",
-      args: ["Context2", 400, false],
+      args: ["Context", 400, false],
       returnValue: undefined,
     },
   ]);
@@ -488,12 +519,12 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "none",
-              data: "Context2",
+              data: "Context",
             }),
-            getState: () => "State",
           },
           handler: () => {
             throw new Error(errorMessage);
@@ -523,13 +554,18 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "getHeader",
-      args: ["Context2", "headername"],
+      args: ["Context", "headername"],
       returnValue: "headername",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context2", 400, false],
+      args: ["Context", 400, false],
       returnValue: undefined,
     },
   ]);
@@ -545,12 +581,12 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "none",
-              data: "Context2",
+              data: "Context",
             }),
-            getState: () => "State",
           },
           handler: () => {
             throw new Error(errorMessage);
@@ -579,18 +615,23 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
       returnValue: "GET",
     },
     {
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
       callbackName: "getHeader",
-      args: ["Context2", contentType],
+      args: ["Context", contentType],
       returnValue: contentType,
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context2"],
+      args: ["Context"],
       returnValue: dummyBody,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context2", 422, false],
+      args: ["Context", 422, false],
       returnValue: undefined,
     },
   ]);
@@ -606,12 +647,12 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          contextValidator: {
+          stateValidator: {
+            stateInfo: undefined,
             validator: () => ({
               error: "none",
-              data: "Context2",
+              data: "Context",
             }),
-            getState: () => "State",
           },
           handler: () => ({
             error: "error",
@@ -636,17 +677,22 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
       returnValue: "GET",
     },
     {
-      args: ["Context2", contentType],
+      callbackName: "getState",
+      args: ["Context", undefined],
+      returnValue: "State",
+    },
+    {
+      args: ["Context", contentType],
       callbackName: "getHeader",
       returnValue: contentType,
     },
     {
-      args: ["Context2"],
+      args: ["Context"],
       callbackName: "getRequestBody",
       returnValue: dummyBody,
     },
     {
-      args: ["Context2", 500, false],
+      args: ["Context", 500, false],
       callbackName: "setStatusCode",
       returnValue: undefined,
     },
@@ -739,7 +785,7 @@ const createTrackingCallback = (
   headerMode: "arg" | "array" | "undefined" = "arg",
 ) => {
   const seenCallbacks: AllCallbacksArray = [];
-  const callbacks: spec.ServerFlowCallbacks<unknown> = {
+  const callbacks: spec.ServerFlowCallbacks<unknown, unknown> = {
     getURL: (...args) => {
       const returnValue =
         headerMode === "arg"
@@ -753,6 +799,11 @@ const createTrackingCallback = (
     getMethod: (...args) => {
       const returnValue = "GET";
       seenCallbacks.push({ callbackName: "getMethod", args, returnValue });
+      return returnValue;
+    },
+    getState: (...args) => {
+      const returnValue = "State";
+      seenCallbacks.push({ callbackName: "getState", args, returnValue });
       return returnValue;
     },
     getHeader: (...args) => {
@@ -805,7 +856,7 @@ const createTrackingCallback = (
 };
 
 type AllCallbacksArray = Array<
-  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown>>
+  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown, unknown>>
 >;
 
 type KeysAndValuesAsUnion<T extends object> = {

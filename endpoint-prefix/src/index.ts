@@ -1,2 +1,2 @@
-// The index.ts is ignored by test coverage so this is why we have the code in prefix.ts.
+// Don't export internal endpoint.ts
 export * from "./prefix";

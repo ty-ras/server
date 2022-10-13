@@ -7,24 +7,29 @@ import * as evt from "./events";
 import * as url from "url";
 import * as stream from "stream";
 
-export const typicalServerFlow = async <TContext, TState>(
+export const typicalServerFlow = async <TContext, TStateInfo, TState>(
   ctx: TContext,
   {
     url: regExp,
     handler,
   }: ReturnType<
-    ep.AppEndpoint<TContext, Record<string, unknown>>["getRegExpAndHandler"]
+    ep.AppEndpoint<
+      TContext,
+      TStateInfo,
+      ep.TMetadataBase
+    >["getRegExpAndHandler"]
   >,
   events: evt.ServerEventEmitter<TContext, TState> | undefined,
   {
     getURL,
     getMethod,
+    getState,
     getHeader,
     getRequestBody,
     setHeader,
     setStatusCode,
     sendContent,
-  }: ServerFlowCallbacks<TContext>, // eslint-disable-next-line sonarjs/cognitive-complexity
+  }: ServerFlowCallbacks<TContext, TStateInfo>, // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
   try {
     const maybeURL = getURL(ctx);
@@ -50,7 +55,7 @@ export const typicalServerFlow = async <TContext, TState>(
       if (foundHandler.found === "handler") {
         const {
           handler: {
-            contextValidator,
+            stateValidator,
             urlValidator,
             headerValidator,
             queryValidator,
@@ -61,16 +66,16 @@ export const typicalServerFlow = async <TContext, TState>(
         // At this point, check context state.
         // State typically includes things like username etc, so verifying it as a first thing before checking body is meaningful.
         // Also, allow the context state checker return custom status code, e.g. 401 for when lacking credentials.
-        const contextValidation = server.checkContextForHandler(
+        const stateValidation = server.checkStateForHandler(
           maybeEventArgs,
           events,
-          contextValidator,
+          stateValidator.validator,
+          await getState(ctx, stateValidator.stateInfo),
         );
-        if (contextValidation.result === "context") {
+        if (stateValidation.result === "state") {
           const eventArgs = {
             ...maybeEventArgs,
-            ctx: contextValidation.context as typeof ctx,
-            state: contextValidation.state as TState,
+            state: stateValidation.state,
           };
           ctx = eventArgs.ctx;
           // State was OK, validate url & query & body
@@ -165,8 +170,8 @@ export const typicalServerFlow = async <TContext, TState>(
           }
         } else {
           // Context validation failed - set status code
-          setStatusCode(ctx, contextValidation.customStatusCode ?? 500, true); // Internal server error
-          await sendContent(ctx, contextValidation.customBody);
+          setStatusCode(ctx, stateValidation.customStatusCode ?? 500, true); // Internal server error
+          await sendContent(ctx, stateValidation.customBody);
         }
       } else {
         setHeader(ctx, "Allow", foundHandler.allowedMethods.join(","));
@@ -186,9 +191,10 @@ export const typicalServerFlow = async <TContext, TState>(
   }
 };
 
-export interface ServerFlowCallbacks<TContext> {
+export interface ServerFlowCallbacks<TContext, TStateInfo> {
   getURL: (ctx: TContext) => url.URL | string | undefined;
   getMethod: (ctx: TContext) => string;
+  getState: (ctx: TContext, stateInfo: TStateInfo) => ep.MaybePromise<unknown>;
   getHeader: (ctx: TContext, headerName: string) => data.HeaderValue;
   getRequestBody: (ctx: TContext) => stream.Readable | undefined;
   setHeader: (

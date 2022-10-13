@@ -8,8 +8,7 @@ import { AppEndpointBuilderInitial } from ".";
 
 export class AppEndpointBuilder<
   TContext,
-  TRefinedContext,
-  TState,
+  TStateInfo,
   TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
   TStringDecoder,
@@ -24,8 +23,7 @@ export class AppEndpointBuilder<
   >,
 > extends AppEndpointBuilderInitial<
   TContext,
-  TRefinedContext,
-  TState,
+  TStateInfo,
   TArgsURL,
   TAllowedMethods,
   TStringDecoder,
@@ -48,6 +46,7 @@ export class AppEndpointBuilder<
       : never;
   }): ep.AppEndpoint<
     TContext,
+    TStateInfo,
     {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
         infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -97,6 +96,7 @@ export class AppEndpointBuilder<
 
 const checkMethodsForHandler = <
   TContext,
+  TStateInfo,
   TStringDecoder,
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
@@ -111,6 +111,7 @@ const checkMethodsForHandler = <
   state: {
     [key: string]: state.StaticAppEndpointBuilderSpec<
       TContext,
+      TStateInfo,
       TStringDecoder,
       TStringEncoder,
       TOutputContents,
@@ -120,7 +121,7 @@ const checkMethodsForHandler = <
   },
   method: ep.HttpMethod,
   groupNamePrefix: string,
-): ep.DynamicHandlerResponse<TContext> =>
+): ep.DynamicHandlerResponse<TContext, TStateInfo> =>
   method in state
     ? {
         found: "handler" as const,
@@ -181,8 +182,7 @@ const buildURLRegExp = <TStringDecoder>(
 
 const constructMDResults = <
   TContext,
-  TRefinedContext,
-  TState,
+  TStateInfo,
   TStringDecoder,
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
@@ -199,8 +199,7 @@ const constructMDResults = <
     ...state
   }: state.AppEndpointBuilderState<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,

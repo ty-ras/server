@@ -1,10 +1,15 @@
-import * as data from "@ty-ras/data-backend";
+import type * as data from "@ty-ras/data-backend";
+import type * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
-import * as common from "./common";
+import type * as common from "./common";
 
 export type BatchSpecificationWithoutBody<
-  TRefinedContext,
+  TContext,
+  TStateInfo,
   TState,
+  TMethod,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -18,22 +23,27 @@ export type BatchSpecificationWithoutBody<
       never
     >
   >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
 > = BatchSpecificationWithoutBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
+  TStateInfo,
+  TState,
   TMethod,
   undefined,
   TOutput,
-  TOutputContentTypes
+  TOutputContentTypes,
+  TEndpointArgs,
+  TMetadataProviders
 > &
-  EndpointSpecArgsWithHandler<TRefinedContext, TState, TEndpointArgs, TOutput>;
+  EndpointSpecArgsWithHandler<TContext, TState, TEndpointArgs, TOutput>;
 
 export type BatchSpecificationWithBody<
-  TRefinedContext,
+  TContext,
+  TStateInfo,
   TState,
+  TMethod,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
+  TInput,
+  TInputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -47,31 +57,34 @@ export type BatchSpecificationWithBody<
       TInputContentTypes
     >
   >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
 > = BatchSpecificationWithBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
+  TStateInfo,
+  TState,
   TMethod,
   undefined,
   TOutput,
   TOutputContentTypes,
   TInput,
-  TInputContentTypes
+  TInputContentTypes,
+  TEndpointArgs,
+  TMetadataProviders
 > &
   EndpointSpecArgsWithHandler<
-    TRefinedContext,
+    TContext,
     TState,
     TEndpointArgs & common.EndpointHandlerArgsWithBody<TInput>,
     TOutput
   >;
 
 export type BatchSpecificationWithoutBodyWithHeaders<
-  TRefinedContext,
+  TContext,
+  TStateInfo,
   TState,
+  TMethod,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
+  THeaderData extends data.RuntimeAnyHeaders,
+  TStringDecoder,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -85,21 +98,18 @@ export type BatchSpecificationWithoutBodyWithHeaders<
       never
     >
   >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  THeaderData extends data.RuntimeAnyHeaders,
-  TStringDecoder,
 > = BatchSpecificationWithoutBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
+  TStateInfo,
+  TState,
   TMethod,
   THeaderData,
   TOutput,
-  TOutputContentTypes
+  TOutputContentTypes,
+  TEndpointArgs,
+  TMetadataProviders
 > &
   EndpointSpecArgsWithHandler<
-    TRefinedContext,
+    TContext,
     TState,
     TEndpointArgs,
     common.EndpointHandlerOutputWithHeaders<TOutput, THeaderData>
@@ -107,8 +117,16 @@ export type BatchSpecificationWithoutBodyWithHeaders<
   BatchSpecificationResponseHeaderArgs<THeaderData, TStringDecoder>;
 
 export type BatchSpecificationWithBodyWithHeaders<
-  TRefinedContext,
+  TContext,
+  TStateInfo,
   TState,
+  TMethod,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
+  THeaderData extends data.RuntimeAnyHeaders,
+  TStringDecoder,
+  TInput,
+  TInputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -122,25 +140,20 @@ export type BatchSpecificationWithBodyWithHeaders<
       TInputContentTypes
     >
   >,
-  TMethod,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  THeaderData extends data.RuntimeAnyHeaders,
-  TStringDecoder,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
 > = BatchSpecificationWithBodyWithoutHandler<
-  TEndpointArgs,
-  TMetadataProviders,
+  TStateInfo,
+  TState,
   TMethod,
   THeaderData,
   TOutput,
   TOutputContentTypes,
   TInput,
-  TInputContentTypes
+  TInputContentTypes,
+  TEndpointArgs,
+  TMetadataProviders
 > &
   EndpointSpecArgsWithHandler<
-    TRefinedContext,
+    TContext,
     TState,
     TEndpointArgs & common.EndpointHandlerArgsWithBody<TInput>,
     common.EndpointHandlerOutputWithHeaders<TOutput, THeaderData>
@@ -148,6 +161,12 @@ export type BatchSpecificationWithBodyWithHeaders<
   BatchSpecificationResponseHeaderArgs<THeaderData, TStringDecoder>;
 
 export type BatchSpecificationWithoutBodyWithoutHandler<
+  TStateInfo,
+  TState,
+  TMethod,
+  TResponseHeaders,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -161,12 +180,9 @@ export type BatchSpecificationWithoutBodyWithoutHandler<
       never
     >
   >,
-  TMethod,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
 > = {
   method: TMethod;
+  state: ep.EndpointStateValidator<TStateInfo, TState>;
 } & EndpointSpecArgsWithoutBody<
   TEndpointArgs,
   TMetadataProviders,
@@ -176,6 +192,14 @@ export type BatchSpecificationWithoutBodyWithoutHandler<
 >;
 
 export type BatchSpecificationWithBodyWithoutHandler<
+  TStateInfo,
+  TState,
+  TMethod,
+  TResponseHeaders,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
+  TInput,
+  TInputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
@@ -189,14 +213,9 @@ export type BatchSpecificationWithBodyWithoutHandler<
       TInputContentTypes
     >
   >,
-  TMethod,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
 > = {
   method: TMethod;
+  state: ep.EndpointStateValidator<TStateInfo, TState>;
 } & EndpointSpecArgsWithBody<
   TEndpointArgs,
   TMetadataProviders,
@@ -341,13 +360,13 @@ export interface EndpointSpecArgsJustBody<
 }
 
 export interface EndpointSpecArgsWithHandler<
-  TRefinedContext,
+  TContext,
   TState,
   TEndpointArgs,
   TOutput,
 > {
   endpointHandler: common.EndpointHandler<
-    TEndpointArgs & common.EndpointHandlerArgs<TRefinedContext, TState>,
+    TEndpointArgs & common.EndpointHandlerArgs<TContext, TState>,
     TOutput
   >;
 }

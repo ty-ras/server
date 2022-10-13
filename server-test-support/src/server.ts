@@ -16,7 +16,7 @@ import * as rawBody from "raw-body";
 export const testServer = async (
   t: ava.ExecutionContext,
   createServer: (
-    endpoint: Array<ep.AppEndpoint<unknown, never>>,
+    endpoint: Array<ep.AppEndpoint<unknown, unknown, never>>,
   ) => AnyHttpServer,
   ...infos: ServerTestAdditionalInfo // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
@@ -97,12 +97,13 @@ const getAppEndpoint = (
   state: string,
   output: string | stream.Readable | undefined,
   noRequestBody: boolean,
-): ep.AppEndpoint<unknown, never> => ({
+): ep.AppEndpoint<unknown, unknown, never> => ({
   getRegExpAndHandler: () => ({
     url: regExp,
     handler: () => {
-      const retVal: ep.StaticAppEndpointHandler<unknown> = {
-        contextValidator: {
+      const retVal: ep.StaticAppEndpointHandler<unknown, unknown> = {
+        stateValidator: {
+          stateInfo: undefined,
           validator: (ctx) =>
             protocolError === undefined
               ? {
@@ -114,7 +115,6 @@ const getAppEndpoint = (
                   statusCode: 403,
                   body: undefined,
                 },
-          getState: () => state,
         },
         handler: () => ({
           error: "none",

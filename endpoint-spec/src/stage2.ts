@@ -2,13 +2,13 @@ import * as ep from "@ty-ras/endpoint";
 import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
 import type * as md from "@ty-ras/metadata";
-import type * as common from "./common";
+import * as common from "./common";
 import type * as state from "./state";
 import { AppEndpointBuilder } from ".";
 
 export class AppEndpointBuilderForMethods<
   TContext,
-  TRefinedContext,
+  TStateInfo,
   TState,
   TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
@@ -28,13 +28,16 @@ export class AppEndpointBuilderForMethods<
   public constructor(
     protected readonly _state: state.AppEndpointBuilderState<
       TContext,
-      TRefinedContext,
-      TState,
+      TStateInfo,
       TStringDecoder,
       TStringEncoder,
       TOutputContents,
       TInputContents,
       TMetadataProviders
+    >,
+    protected readonly _endpointStateValidator: ep.EndpointStateValidator<
+      TStateInfo,
+      TState
     >,
     protected readonly _methods: Set<TAllowedMethods>,
     protected readonly _queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
@@ -46,9 +49,7 @@ export class AppEndpointBuilderForMethods<
 
   public withoutBody<TOutput, THeaderData extends dataBE.RuntimeAnyHeaders>(
     endpointHandler: common.EndpointHandlerSpec<
-      TArgsURL &
-        TArgsQuery &
-        common.EndpointHandlerArgs<TRefinedContext, TState>,
+      TArgsURL & TArgsQuery & common.EndpointHandlerArgs<TContext, TState>,
       TOutput,
       THeaderData,
       TStringEncoder
@@ -68,8 +69,7 @@ export class AppEndpointBuilderForMethods<
     >,
   ): AppEndpointBuilder<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
     TStringDecoder,
@@ -80,9 +80,7 @@ export class AppEndpointBuilderForMethods<
   >;
   public withoutBody<TOutput>(
     endpointHandler: common.EndpointHandler<
-      TArgsURL &
-        TArgsQuery &
-        common.EndpointHandlerArgs<TRefinedContext, TState>,
+      TArgsURL & TArgsQuery & common.EndpointHandlerArgs<TContext, TState>,
       TOutput
     >,
     outputSpec: dataBE.DataValidatorResponseOutputSpec<
@@ -99,8 +97,7 @@ export class AppEndpointBuilderForMethods<
     >,
   ): AppEndpointBuilder<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
     TStringDecoder,
@@ -112,15 +109,11 @@ export class AppEndpointBuilderForMethods<
   public withoutBody<TOutput, THeaderData extends dataBE.RuntimeAnyHeaders>(
     endpointHandlerSpec:
       | common.EndpointHandler<
-          TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState>,
+          TArgsURL & TArgsQuery & common.EndpointHandlerArgs<TContext, TState>,
           TOutput
         >
       | common.EndpointHandlerSpec<
-          TArgsURL &
-            TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState>,
+          TArgsURL & TArgsQuery & common.EndpointHandlerArgs<TContext, TState>,
           TOutput,
           THeaderData,
           TStringEncoder
@@ -140,8 +133,7 @@ export class AppEndpointBuilderForMethods<
     >,
   ): AppEndpointBuilder<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
     TStringDecoder,
@@ -152,6 +144,7 @@ export class AppEndpointBuilderForMethods<
   > {
     const handler: state.StaticAppEndpointBuilderSpec<
       TContext,
+      TStateInfo,
       TStringDecoder,
       TStringEncoder,
       TOutputContents,
@@ -159,7 +152,7 @@ export class AppEndpointBuilderForMethods<
       TMetadataProviders
     > = {
       ...createStaticEndpointSpec(
-        this._state.contextTransform,
+        this._endpointStateValidator,
         this._state.urlValidation,
         this._queryInfo,
         this._headerInfo,
@@ -184,7 +177,7 @@ export class AppEndpointBuilderForMethods<
 
 export class AppEndpointBuilderForMethodsAndBody<
   TContext,
-  TRefinedContext,
+  TStateInfo,
   TState,
   TArgsURL extends object,
   TAllowedMethods extends ep.HttpMethod,
@@ -202,7 +195,7 @@ export class AppEndpointBuilderForMethodsAndBody<
   >,
 > extends AppEndpointBuilderForMethods<
   TContext,
-  TRefinedContext,
+  TStateInfo,
   TState,
   TArgsURL,
   TAllowedMethods,
@@ -219,7 +212,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     endpointHandler: common.EndpointHandler<
       TArgsURL &
         TArgsQuery &
-        common.EndpointHandlerArgs<TRefinedContext, TState> &
+        common.EndpointHandlerArgs<TContext, TState> &
         common.EndpointHandlerArgsWithBody<TBody>,
       THandlerResult
     >,
@@ -239,8 +232,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     >,
   ): AppEndpointBuilder<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
     TStringDecoder,
@@ -258,7 +250,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     endpointHandlerSpec: common.EndpointHandlerSpec<
       TArgsURL &
         TArgsQuery &
-        common.EndpointHandlerArgs<TRefinedContext, TState> &
+        common.EndpointHandlerArgs<TContext, TState> &
         common.EndpointHandlerArgsWithBody<TBody>,
       THandlerResult,
       THeaderData,
@@ -281,8 +273,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     >,
   ): AppEndpointBuilder<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
     TStringDecoder,
@@ -301,14 +292,14 @@ export class AppEndpointBuilderForMethodsAndBody<
       | common.EndpointHandler<
           TArgsURL &
             TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState> &
+            common.EndpointHandlerArgs<TContext, TState> &
             common.EndpointHandlerArgsWithBody<TBody>,
           THandlerResult
         >
       | common.EndpointHandlerSpec<
           TArgsURL &
             TArgsQuery &
-            common.EndpointHandlerArgs<TRefinedContext, TState> &
+            common.EndpointHandlerArgs<TContext, TState> &
             common.EndpointHandlerArgsWithBody<TBody>,
           THandlerResult,
           THeaderData,
@@ -331,8 +322,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     >,
   ): AppEndpointBuilder<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgsURL,
     Exclude<ep.HttpMethod, TAllowedMethods>,
     TStringDecoder,
@@ -343,6 +333,7 @@ export class AppEndpointBuilderForMethodsAndBody<
   > {
     const handler: state.StaticAppEndpointBuilderSpec<
       TContext,
+      TStateInfo,
       TStringDecoder,
       TStringEncoder,
       TOutputContents,
@@ -350,7 +341,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       TMetadataProviders
     > = {
       ...createStaticEndpointSpec(
-        this._state.contextTransform,
+        this._endpointStateValidator,
         this._state.urlValidation,
         this._queryInfo,
         this._headerInfo,
@@ -376,7 +367,7 @@ export class AppEndpointBuilderForMethodsAndBody<
 
 const createStaticEndpointSpec = <
   TContext,
-  TRefinedContext,
+  TStateInfo,
   TState,
   TStringDecoder,
   TStringEncoder,
@@ -386,16 +377,12 @@ const createStaticEndpointSpec = <
   TArgsHeaders extends object,
   TEndpointArgs extends TArgsURL &
     TArgsQuery &
-    common.EndpointHandlerArgs<TRefinedContext, TState>,
+    common.EndpointHandlerArgs<TContext, TState>,
   THandlerResult,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
 >(
-  contextTransform: dataBE.ContextValidatorSpec<
-    TContext,
-    TRefinedContext,
-    TState
-  >,
+  stateValidator: ep.EndpointStateValidator<TStateInfo, TState>,
   urlValidation: state.URLValidationInfo<TStringDecoder>,
   queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
   headerInfo: common.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
@@ -434,6 +421,7 @@ const createStaticEndpointSpec = <
   const retVal: Omit<
     state.StaticAppEndpointBuilderSpec<
       TContext,
+      TStateInfo,
       TStringDecoder,
       TStringEncoder,
       TOutputContents,
@@ -445,8 +433,7 @@ const createStaticEndpointSpec = <
     outputValidation: outputSpec,
     builder: (groupNamePrefix) =>
       stripUndefineds({
-        contextValidator:
-          contextTransform as ep.StaticAppEndpointHandler<TContext>["contextValidator"],
+        stateValidator,
         urlValidator: urlValidation
           ? {
               groupNames: Object.fromEntries(

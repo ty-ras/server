@@ -1,5 +1,11 @@
 import type * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
+import type * as ep from "@ty-ras/endpoint";
+
+export type StateProvider<TContext, TStateInfo> = (args: {
+  context: TContext;
+  stateInfo: TStateInfo;
+}) => ep.MaybePromise<unknown>;
 
 export type MetadataProvidersBase<
   TStringDecoder,
@@ -32,9 +38,9 @@ export type MetadataBuilderBase<
 > = Record<
   string,
   // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilderInitial with specific TMetadataProviders type as parameter to functions.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   md.MetadataBuilder<
     md.HKTArg,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
     unknown,
     TStringDecoder,

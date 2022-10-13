@@ -73,7 +73,7 @@ const test500: ParametrizedTest = async (...args) => {
 };
 
 export type CreateServer = (
-  endpoints: ReadonlyArray<ep.AppEndpoint<unknown, Record<string, unknown>>>,
+  endpoints: ReadonlyArray<ep.AppEndpoint<unknown, unknown, ep.TMetadataBase>>,
   info: server.ServerTestAdditionalInfo[0],
   httpVersion: number,
   secure: boolean,
