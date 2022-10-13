@@ -45,11 +45,6 @@ test("Validate typicalServerFlow works", async (t) => {
       returnValue: dummyURL,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -124,11 +119,6 @@ test("Validate typicalServerFlow works with special values", async (t) => {
       returnValue: undefined,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -188,11 +178,6 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
       returnValue: dummyURLObject,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -236,11 +221,6 @@ test("Validate typicalServerFlow works with invalid URL", async (t) => {
       returnValue: dummyURL,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "setStatusCode",
       args: ["Context", 404, false],
       returnValue: undefined,
@@ -268,11 +248,6 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
       callbackName: "getURL",
       args: ["Context"],
       returnValue: dummyURL,
-    },
-    {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
     },
     {
       callbackName: "getMethod",
@@ -328,11 +303,6 @@ test("Validate typicalServerFlow works with invalid context", async (t) => {
       returnValue: dummyURL,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -384,11 +354,6 @@ test("Validate typicalServerFlow works with invalid context and custom error", a
       callbackName: "getURL",
       args: ["Context"],
       returnValue: dummyURL,
-    },
-    {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
     },
     {
       callbackName: "getMethod",
@@ -449,11 +414,6 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
       returnValue: dummyURL,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -506,11 +466,6 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
       returnValue: dummyURL,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -561,11 +516,6 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
       callbackName: "getURL",
       args: ["Context"],
       returnValue: dummyURL,
-    },
-    {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
     },
     {
       callbackName: "getMethod",
@@ -622,11 +572,6 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
       callbackName: "getURL",
       args: ["Context"],
       returnValue: dummyURL,
-    },
-    {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
     },
     {
       callbackName: "getMethod",
@@ -687,11 +632,6 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
     },
     {
       args: ["Context"],
-      callbackName: "getState",
-      returnValue: "State",
-    },
-    {
-      args: ["Context"],
       callbackName: "getMethod",
       returnValue: "GET",
     },
@@ -737,11 +677,6 @@ test("Validate typicalServerFlow works with throwing callback", async (t) => {
       returnValue: dummyURL,
     },
     {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
-    },
-    {
       callbackName: "getMethod",
       args: ["Context"],
       returnValue: "GET",
@@ -776,10 +711,8 @@ test("Validate typicalServerFlow works with throwing and throwing event emitter"
         throw thrownError;
       },
     },
-    {
-      emit: () => {
-        throw new Error("This should be ignored");
-      },
+    () => {
+      throw new Error("This should be ignored");
     },
     callbacks,
   );
@@ -788,11 +721,6 @@ test("Validate typicalServerFlow works with throwing and throwing event emitter"
       callbackName: "getURL",
       args: ["Context"],
       returnValue: dummyURL,
-    },
-    {
-      callbackName: "getState",
-      args: ["Context"],
-      returnValue: "State",
     },
     {
       callbackName: "getMethod",
@@ -811,7 +739,7 @@ const createTrackingCallback = (
   headerMode: "arg" | "array" | "undefined" = "arg",
 ) => {
   const seenCallbacks: AllCallbacksArray = [];
-  const callbacks: spec.ServerFlowCallbacks<unknown, unknown> = {
+  const callbacks: spec.ServerFlowCallbacks<unknown> = {
     getURL: (...args) => {
       const returnValue =
         headerMode === "arg"
@@ -820,11 +748,6 @@ const createTrackingCallback = (
           ? undefined
           : dummyURLObject;
       seenCallbacks.push({ callbackName: "getURL", args, returnValue });
-      return returnValue;
-    },
-    getState: (...args) => {
-      const returnValue = "State";
-      seenCallbacks.push({ callbackName: "getState", args, returnValue });
       return returnValue;
     },
     getMethod: (...args) => {
@@ -882,7 +805,7 @@ const createTrackingCallback = (
 };
 
 type AllCallbacksArray = Array<
-  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown, unknown>>
+  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown>>
 >;
 
 type KeysAndValuesAsUnion<T extends object> = {

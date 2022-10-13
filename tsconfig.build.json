@@ -1,3 +1,4 @@
+// TS config file to use to compile <project name>/src/**/*.ts files in CI.
 {
   "extends": "./tsconfig.json",
   "exclude": [

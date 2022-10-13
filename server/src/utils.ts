@@ -9,24 +9,21 @@ import * as u from "url";
 
 export const checkURLPathNameForHandler = <TContext, TState>(
   ctx: TContext,
-  state: TState,
   events: evt.ServerEventEmitter<TContext, TState, "onInvalidUrl"> | undefined,
   url: u.URL | string,
   regExp: RegExp,
-) => {
+): evt.EventArgumentsWithoutState<TContext> | undefined => {
   const pathName = (url instanceof u.URL ? url : new u.URL(url)).pathname;
   const groups = regExp.exec(pathName)?.groups;
   if (!groups) {
-    events?.emit("onInvalidUrl", {
+    events?.("onInvalidUrl", {
       ctx,
-      state,
       regExp,
     });
   }
   return groups
     ? {
         ctx,
-        state,
         groups,
         regExp,
       }
@@ -34,7 +31,7 @@ export const checkURLPathNameForHandler = <TContext, TState>(
 };
 
 export const checkMethodForHandler = <TContext, TState>(
-  eventArgs: evt.EventArguments<TContext, TState>,
+  eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events:
     | evt.ServerEventEmitter<TContext, TState, "onInvalidMethod">
     | undefined,
@@ -44,7 +41,7 @@ export const checkMethodForHandler = <TContext, TState>(
   const foundHandler = handler(method, eventArgs.groups);
   const foundSuccess = foundHandler.found === "handler";
   if (!foundSuccess) {
-    events?.emit("onInvalidMethod", {
+    events?.("onInvalidMethod", {
       ...eventArgs,
     });
   }
@@ -52,7 +49,7 @@ export const checkMethodForHandler = <TContext, TState>(
 };
 
 export const checkContextForHandler = <TContext, TState>(
-  eventArgs: evt.EventArguments<TContext, TState>,
+  eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events:
     | evt.ServerEventEmitter<TContext, TState, "onInvalidContext">
     | undefined,
@@ -81,7 +78,7 @@ export const checkContextForHandler = <TContext, TState>(
     };
   } else {
     const isProtocolError = validationResult.error === "protocol-error";
-    events?.emit("onInvalidContext", {
+    events?.("onInvalidContext", {
       ...eventArgs,
       validationError: isProtocolError ? undefined : validationResult,
     });
@@ -137,7 +134,7 @@ export const checkURLParametersForHandler = <TContext, TState>(
       }
     }
     if (!proceedToInvokeHandler) {
-      events?.emit("onInvalidUrlParameters", {
+      events?.("onInvalidUrlParameters", {
         ...eventArgs,
         validationError: errors,
       });
@@ -164,7 +161,7 @@ export const checkQueryForHandler = <TContext, TState>(
       false,
     );
     if (!proceedToInvokeHandler) {
-      events?.emit("onInvalidQuery", {
+      events?.("onInvalidQuery", {
         ...eventArgs,
         validationError: errors,
       });
@@ -193,7 +190,7 @@ export const checkHeadersForHandler = <TContext, TState>(
       true,
     );
     if (!proceedToInvokeHandler) {
-      events?.emit("onInvalidRequestHeaders", {
+      events?.("onInvalidRequestHeaders", {
         ...eventArgs,
         validationError: errors,
       });
@@ -238,12 +235,12 @@ export const checkBodyForHandler = async <TContext, TState>(
     } else {
       proceedToInvokeHandler = false;
       if (bodyValidationResult.error === "error") {
-        events?.emit("onInvalidBody", {
+        events?.("onInvalidBody", {
           ...eventArgs,
           validationError: bodyValidationResult,
         });
       } else {
-        events?.emit("onInvalidContentType", {
+        events?.("onInvalidContentType", {
           ...eventArgs,
           contentType,
         });
@@ -271,12 +268,12 @@ export const invokeHandler = async <TContext, TState>(
   handler: ep.StaticAppEndpointHandler<TContext>["handler"],
   ...handlerParameters: Parameters<typeof handler>
 ) => {
-  events?.emit("onSuccessfulInvocationStart", { ...eventArgs });
+  events?.("onSuccessfulInvocationStart", { ...eventArgs });
   const retVal = await handler(...handlerParameters);
   if (retVal.error === "none") {
-    events?.emit("onSuccessfulInvocationEnd", { ...eventArgs });
+    events?.("onSuccessfulInvocationEnd", { ...eventArgs });
   } else {
-    events?.emit("onInvalidResponse", {
+    events?.("onInvalidResponse", {
       ...eventArgs,
       validationError: retVal,
     });

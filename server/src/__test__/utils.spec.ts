@@ -16,29 +16,21 @@ test("Validate checkURLPathNameForHandler works for valid input", (t) => {
   t.plan(5);
   const urlString = "http://url";
   const ctx = "Context";
-  const state = "State";
   withoutAndWithEvents(t, (emitter) => {
     const regExp = /(?<group>^\/$)/;
     const expectedResult = {
       ctx,
-      state,
       regExp,
       groups: {
         group: "/",
       },
     };
     t.deepEqual(
-      spec.checkURLPathNameForHandler(ctx, state, emitter, urlString, regExp),
+      spec.checkURLPathNameForHandler(ctx, emitter, urlString, regExp),
       expectedResult,
     );
     t.deepEqual(
-      spec.checkURLPathNameForHandler(
-        ctx,
-        state,
-        emitter,
-        new URL(urlString),
-        regExp,
-      ),
+      spec.checkURLPathNameForHandler(ctx, emitter, new URL(urlString), regExp),
       expectedResult,
     );
   });
@@ -47,11 +39,10 @@ test("Validate checkURLPathNameForHandler works for invalid input", (t) => {
   t.plan(3);
   const urlString = "http://url";
   const ctx = "Context";
-  const state = "State";
   withoutAndWithEvents(t, (emitter) => {
     const regExp = /no-match/;
     t.deepEqual(
-      spec.checkURLPathNameForHandler(ctx, state, emitter, urlString, regExp),
+      spec.checkURLPathNameForHandler(ctx, emitter, urlString, regExp),
       undefined,
     );
     return [
@@ -59,7 +50,6 @@ test("Validate checkURLPathNameForHandler works for invalid input", (t) => {
         eventName: "onInvalidUrl",
         args: {
           ctx,
-          state,
           regExp,
         },
       },
@@ -91,7 +81,7 @@ test("Validate checkMethodForHandler works for invalid input", (t) => {
       allowedMethods: [],
     };
     const retVal = spec.checkMethodForHandler(
-      EVENT_ARGS,
+      EVENT_ARGS_NO_STATE,
       emitter,
       "GET",
       () => handler,
@@ -100,7 +90,7 @@ test("Validate checkMethodForHandler works for invalid input", (t) => {
     return [
       {
         eventName: "onInvalidMethod",
-        args: EVENT_ARGS,
+        args: EVENT_ARGS_NO_STATE,
       },
     ];
   });
@@ -109,7 +99,7 @@ test("Validate checkMethodForHandler works for invalid input", (t) => {
 test("Validate checkContextForHandler works for valid input", (t) => {
   t.plan(7);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkContextForHandler(EVENT_ARGS, emitter, {
+    const retVal = spec.checkContextForHandler(EVENT_ARGS_NO_STATE, emitter, {
       validator: (ctx) => {
         t.deepEqual(ctx, "Context");
         return { error: "none", data: "Context2" };
@@ -129,7 +119,7 @@ test("Validate checkContextForHandler works for valid input", (t) => {
 test("Validate checkContextForHandler works for invalid data input", (t) => {
   t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkContextForHandler(EVENT_ARGS, emitter, {
+    const retVal = spec.checkContextForHandler(EVENT_ARGS_NO_STATE, emitter, {
       validator: (ctx) => {
         t.deepEqual(ctx, "Context");
         return {
@@ -151,7 +141,7 @@ test("Validate checkContextForHandler works for invalid data input", (t) => {
       {
         eventName: "onInvalidContext",
         args: {
-          ...EVENT_ARGS,
+          ...EVENT_ARGS_NO_STATE,
           validationError: {
             error: "error",
             errorInfo: "Info",
@@ -165,7 +155,7 @@ test("Validate checkContextForHandler works for invalid data input", (t) => {
 test("Validate checkContextForHandler works for invalid state input", (t) => {
   t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkContextForHandler(EVENT_ARGS, emitter, {
+    const retVal = spec.checkContextForHandler(EVENT_ARGS_NO_STATE, emitter, {
       validator: (ctx) => {
         t.deepEqual(ctx, "Context");
         return {
@@ -187,7 +177,7 @@ test("Validate checkContextForHandler works for invalid state input", (t) => {
       {
         eventName: "onInvalidContext",
         args: {
-          ...EVENT_ARGS,
+          ...EVENT_ARGS_NO_STATE,
           validationError: undefined,
         },
       },
@@ -726,13 +716,16 @@ const withoutAndWithEventsAsync = async (
   t.deepEqual(seenEvents, expectedEvents);
 };
 
-const EVENT_ARGS: evt.EventArguments<any, any> = {
+const EVENT_ARGS_NO_STATE: evt.EventArgumentsWithoutState<any> = {
   ctx: "Context",
-  state: "State",
   groups: {
     groupName: "groupValue",
   },
   regExp: /^$/,
+};
+const EVENT_ARGS: evt.EventArguments<any, any> = {
+  ...EVENT_ARGS_NO_STATE,
+  state: "State",
 };
 
 const getHumanReadableMessage = () => "";

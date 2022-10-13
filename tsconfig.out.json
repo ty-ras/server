@@ -1,0 +1,10 @@
+// TS config for formatting the resulting .d.ts files (<project name>/dist-ts/**/*.d.ts) that end up in NPM package for typing information.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./dist-ts"
+  },
+  "include": [
+    "./dist-ts/**/*"
+  ]
+}

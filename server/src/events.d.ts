@@ -11,12 +11,12 @@ export type ServerEventEmitter<
   Pick<VirtualRequestProcessingEvents<TContext, TState>, TEvents>
 >;
 
-export interface EventEmitter<TVirtualEvents extends object> {
-  emit<TEventName extends keyof TVirtualEvents>(
-    eventName: TEventName,
-    eventArgs: TVirtualEvents[TEventName],
-  ): void;
-}
+export type EventEmitter<TVirtualEvents extends object> = <
+  TEventName extends keyof TVirtualEvents,
+>(
+  eventName: TEventName,
+  eventArgs: TVirtualEvents[TEventName],
+) => void;
 
 // This is 'virtual interface' -> instances of this interface are never meant to be created!
 // It is only used for typing purposes
@@ -25,11 +25,11 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
   onSuccessfulInvocationEnd: EventArguments<TContext, TState>;
 
   // URL did not match combined regex
-  onInvalidUrl: Omit<EventArguments<TContext, TState>, "groups">;
+  onInvalidUrl: Omit<EventArgumentsWithoutState<TContext>, "groups">;
   // No handler for given HTTP method
-  onInvalidMethod: EventArguments<TContext, TState>;
+  onInvalidMethod: EventArgumentsWithoutState<TContext>;
   // Context failed passing validation
-  onInvalidContext: EventArguments<TContext, TState> &
+  onInvalidContext: EventArgumentsWithoutState<TContext> &
     ValidationErrorArgs<data.DataValidatorResultError | undefined>;
   // URL matched combined regex, but parameter validation failed
   onInvalidUrlParameters: EventArguments<TContext, TState> &
@@ -53,12 +53,16 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
   };
 }
 
-export interface EventArguments<TContext, TState> {
+export interface EventArgumentsWithoutState<TContext> {
   ctx: TContext;
-  state: TState;
   groups: Record<string, string | undefined>;
   regExp: RegExp;
 }
+
+export type EventArguments<TContext, TState> =
+  EventArgumentsWithoutState<TContext> & {
+    state: TState;
+  };
 
 export interface ValidationErrorArgs<
   TValidationError = data.DataValidatorResultError,

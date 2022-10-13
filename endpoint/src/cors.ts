@@ -33,12 +33,8 @@ export const withCORSOptions = <
                   },
                 },
               }),
-              contextValidator: {
-                validator: (ctx) => ({
-                  error: "none",
-                  data: ctx,
-                }),
-                getState: () => undefined,
+              stateValidator: {
+                validator: () => ({ error: "none", data: undefined }),
               },
             },
           };
