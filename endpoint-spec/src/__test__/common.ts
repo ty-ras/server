@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as data from "@ty-ras/data";
 import type * as dataBE from "@ty-ras/data-backend";
+import type * as ep from "@ty-ras/endpoint";
 import * as rawBody from "raw-body";
 import * as spec from "..";
 
@@ -83,8 +84,8 @@ export const validatorFromValue =
 
 export const stringValidatorFromValue = <TValue>(
   value: TValue,
-): data.DataValidator<data.HeaderValue | data.QueryValue, TValue> =>
-  validatorFromValue<TValue, data.HeaderValue | data.QueryValue>(value);
+): data.DataValidator<data.ReadonlyStringValue, TValue> =>
+  validatorFromValue<TValue, data.ReadonlyStringValue>(value);
 
 export const stringDecoderSpec = <
   TValue extends Record<string, unknown>,
@@ -98,7 +99,7 @@ export const stringDecoderSpec = <
 ): dataBE.StringDataValidatorSpec<
   TValue,
   { decoder: string },
-  data.HeaderValue | data.QueryValue,
+  data.ReadonlyStringValue,
   TAdditionalInfo
 > => {
   return {
@@ -186,3 +187,12 @@ export const createComplexEndpointHandler = <TRefinedContext, TState>(
     () => ({ required: true }),
   ),
 });
+
+export const createStateValidator = <T>(
+  value: T,
+): ep.EndpointStateValidator<unknown, T> => ({
+  stateInfo: value,
+  validator: validatorFromValue(value),
+});
+
+export const state = createStateValidator<unknown>(undefined);

@@ -1,11 +1,11 @@
 import * as ep from "@ty-ras/endpoint";
 import * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
+import type * as common from "./common";
 
 export interface AppEndpointBuilderState<
   TContext,
-  TRefinedContext,
-  TState,
+  TStateInfo,
   TStringDecoder,
   TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
@@ -23,12 +23,14 @@ export interface AppEndpointBuilderState<
     >
   >,
 > {
+  stateProvider: common.StateProvider<TContext, TStateInfo>;
   fragments: ReadonlyArray<string>;
   methods: Partial<
     Record<
       ep.HttpMethod,
       StaticAppEndpointBuilderSpec<
         TContext,
+        TStateInfo,
         TStringDecoder,
         TStringEncoder,
         TOutputContents,
@@ -36,11 +38,6 @@ export interface AppEndpointBuilderState<
         TMetadata
       >
     >
-  >;
-  contextTransform: data.ContextValidatorSpec<
-    TContext,
-    TRefinedContext,
-    TState
   >;
   metadata: TMetadata;
   urlValidation: URLValidationInfo<TStringDecoder>;
@@ -58,6 +55,7 @@ export type URLValidationInfo<TStringDecoder> =
 
 export interface StaticAppEndpointBuilderSpec<
   TContext,
+  TStateInfo,
   TStringDecoder,
   TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
@@ -75,7 +73,7 @@ export interface StaticAppEndpointBuilderSpec<
     >
   >,
 > {
-  builder: StaticAppEndpointBuilder<TContext>;
+  builder: StaticAppEndpointBuilder<TContext, TStateInfo>;
   requestHeadersSpec?: data.RequestHeaderDataValidatorSpecMetadata<
     string,
     TStringDecoder
@@ -110,7 +108,7 @@ export interface StaticAppEndpointBuilderSpec<
   };
 }
 
-export type StaticAppEndpointBuilder<TContext> = (
+export type StaticAppEndpointBuilder<TContext, TStateInfo> = (
   groupNamePrefix: string,
   // groups: Record<string, string>,
-) => ep.StaticAppEndpointHandler<TContext>;
+) => ep.StaticAppEndpointHandler<TContext, TStateInfo>;

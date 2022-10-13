@@ -9,17 +9,19 @@ test("Handlers: Validate all batch spec combinations", (t) => {
   // There are 4 boolean things to vary, therefore causing 2⁴ = 16 variations
   // Invoke them all to make sure compiler catches correctly all overload variations
   // Use method which can have body, in order to catch compilation errors when using non-body builder methods with body-enabled HTTP methods.
-  const builder = spec.bindNecessaryTypes(() => "").atURL`/path`;
+  const builder = spec.startBuildingAPI().atURL`/path`;
   const mdArgs = {};
   const method = "POST";
   const output = common.outputSpec("");
   const headers = common.stringEncoderSpec({}, () => ({ required: true }));
   const query = common.stringDecoderSpec({}, () => ({ required: true }));
   const input = common.inputSpec("");
+  const state = common.state;
   {
     const endpointHandler = () => "";
     // Without response headers, without body, without query, without request headers
     builder.batchSpec({
+      state,
       method,
       endpointHandler,
       output,
@@ -27,6 +29,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, without body, without query, with request headers
     builder.batchSpec({
+      state,
       method,
       headers,
       endpointHandler,
@@ -35,6 +38,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, without body, with query, without request headers
     builder.batchSpec({
+      state,
       method,
       query,
       endpointHandler,
@@ -43,6 +47,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, without body, with query, with request headers
     builder.batchSpec({
+      state,
       method,
       query,
       headers,
@@ -52,6 +57,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, with body, without query, without request headers
     builder.batchSpec({
+      state,
       method,
       input,
       endpointHandler,
@@ -60,6 +66,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, with body, without query, with request headers
     builder.batchSpec({
+      state,
       method,
       headers,
       input,
@@ -69,6 +76,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, with body, with query, without request headers
     builder.batchSpec({
+      state,
       method,
       query,
       input,
@@ -78,6 +86,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // Without response headers, with body, with query, with request headers
     builder.batchSpec({
+      state,
       method,
       query,
       headers,
@@ -97,6 +106,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     }));
     // With response headers, without body, without query, without request headers
     builder.batchSpec({
+      state,
       method,
       endpointHandler,
       responseHeaders,
@@ -105,6 +115,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, without body, without query, with request headers
     builder.batchSpec({
+      state,
       method,
       headers,
       endpointHandler,
@@ -114,6 +125,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, without body, with query, without request headers
     builder.batchSpec({
+      state,
       method,
       query,
       endpointHandler,
@@ -123,6 +135,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, without body, with query, with request headers
     builder.batchSpec({
+      state,
       method,
       query,
       headers,
@@ -133,6 +146,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, with body, without query, without request headers
     builder.batchSpec({
+      state,
       method,
       input,
       endpointHandler,
@@ -142,6 +156,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, with body, without query, with request headers
     builder.batchSpec({
+      state,
       method,
       headers,
       input,
@@ -152,6 +167,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, with body, with query, without request headers
     builder.batchSpec({
+      state,
       method,
       query,
       input,
@@ -162,6 +178,7 @@ test("Handlers: Validate all batch spec combinations", (t) => {
     });
     // With response headers, with body, with query, with request headers
     builder.batchSpec({
+      state,
       method,
       query,
       headers,

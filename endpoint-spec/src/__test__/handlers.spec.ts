@@ -15,19 +15,20 @@ const testWithSimpleEndpoint = async (
   t.plan(5);
   const responseBody = common.RESPONSE_BODY;
   const initialState = "InitialState";
-  const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
+  const seenArgs: Array<spec.EndpointHandlerArgs<unknown, unknown>> = [];
   const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
-  const starter = spec.bindNecessaryTypes(() => initialState).atURL`/path`;
+  const starter = spec.startBuildingAPI().atURL`/path`;
   const maybeHandler = (
     useBatch
       ? starter.batchSpec({
+          state: common.state,
           method: "GET",
           endpointHandler,
           output: common.outputSpec(responseBody),
           mdArgs: {},
         })
       : starter
-          .forMethod("GET")
+          .forMethod("GET", common.state)
           .withoutBody(endpointHandler, common.outputSpec(responseBody), {})
   )
     .createEndpoint({})
@@ -35,9 +36,9 @@ const testWithSimpleEndpoint = async (
     .handler("GET", {});
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail
-    const { contextValidator, handler, ...rest } = maybeHandler.handler;
-    t.deepEqual(contextValidator.validator(undefined).error, "none");
-    t.deepEqual(contextValidator.getState(undefined), initialState);
+    const { stateValidator, handler, ...rest } = maybeHandler.handler;
+    t.deepEqual(stateValidator.validator(undefined).error, "none");
+    t.deepEqual(stateValidator.stateInfo, undefined);
     t.deepEqual(rest, {});
     const args: Parameters<ep.StaticAppEndpointHandlerFunction<unknown>>[0] = {
       context: undefined,
@@ -65,19 +66,13 @@ const testWithComplexEndpoint = async (
 ) => {
   t.plan(10);
   const responseBody = common.RESPONSE_BODY;
-  const initialState = "InitialState";
   const refinedState = "RefinedState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
   const endpointHandler = common.createComplexEndpointHandler(seenArgs);
   const starter = spec
-    .bindNecessaryTypes(() => initialState)
-    .refineContext(
-      {
-        validator: common.validatorFromValue(undefined),
-        getState: () => refinedState,
-      },
-      {},
-    ).atURL`/path/${"urlParam"}`.validateURLData(
+    .startBuildingAPI()
+    .changeStateProvider(() => refinedState, {})
+    .atURL`/path/${"urlParam"}`.validateURLData(
     common.stringDecoderSpec(
       {
         urlParam: "urlParamValue",
@@ -102,6 +97,7 @@ const testWithComplexEndpoint = async (
   const maybeHandler = (
     useBatch
       ? starter.batchSpec({
+          state: common.createStateValidator(refinedState),
           method: "POST",
           endpointHandler: endpointHandler.handler,
           query,
@@ -112,7 +108,12 @@ const testWithComplexEndpoint = async (
           mdArgs: {},
         })
       : starter
-          .forMethod("POST", query, headers)
+          .forMethod(
+            "POST",
+            common.createStateValidator(refinedState),
+            query,
+            headers,
+          )
           .withBody(
             common.inputSpec(""),
             endpointHandler,
@@ -126,7 +127,7 @@ const testWithComplexEndpoint = async (
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail
     const {
-      contextValidator,
+      stateValidator,
       handler,
       urlValidator,
       queryValidator,
@@ -134,8 +135,8 @@ const testWithComplexEndpoint = async (
       bodyValidator,
       ...rest
     } = maybeHandler.handler;
-    t.deepEqual(contextValidator.validator(undefined).error, "none");
-    t.deepEqual(contextValidator.getState(undefined), refinedState);
+    t.deepEqual(stateValidator.validator(refinedState).error, "none");
+    t.deepEqual(stateValidator.stateInfo, refinedState);
     t.deepEqual(urlValidator?.groupNames, {
       urlParam: "urlParam",
     });

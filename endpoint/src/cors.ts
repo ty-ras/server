@@ -5,7 +5,7 @@ import type * as ep from "./endpoint";
 export const withCORSOptions = <
   TContext,
   TStateInfo,
-  TMetadata extends Record<string, unknown>,
+  TMetadata extends ep.TMetadataBase,
 >(
   ep: ep.AppEndpoint<TContext, TStateInfo, TMetadata>,
   { origin, allowHeaders }: CORSOptions,

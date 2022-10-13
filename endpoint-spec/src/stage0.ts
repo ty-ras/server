@@ -5,39 +5,23 @@ import type * as md from "@ty-ras/metadata";
 import type * as common from "./common";
 import { AppEndpointBuilderInitial } from ".";
 
-/**
- * This function begins the process of building AppEndpoints.
- * @param getInitialState The callback to get initial state from context.
- * @returns The `AppEndpointBuilderProvider` which can be used to refine URL and HTTP method parameters for the endpoint
- */
-export const bindNecessaryTypes = <TContext, TState>(
-  getInitialState: (ctx: TContext) => TState,
-): AppEndpointBuilderProvider<
-  TContext,
-  TContext,
-  TState,
-  unknown,
-  unknown,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {}
-> =>
-  new AppEndpointBuilderProvider(
-    {
-      validator: (ctx) => ({ error: "none", data: ctx }),
-      getState: getInitialState,
-    },
+export const startBuildingAPI = <TContext>() =>
+  new AppEndpointBuilderProvider<
+    TContext,
+    unknown,
+    unknown,
+    unknown,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     {},
-  );
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    {},
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    {}
+  >(() => undefined, {});
 
-// TODO use ContextHKT in these
 export class AppEndpointBuilderProvider<
   TContext,
-  TRefinedContext,
-  TState,
+  TStateInfo,
   TStringDecoder,
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
@@ -50,18 +34,13 @@ export class AppEndpointBuilderProvider<
   >,
 > {
   public constructor(
-    private readonly _contextTransform: dataBE.ContextValidatorSpec<
-      TContext,
-      TRefinedContext,
-      TState
-    >,
+    private readonly _stateProvider: common.StateProvider<TContext, TStateInfo>,
     private readonly _mdProviders: TMetadataProviders,
   ) {}
 
   public atURL(fragments: TemplateStringsArray): AppEndpointBuilderInitial<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     {}, // eslint-disable-line @typescript-eslint/ban-types
     ep.HttpMethod,
     TStringDecoder,
@@ -79,8 +58,7 @@ export class AppEndpointBuilderProvider<
     ...args: TArgs
   ): URLDataNames<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TArgs[number],
     TStringDecoder,
     TStringEncoder,
@@ -98,8 +76,7 @@ export class AppEndpointBuilderProvider<
   ):
     | AppEndpointBuilderInitial<
         TContext,
-        TRefinedContext,
-        TState,
+        TStateInfo,
         {}, // eslint-disable-line @typescript-eslint/ban-types
         ep.HttpMethod,
         TStringDecoder,
@@ -114,8 +91,7 @@ export class AppEndpointBuilderProvider<
       >
     | URLDataNames<
         TContext,
-        TRefinedContext,
-        TState,
+        TStateInfo,
         TArgs[number],
         TStringDecoder,
         TStringEncoder,
@@ -132,7 +108,7 @@ export class AppEndpointBuilderProvider<
       return {
         validateURLData: (validation) => {
           return new AppEndpointBuilderInitial({
-            contextTransform: this._contextTransform,
+            stateProvider: this._stateProvider,
             fragments,
             methods: {},
             // TODO fix this typing (may require extracting this method into class, as anonymous methods with method generic arguments don't behave well)
@@ -151,7 +127,7 @@ export class AppEndpointBuilderProvider<
       // URL has no arguments -> return builder which can build endpoints without URL validation
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return new AppEndpointBuilderInitial({
-        contextTransform: this._contextTransform,
+        stateProvider: this._stateProvider,
         fragments,
         methods: {},
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -163,12 +139,8 @@ export class AppEndpointBuilderProvider<
     }
   }
 
-  public refineContext<TNewContext, TNewState>(
-    transform: dataBE.ContextValidatorSpec<
-      TRefinedContext,
-      TNewContext,
-      TNewState
-    >,
+  public changeStateProvider<TNewStateInfo>(
+    newStateProvider: common.StateProvider<TContext, TNewStateInfo>,
     mdArgs: {
       [P in keyof TMetadataProviders]: Parameters<
         TMetadataProviders[P]["withRefinedContext"]
@@ -176,8 +148,7 @@ export class AppEndpointBuilderProvider<
     },
   ): AppEndpointBuilderProvider<
     TContext,
-    TNewContext,
-    TNewState,
+    TNewStateInfo,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -185,17 +156,7 @@ export class AppEndpointBuilderProvider<
     TMetadataProviders
   > {
     return new AppEndpointBuilderProvider(
-      {
-        ...transform,
-        // TODO we can't use data.transitiveDataValidation here, because our error type is customized.
-        // Extend the data.transitiveDataValidation so that it would also work for custom error types
-        validator: (ctx) => {
-          const transformed = this._contextTransform.validator(ctx);
-          return transformed.error === "none"
-            ? transform.validator(transformed.data)
-            : transformed;
-        },
-      },
+      newStateProvider,
       data.transformEntries(this._mdProviders, (provider, key) =>
         provider.withRefinedContext(mdArgs[key]),
       ) as TMetadataProviders,
@@ -221,8 +182,7 @@ export class AppEndpointBuilderProvider<
     metadataProvider: TMetadataProvider,
   ): AppEndpointBuilderProvider<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     TMetadataProvider extends md.MetadataProvider<
       infer _,
       infer _1,
@@ -283,7 +243,7 @@ export class AppEndpointBuilderProvider<
         : never),
     TMetadataProviders & { [P in TMetadataKind]: TMetadataProvider }
   > {
-    return new AppEndpointBuilderProvider(this._contextTransform, {
+    return new AppEndpointBuilderProvider(this._stateProvider, {
       ...this._mdProviders,
       [metadataKind]: metadataProvider,
     });
@@ -364,8 +324,7 @@ export class AppEndpointBuilderProvider<
 
 export interface URLDataNames<
   TContext,
-  TRefinedContext,
-  TState,
+  TStateInfo,
   TNames extends string,
   TStringDecoder,
   TStringEncoder,
@@ -386,8 +345,7 @@ export interface URLDataNames<
     validation: dataBE.URLParameterValidatorSpec<TValidation, TStringDecoder>,
   ) => AppEndpointBuilderInitial<
     TContext,
-    TRefinedContext,
-    TState,
+    TStateInfo,
     common.EndpointHandlerArgsWithURL<TValidation>,
     ep.HttpMethod,
     TStringDecoder,
