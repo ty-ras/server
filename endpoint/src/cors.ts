@@ -4,11 +4,12 @@ import type * as ep from "./endpoint";
 // Refactor when issue #16 gets addressed.
 export const withCORSOptions = <
   TContext,
+  TStateInfo,
   TMetadata extends Record<string, unknown>,
 >(
-  ep: ep.AppEndpoint<TContext, TMetadata>,
+  ep: ep.AppEndpoint<TContext, TStateInfo, TMetadata>,
   { origin, allowHeaders }: CORSOptions,
-): ep.AppEndpoint<TContext, TMetadata> => ({
+): ep.AppEndpoint<TContext, TStateInfo, TMetadata> => ({
   getRegExpAndHandler: (groupNamePrefix) => {
     const { handler, ...retVal } = ep.getRegExpAndHandler(groupNamePrefix);
     return {
@@ -34,6 +35,7 @@ export const withCORSOptions = <
                 },
               }),
               stateValidator: {
+                stateInfo: undefined as unknown as TStateInfo,
                 validator: () => ({ error: "none", data: undefined }),
               },
             },

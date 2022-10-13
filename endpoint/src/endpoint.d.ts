@@ -4,38 +4,43 @@ import type * as dataBE from "@ty-ras/data-backend";
 
 export interface AppEndpoint<
   TContext,
-  TMetadata extends Record<string, unknown>,
+  TStateInfo,
+  TMetadata extends TMetadataBase,
 > {
   getRegExpAndHandler: (
     groupNamePrefix: string,
-  ) => FinalizedAppEndpoint<TContext>;
-  getMetadata: (urlPrefix: string) => {
-    [P in keyof TMetadata]: Array<TMetadata[P]>;
-  };
+  ) => FinalizedAppEndpoint<TContext, TStateInfo>;
+  getMetadata: (urlPrefix: string) => BuiltMetadata<TMetadata>;
 }
 
-export interface FinalizedAppEndpoint<TContext> {
+export type BuiltMetadata<TMetadata> = {
+  [P in keyof TMetadata]: Array<TMetadata[P]>;
+};
+
+export type TMetadataBase = Record<string, unknown>;
+
+export interface FinalizedAppEndpoint<TContext, TStateInfo> {
   url: RegExp;
-  handler: DynamicHandlerGetter<TContext>;
+  handler: DynamicHandlerGetter<TContext, TStateInfo>;
 }
 
-export type DynamicHandlerGetter<TContext> = (
+export type DynamicHandlerGetter<TContext, TStateInfo> = (
   method: method.HttpMethod,
   groups: Record<string, string | undefined>,
-) => DynamicHandlerResponse<TContext>;
+) => DynamicHandlerResponse<TContext, TStateInfo>;
 
-export type DynamicHandlerResponse<TContext> =
+export type DynamicHandlerResponse<TContext, TStateInfo> =
   | {
       found: "invalid-method";
       allowedMethods: Array<method.HttpMethod>;
     }
   | {
       found: "handler";
-      handler: StaticAppEndpointHandler<TContext>;
+      handler: StaticAppEndpointHandler<TContext, TStateInfo>;
     };
 
-export type StaticAppEndpointHandler<TContext> = {
-  stateValidator: EndpointStateValidator<unknown, unknown>;
+export type StaticAppEndpointHandler<TContext, TStateInfo> = {
+  stateValidator: EndpointStateValidator<TStateInfo, unknown>;
   urlValidator?:
     | {
         groupNames: Record<string, string>;
@@ -66,6 +71,6 @@ export type StaticAppEndpointHandlerFunction<TContext> = (args: {
 export type MaybePromise<T> = T | Promise<T>;
 
 export interface EndpointStateValidator<TStateInfo, TState> {
-  stateInfo?: TStateInfo;
+  stateInfo: TStateInfo;
   validator: dataBE.StateValidator<unknown, TState>;
 }

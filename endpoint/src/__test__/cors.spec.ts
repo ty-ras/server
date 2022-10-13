@@ -18,10 +18,11 @@ const testCORSedEP = async (
     allowHeaders,
   };
   const url = /url/;
-  const response: ep.DynamicHandlerResponse<unknown> = {
+  const response: ep.DynamicHandlerResponse<unknown, unknown> = {
     found: "handler",
     handler: {
       stateValidator: {
+        stateInfo: undefined,
         validator: () => ({ error: "none", data: undefined }),
       },
       handler: () => ({
@@ -87,7 +88,7 @@ const validateCORSedResponse = async (
   t: ExecutionContext,
   method: methods.HttpMethod,
   { allowHeaders, origin }: spec.CORSOptions,
-  handlerResponse: ep.DynamicHandlerResponse<unknown>,
+  handlerResponse: ep.DynamicHandlerResponse<unknown, unknown>,
 ) => {
   if (handlerResponse.found === "handler") {
     t.deepEqual(
