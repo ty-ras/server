@@ -97,41 +97,35 @@ test("Validate checkMethodForHandler works for invalid input", (t) => {
 });
 
 test("Validate checkStateForHandler works for valid input", (t) => {
-  t.plan(7);
+  t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkStateForHandler(EVENT_ARGS_NO_STATE, emitter, {
-      validator: (ctx) => {
-        t.deepEqual(ctx, "Context");
-        return { error: "none", data: "Context2" };
+    const retVal = spec.checkStateForHandler(
+      EVENT_ARGS_NO_STATE,
+      emitter,
+      (data) => {
+        t.deepEqual(data, "State");
+        return { error: "none", data };
       },
-      getState: (ctx) => {
-        t.deepEqual(ctx, "Context2");
-        return "State2";
-      },
-    });
+      "State",
+    );
     t.deepEqual(retVal, {
-      result: "context",
-      context: "Context2",
-      state: "State2",
+      result: "state",
+      state: "State",
     });
   });
 });
 test("Validate checkStateForHandler works for invalid data input", (t) => {
   t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkStateForHandler(EVENT_ARGS_NO_STATE, emitter, {
-      validator: (ctx) => {
-        t.deepEqual(ctx, "Context");
-        return {
-          error: "error",
-          errorInfo: "Info",
-          getHumanReadableMessage,
-        };
+    const retVal = spec.checkStateForHandler(
+      EVENT_ARGS_NO_STATE,
+      emitter,
+      (data) => {
+        t.deepEqual(data, "State");
+        return { error: "error", errorInfo: "Info", getHumanReadableMessage };
       },
-      getState: () => {
-        throw new Error("This should not be called");
-      },
-    });
+      "State",
+    );
     t.deepEqual(retVal, {
       result: "error",
       customStatusCode: undefined,
@@ -152,22 +146,22 @@ test("Validate checkStateForHandler works for invalid data input", (t) => {
     ];
   });
 });
-test("Validate checkStateForHandler works for invalid state input", (t) => {
+test("Validate checkStateForHandler works for invalid data input with protocol information", (t) => {
   t.plan(5);
   withoutAndWithEvents(t, (emitter) => {
-    const retVal = spec.checkStateForHandler(EVENT_ARGS_NO_STATE, emitter, {
-      validator: (ctx) => {
-        t.deepEqual(ctx, "Context");
+    const retVal = spec.checkStateForHandler(
+      EVENT_ARGS_NO_STATE,
+      emitter,
+      (data) => {
+        t.deepEqual(data, "State");
         return {
           error: "protocol-error",
           statusCode: 123,
           body: "Body",
         };
       },
-      getState: () => {
-        throw new Error("This should not be called");
-      },
-    });
+      "State",
+    );
     t.deepEqual(retVal, {
       result: "error",
       customStatusCode: 123,
