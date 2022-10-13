@@ -25,9 +25,8 @@ const testOneURLWithPrefix = (
 
   const url = /url/;
   const singleEP: ep.StaticAppEndpointHandler<unknown> = {
-    contextValidator: {
+    stateValidator: {
       validator: () => ({ error: "none", data: {} }),
-      getState: () => undefined,
     },
     handler: () => ({
       error: "none",
@@ -139,9 +138,8 @@ const testTwoURLsWithPrefix = (
   t.plan(12);
 
   const singleEP: ep.StaticAppEndpointHandler<unknown> = {
-    contextValidator: {
+    stateValidator: {
       validator: () => ({ error: "none", data: {} }),
-      getState: () => undefined,
     },
     handler: () => ({
       error: "none",
@@ -272,3 +270,26 @@ test(
 );
 
 const INVALID_METHOD = "invalid-method";
+
+test("Validate atPrefix detects top-level prefix", (t) => {
+  t.plan(1);
+  t.throws(
+    () =>
+      spec.atPrefix(
+        "some-prefix",
+        spec.atPrefix("", {
+          getRegExpAndHandler: () => {
+            throw new Error("This should never be called");
+          },
+          getMetadata: () => {
+            throw new Error("This should never be called");
+          },
+        }),
+      ),
+    {
+      instanceOf: spec.InvalidEndpointsError,
+      message:
+        "Endpoints at indices 0 were top-level endpoints and thus unprefixable.",
+    },
+  );
+});
