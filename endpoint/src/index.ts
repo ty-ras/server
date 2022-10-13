@@ -7,6 +7,8 @@ export type {
   AppEndpoint,
   DynamicHandlerGetter,
   DynamicHandlerResponse,
+  EndpointStateValidator,
+  FinalizedAppEndpoint,
   MaybePromise,
   StaticAppEndpointHandler,
   StaticAppEndpointHandlerFunction,
