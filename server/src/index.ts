@@ -8,5 +8,6 @@ export type {
   ValidationErrorArgs,
   VirtualRequestProcessingEvents,
 } from "./events";
+export type { StateProvider } from "./state";
 export * from "./utils";
 export * from "./flow";

@@ -15,7 +15,7 @@ export class AppEndpointBuilder<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -33,7 +33,7 @@ export class AppEndpointBuilder<
   TMetadataProviders
 > {
   public createEndpoint(mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer TArg,
       unknown,
@@ -44,27 +44,12 @@ export class AppEndpointBuilder<
     >
       ? TArg
       : never;
-  }): ep.AppEndpoint<
-    TContext,
-    TStateInfo,
-    {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer TEndpointMD,
-        infer _0,
-        infer _1,
-        infer _2,
-        infer _3
-      >
-        ? TEndpointMD
-        : never;
-    }
-  > {
+  }) {
     if (Object.keys(this._state.methods).length > 0) {
-      const { urlValidation } = this._state;
+      const { urlValidation, endpointMetadata } = this._state;
       const metadata = constructMDResults(this._state, mdArgs);
-      return {
+
+      const endpoint: ep.AppEndpoint<TContext, TStateInfo> = {
         getRegExpAndHandler: (groupNamePrefix) => ({
           url: urlValidation
             ? buildURLRegExp(
@@ -81,13 +66,22 @@ export class AppEndpointBuilder<
               groupNamePrefix,
             ),
         }),
-        getMetadata: (urlPrefix) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          return data.transformEntries(metadata, (md) => [
-            md(urlPrefix),
-          ]) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-        },
+        // getMetadata: (urlPrefix) => {
+        //   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        //   return data.transformEntries(metadata, (md) => [
+        //     md(urlPrefix),
+        //   ]) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        // },
       };
+      endpointMetadata.push({
+        stateInfo: Object.fromEntries(
+          Object.entries(this._state.methods).map(
+            ([method, info]) => [method, info.stateInfo] as const,
+          ),
+        ),
+        metadata,
+      });
+      return endpoint;
     } else {
       throw new NoMethodsForEndpointError();
     }
@@ -101,7 +95,7 @@ const checkMethodsForHandler = <
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -187,7 +181,7 @@ const constructMDResults = <
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadata extends common.MetadataBuilderBase<
+  TMetadata extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -207,7 +201,7 @@ const constructMDResults = <
     TMetadata
   >,
   mdArgs: {
-    [P in keyof TMetadata]: TMetadata[P] extends md.MetadataBuilder<
+    [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
       infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer TArg,
       unknown,

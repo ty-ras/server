@@ -16,7 +16,7 @@ import * as rawBody from "raw-body";
 export const testServer = async (
   t: ava.ExecutionContext,
   createServer: (
-    endpoint: Array<ep.AppEndpoint<unknown, unknown, never>>,
+    endpoint: Array<ep.AppEndpoint<unknown, unknown>>,
   ) => AnyHttpServer,
   ...infos: ServerTestAdditionalInfo // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
@@ -94,7 +94,7 @@ const getAppEndpoint = (
   protocolError: number | undefined,
   output: string | stream.Readable | undefined,
   noRequestBody: boolean,
-): ep.AppEndpoint<unknown, unknown, never> => ({
+): ep.AppEndpoint<unknown, unknown> => ({
   getRegExpAndHandler: () => ({
     url: regExp,
     handler: () => {
@@ -151,9 +151,6 @@ const getAppEndpoint = (
       };
     },
   }),
-  getMetadata: () => {
-    throw new Error("This should never be called.");
-  },
 });
 
 const listenAsync = (server: net.Server, host: string, port: number) =>

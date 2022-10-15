@@ -1,16 +1,12 @@
-import * as data from "@ty-ras/data";
 import * as ep from "@ty-ras/endpoint";
 
-export class PrefixedEndpoint<
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
-> implements ep.AppEndpoint<TContext, TStateInfo, TMetadata>
+export class PrefixedEndpoint<TContext, TStateInfo>
+  implements ep.AppEndpoint<TContext, TStateInfo>
 {
   public constructor(
     public readonly prefix: string,
     private readonly allEndpoints: ReadonlyArray<
-      ep.AppEndpoint<TContext, TStateInfo, TMetadata>
+      ep.AppEndpoint<TContext, TStateInfo>
     >,
   ) {
     // We have to use properties instead of instance method because the AppEndpoint interface specifies them like that.
@@ -29,31 +25,14 @@ export class PrefixedEndpoint<
         handler: createPrefixedHandlerImpl(builtEndpoints),
       };
     };
-    this.getMetadata = (urlPrefix) =>
-      this.allEndpoints.reduce((curResult, { getMetadata }) => {
-        const mdDic = getMetadata(`${urlPrefix}${this.prefix}`);
-        if (curResult === undefined) {
-          curResult = data.transformEntries(mdDic, () => []);
-        }
-        for (const key of Object.keys(mdDic)) {
-          curResult[key].push(...mdDic[key]);
-        }
-        return curResult;
-      }, undefined as undefined | { [P in keyof TMetadata]: Array<TMetadata[P]> }) ??
-      ({} as { [P in keyof TMetadata]: Array<TMetadata[P]> });
   }
   public getRegExpAndHandler: (
     groupNamePrefix: string,
   ) => ep.FinalizedAppEndpoint<TContext, TStateInfo>;
-  public getMetadata: (urlPrefix: string) => ep.BuiltMetadata<TMetadata>;
 }
 
-const buildEndpoints = <
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
->(
-  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>,
+const buildEndpoints = <TContext, TStateInfo>(
+  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo>>,
   regExpGroupNamePrefix?: string,
 ): PrefixedAppEndpointsInfo<TContext, TStateInfo> => {
   const isTopLevel = !regExpGroupNamePrefix;

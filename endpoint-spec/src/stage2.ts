@@ -18,7 +18,7 @@ export class AppEndpointBuilderForMethods<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -187,7 +187,7 @@ export class AppEndpointBuilderForMethodsAndBody<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -430,6 +430,7 @@ const createStaticEndpointSpec = <
     >,
     "mdArgs"
   > = {
+    stateInfo: stateValidator.stateInfo,
     outputValidation: outputSpec,
     builder: (groupNamePrefix) =>
       stripUndefineds({
@@ -561,7 +562,7 @@ export type MetadataArguments<
   TMetadataProviders,
   THandlerResult,
 > = {
-  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
     infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
     infer _0,
@@ -597,7 +598,7 @@ export type MetadataArgumentsWithHeaders<
   THandlerResult,
   TResponseHeaderKeys extends PropertyKey,
 > = {
-  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
     infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
     infer _0,
@@ -634,7 +635,7 @@ export type MetadataArgumentsWithBody<
   TInputContentsKeys extends PropertyKey,
   TBody,
 > = {
-  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
     infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
     infer _0,
@@ -672,7 +673,7 @@ export type MetadataArgumentsWithBodyAndHeaders<
   TInputContentsKeys extends PropertyKey,
   TBody,
 > = {
-  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+  [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
     infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
     infer _0,

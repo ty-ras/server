@@ -21,8 +21,8 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
   onInvalidUrl: Omit<EventArgumentsWithoutState<TContext>, "groups">;
   // No handler for given HTTP method
   onInvalidMethod: EventArgumentsWithoutState<TContext>;
-  // Context failed passing validation
-  onInvalidContext: EventArgumentsWithoutState<TContext> &
+  // State required by endpoint failed passing validation
+  onInvalidState: EventArgumentsWithoutState<TContext> &
     ValidationErrorArgs<data.DataValidatorResultError | undefined>;
   // URL matched combined regex, but parameter validation failed
   onInvalidUrlParameters: EventArguments<TContext, TState> &

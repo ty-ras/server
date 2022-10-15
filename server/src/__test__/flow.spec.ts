@@ -338,7 +338,7 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
   ]);
 });
 
-test("Validate typicalServerFlow works with invalid context and custom error", async (t) => {
+test("Validate typicalServerFlow works with invalid state and custom error", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = createTrackingCallback();
   await spec.typicalServerFlow(

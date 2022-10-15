@@ -1,7 +1,6 @@
 import * as ep from "@ty-ras/endpoint";
 import * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
-import type * as common from "./common";
 
 export interface AppEndpointBuilderState<
   TContext,
@@ -12,7 +11,7 @@ export interface AppEndpointBuilderState<
   TInputContents extends data.TInputContentsBase,
   TMetadata extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       unknown,
       unknown,
@@ -23,7 +22,6 @@ export interface AppEndpointBuilderState<
     >
   >,
 > {
-  stateProvider: common.StateProvider<TContext, TStateInfo>;
   fragments: ReadonlyArray<string>;
   methods: Partial<
     Record<
@@ -41,6 +39,13 @@ export interface AppEndpointBuilderState<
   >;
   metadata: TMetadata;
   urlValidation: URLValidationInfo<TStringDecoder>;
+  endpointMetadata: Array<EndpointMetadata<TStateInfo, TMetadata>>;
+}
+
+export interface EndpointMetadata<TStateInfo, TMetadata> {
+  // Key: ep.HttpMethod
+  stateInfo: Record<string, TStateInfo>;
+  metadata: { [P in keyof TMetadata]: md.SingleEndpointResult<unknown> };
 }
 
 export type URLValidationInfo<TStringDecoder> =
@@ -62,7 +67,7 @@ export interface StaticAppEndpointBuilderSpec<
   TInputContents extends data.TInputContentsBase,
   TMetadata extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       unknown,
       unknown,
@@ -74,6 +79,7 @@ export interface StaticAppEndpointBuilderSpec<
   >,
 > {
   builder: StaticAppEndpointBuilder<TContext, TStateInfo>;
+  stateInfo: TStateInfo;
   requestHeadersSpec?: data.RequestHeaderDataValidatorSpecMetadata<
     string,
     TStringDecoder
@@ -86,7 +92,7 @@ export interface StaticAppEndpointBuilderSpec<
   inputValidation?: data.DataValidatorResponseInputValidatorSpec<TInputContents>;
   outputValidation: data.DataValidatorResponseOutputValidatorSpec<TOutputContents>;
   mdArgs: {
-    [P in keyof TMetadata]: TMetadata[P] extends md.MetadataBuilder<
+    [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
       infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars

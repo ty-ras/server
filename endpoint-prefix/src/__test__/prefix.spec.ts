@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import test, { ExecutionContext } from "ava";
 import type * as ep from "@ty-ras/endpoint";
 import * as spec from "../prefix";
 
 test("Validate atPrefix works with no endpoints", (t) => {
-  t.plan(7);
-  const { getMetadata, getRegExpAndHandler } = spec.atPrefix("prefix");
-  t.deepEqual(getMetadata("ignored"), {});
+  t.plan(6);
+  const { getRegExpAndHandler } = spec.atPrefix("prefix");
   const { url, handler } = getRegExpAndHandler("group");
   t.deepEqual(url, /prefix()/);
   for (const method of ["GET", "POST", "DELETE", "PUT", "OPTIONS"] as const) {
@@ -21,7 +21,7 @@ const testOneURLWithPrefix = (
   prefix: string,
   isTopLevel: boolean,
 ) => {
-  t.plan(7);
+  t.plan(6);
 
   const url = /url/;
   const singleEP: ep.StaticAppEndpointHandler<unknown, unknown> = {
@@ -54,17 +54,10 @@ const testOneURLWithPrefix = (
     getRegExpAndHandler: () => {
       return {
         url,
-        handler: (method) => responses[method],
+        handler: (method) => responses[method]!,
       };
     },
-    getMetadata: (urlPrefix) => ({ [urlPrefix]: [] }),
   });
-  const mdPrefix = "/mdPrefix";
-  t.deepEqual(
-    prefixed.getMetadata(mdPrefix),
-    { [`${mdPrefix}${prefix}`]: [] },
-    "Metadata must see correct URL",
-  );
   // Creating 'top-level' regexp (to be used by actual HTTP server, and not by user prefixing other endpoints) is signalled by passing empty string as group name prefix to getRegExpAndHandler
   const groupNamePrefix = isTopLevel ? "" : "group";
   const prefixedHandler = prefixed.getRegExpAndHandler(groupNamePrefix);
@@ -136,7 +129,7 @@ const testTwoURLsWithPrefix = (
   prefix: string,
   isTopLevel: boolean,
 ) => {
-  t.plan(12);
+  t.plan(11);
 
   const singleEP: ep.StaticAppEndpointHandler<unknown, unknown> = {
     stateValidator: {
@@ -171,26 +164,18 @@ const testTwoURLsWithPrefix = (
       getRegExpAndHandler: () => {
         return {
           url: new RegExp(urls[0]),
-          handler: (method) => responses[method],
+          handler: (method) => responses[method]!,
         };
       },
-      getMetadata: (urlPrefix) => ({ [urlPrefix]: [] }),
     },
     {
       getRegExpAndHandler: () => {
         return {
           url: new RegExp(urls[1]),
-          handler: (method) => responses[method],
+          handler: (method) => responses[method]!,
         };
       },
-      getMetadata: (urlPrefix) => ({ [urlPrefix]: [] }),
     },
-  );
-  const mdPrefix = "/mdPrefix";
-  t.deepEqual(
-    prefixed.getMetadata(mdPrefix),
-    { [`${mdPrefix}${prefix}`]: [] },
-    "Metadata must see correct URL",
   );
   // Creating 'top-level' regexp (to be used by actual HTTP server, and not by user prefixing other endpoints) is signalled by passing empty string as group name prefix to getRegExpAndHandler
   const groupNamePrefix = isTopLevel ? "" : "group";
@@ -281,9 +266,6 @@ test("Validate atPrefix detects top-level prefix", (t) => {
         "some-prefix",
         spec.atPrefix("", {
           getRegExpAndHandler: () => {
-            throw new Error("This should never be called");
-          },
-          getMetadata: () => {
             throw new Error("This should never be called");
           },
         }),

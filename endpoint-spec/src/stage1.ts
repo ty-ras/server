@@ -18,7 +18,7 @@ export class AppEndpointBuilderInitial<
   TStringEncoder,
   TOutputContents extends data.TOutputContentsBase,
   TInputContents extends data.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,

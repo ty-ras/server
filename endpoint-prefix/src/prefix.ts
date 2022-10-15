@@ -1,35 +1,23 @@
 import * as ep from "@ty-ras/endpoint";
 import * as prefixedEndpoint from "./endpoint";
 
-export function atPrefix<
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
->(
+export function atPrefix<TContext, TStateInfo>(
   prefix: string,
-  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>
-): ep.AppEndpoint<TContext, TStateInfo, TMetadata>;
-export function atPrefix<
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
->(
+  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo>>
+): ep.AppEndpoint<TContext, TStateInfo>;
+export function atPrefix<TContext, TStateInfo>(
   prefix: string,
   regexpGroupNamePrefix: string,
-  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>
-): ep.AppEndpoint<TContext, TStateInfo, TMetadata>;
-export function atPrefix<
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
->(
+  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo>>
+): ep.AppEndpoint<TContext, TStateInfo>;
+export function atPrefix<TContext, TStateInfo>(
   prefix: string,
   endpointOrGroupNamePrefix:
-    | ep.AppEndpoint<TContext, TStateInfo, TMetadata>
+    | ep.AppEndpoint<TContext, TStateInfo>
     | string
     | undefined,
-  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo, TMetadata>>
-): ep.AppEndpoint<TContext, TStateInfo, TMetadata> {
+  ...endpoints: Array<ep.AppEndpoint<TContext, TStateInfo>>
+): ep.AppEndpoint<TContext, TStateInfo> {
   const allEndpoints =
     typeof endpointOrGroupNamePrefix === "string" || !endpointOrGroupNamePrefix
       ? endpoints
@@ -43,12 +31,8 @@ export function atPrefix<
   return new prefixedEndpoint.PrefixedEndpoint(prefix, allEndpoints);
 }
 
-export const tryGetPrefix = <
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
->(
-  endpoint: ep.AppEndpoint<TContext, TStateInfo, TMetadata>,
+export const tryGetPrefix = <TContext, TStateInfo>(
+  endpoint: ep.AppEndpoint<TContext, TStateInfo>,
 ) =>
   endpoint instanceof prefixedEndpoint.PrefixedEndpoint
     ? endpoint.prefix
