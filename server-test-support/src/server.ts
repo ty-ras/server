@@ -23,16 +23,14 @@ export const testServer = async (
   const [info, contentTypeSuffix] = infos;
   const isError = typeof info === "object";
   const isProtocolError = info === 403;
-  const state = "State";
-  const responseData = info === 204 ? undefined : state;
+  const responseData = info === 204 ? undefined : "data";
   const noRequestBody = isError || info === 403 || info === 500;
   t.plan(isError || isProtocolError || info === 500 ? 2 : 1);
   const responseIsStreamed = info === 200;
   const serverObj = createServer([
     getAppEndpoint(
-      isError ? info?.regExp : /^\/(?<group>path)$/,
+      isError ? info.regExp : /^\/(?<group>path)$/,
       isProtocolError ? info : undefined,
-      state,
       responseIsStreamed ? stream.Readable.from([responseData]) : responseData,
       noRequestBody,
     ),
@@ -94,7 +92,6 @@ export const testServer = async (
 const getAppEndpoint = (
   regExp: RegExp,
   protocolError: number | undefined,
-  state: string,
   output: string | stream.Readable | undefined,
   noRequestBody: boolean,
 ): ep.AppEndpoint<unknown, unknown, never> => ({

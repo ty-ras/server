@@ -72,5 +72,5 @@ export type MaybePromise<T> = T | Promise<T>;
 
 export interface EndpointStateValidator<TStateInfo, TState> {
   stateInfo: TStateInfo;
-  validator: dataBE.StateValidator<unknown, TState>;
+  validator: dataBE.StateValidator<TState>;
 }
