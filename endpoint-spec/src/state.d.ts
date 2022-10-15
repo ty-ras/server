@@ -39,13 +39,6 @@ export interface AppEndpointBuilderState<
   >;
   metadata: TMetadata;
   urlValidation: URLValidationInfo<TStringDecoder>;
-  endpointMetadata: Array<EndpointMetadata<TStateInfo, TMetadata>>;
-}
-
-export interface EndpointMetadata<TStateInfo, TMetadata> {
-  // Key: ep.HttpMethod
-  stateInfo: Record<string, TStateInfo>;
-  metadata: { [P in keyof TMetadata]: md.SingleEndpointResult<unknown> };
 }
 
 export type URLValidationInfo<TStringDecoder> =

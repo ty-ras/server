@@ -44,44 +44,57 @@ export class AppEndpointBuilder<
     >
       ? TArg
       : never;
-  }) {
+  }): common.AppEndpointWithMetadata<
+    TContext,
+    TStateInfo,
+    {
+      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
+        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer TEndpointMD,
+        infer _0,
+        infer _1,
+        infer _2,
+        infer _3
+      >
+        ? TEndpointMD
+        : never;
+    }
+  > {
     if (Object.keys(this._state.methods).length > 0) {
-      const { urlValidation, endpointMetadata } = this._state;
+      const { urlValidation } = this._state;
       const metadata = constructMDResults(this._state, mdArgs);
-
-      const endpoint: ep.AppEndpoint<TContext, TStateInfo> = {
-        getRegExpAndHandler: (groupNamePrefix) => ({
-          url: urlValidation
-            ? buildURLRegExp(
-                this._state.fragments,
-                urlValidation.args,
-                urlValidation.validation,
+      return {
+        endpoint: {
+          getRegExpAndHandler: (groupNamePrefix) => ({
+            url: urlValidation
+              ? buildURLRegExp(
+                  this._state.fragments,
+                  urlValidation.args,
+                  urlValidation.validation,
+                  groupNamePrefix,
+                )
+              : new RegExp(ep.escapeRegExp(this._state.fragments.join(""))),
+            handler: (method) =>
+              checkMethodsForHandler(
+                this._state.methods,
+                method,
                 groupNamePrefix,
-              )
-            : new RegExp(ep.escapeRegExp(this._state.fragments.join(""))),
-          handler: (method) =>
-            checkMethodsForHandler(
-              this._state.methods,
-              method,
-              groupNamePrefix,
+              ),
+          }),
+        },
+        getMetadata: (urlPrefix) => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          metadata: data.transformEntries(metadata, (md) =>
+            md(urlPrefix),
+          ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          stateInfo: Object.fromEntries(
+            Object.entries(this._state.methods).map(
+              ([method, info]) => [method, info.stateInfo] as const,
             ),
-        }),
-        // getMetadata: (urlPrefix) => {
-        //   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        //   return data.transformEntries(metadata, (md) => [
-        //     md(urlPrefix),
-        //   ]) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-        // },
-      };
-      endpointMetadata.push({
-        stateInfo: Object.fromEntries(
-          Object.entries(this._state.methods).map(
-            ([method, info]) => [method, info.stateInfo] as const,
           ),
-        ),
-        metadata,
-      });
-      return endpoint;
+        }),
+      };
     } else {
       throw new NoMethodsForEndpointError();
     }

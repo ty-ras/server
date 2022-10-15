@@ -11,8 +11,12 @@ const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, unknown>> = [];
   const endpointHandler = common.createSimpleEndpointHandler(seenArgs);
   const builder = spec
-    .startBuildingAPI()
-    .withMetadataProvider("string", new MetadataProvider());
+    .startBuildingAPI<unknown, string>()
+    .withMetadataProvider(
+      "string",
+      createMetadataProvider(),
+      (stateInfo) => stateInfo,
+    );
   const starter = builder.atURL`/path`;
   const endpoint = (
     useBatch
@@ -98,8 +102,12 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, unknown>> = [];
   const endpointHandler = common.createComplexEndpointHandler(seenArgs);
   const builder = spec
-    .startBuildingAPI()
-    .withMetadataProvider("string", new MetadataProvider());
+    .startBuildingAPI<unknown, string>()
+    .withMetadataProvider(
+      "string",
+      createMetadataProvider(),
+      (stateInfo) => stateInfo,
+    );
   const starter = builder.atURL`/path/${"urlParam"}`.validateURLData(
     common.stringDecoderSpec(
       {
@@ -294,7 +302,7 @@ interface MetadataConcrete<
 
 // This is MD provider only for tests purpose.
 // It simply collects all input it gets and returns it from getMetadataFinalResult call.
-class MetadataProvider extends md.InitialMetadataProviderClass<
+const createMetadataProvider = (): md.MetadataProvider<
   MetadataHKT,
   string,
   Array<
@@ -310,9 +318,9 @@ class MetadataProvider extends md.InitialMetadataProviderClass<
   >,
   string,
   string,
+  { string: string },
+  { string: string },
   string,
-  { string: string },
-  { string: string },
   string,
   Array<
     | string
@@ -325,23 +333,21 @@ class MetadataProvider extends md.InitialMetadataProviderClass<
         { string: string }
       >
   >
-> {
-  public constructor(context = "InitialContext") {
-    super(
-      context,
-      (ctx) => ({
-        getEndpointsMetadata: (arg, url, methods) => (urlPrefix) =>
-          [
-            urlPrefix,
-            ctx,
-            arg,
-            ...url.map((u) => (typeof u === "string" ? u : u.name)),
-            ...Object.entries(methods)
-              .map(([methodName, info]) => [methodName, info])
-              .flat(),
-          ],
-      }),
-      (ctx, args, endpoints) => [...endpoints.flat(), ctx, args],
-    );
-  }
-}
+> => ({
+  getEndpointsMetadata: (arg, url, methods) => (urlPrefix) =>
+    [
+      urlPrefix,
+      arg,
+      ...url.map((u) => (typeof u === "string" ? u : u.name)),
+      ...Object.entries(methods)
+        .map(([methodName, info]) => [methodName, info])
+        .flat(),
+    ],
+  createFinalMetadata: (args, endpoints) => [
+    ...endpoints.flatMap(({ md, stateMD }) => [
+      ...md,
+      ...Object.entries(stateMD).flatMap((entry) => entry),
+    ]),
+    args,
+  ],
+});

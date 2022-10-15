@@ -3,7 +3,6 @@ import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
 import type * as md from "@ty-ras/metadata";
 import type * as common from "./common";
-import type * as state from "./state";
 import { AppEndpointBuilderInitial } from ".";
 
 export const startBuildingAPI = <TContext, TStateInfo>() =>
@@ -18,7 +17,7 @@ export const startBuildingAPI = <TContext, TStateInfo>() =>
     {},
     // eslint-disable-next-line @typescript-eslint/ban-types
     {}
-  >({}, {}, []);
+  >({}, {});
 
 export class AppEndpointBuilderProvider<
   TContext,
@@ -42,9 +41,6 @@ export class AppEndpointBuilderProvider<
         TMetadataProviders[P]
       >;
     },
-    private readonly _endpointMetadata: Array<
-      state.EndpointMetadata<TStateInfo, TMetadataProviders>
-    >,
   ) {}
 
   public atURL(fragments: TemplateStringsArray): AppEndpointBuilderInitial<
@@ -109,7 +105,6 @@ export class AppEndpointBuilderProvider<
               args,
               validation,
             },
-            endpointMetadata: this._endpointMetadata,
           });
         },
       };
@@ -121,7 +116,6 @@ export class AppEndpointBuilderProvider<
         methods: {},
         metadata: this._mdProviders,
         urlValidation: undefined,
-        endpointMetadata: this._endpointMetadata,
       });
     }
   }
@@ -151,8 +145,8 @@ export class AppEndpointBuilderProvider<
       infer _0,
       infer _1,
       infer _2,
-      infer _4,
       infer TNewHeaderDecoder,
+      infer _4,
       infer _5,
       infer _6,
       infer _7,
@@ -166,8 +160,8 @@ export class AppEndpointBuilderProvider<
       infer _1,
       infer _2,
       infer _4,
-      infer _5,
       infer TNewHeaderEncoder,
+      infer _5,
       infer _6,
       infer _7,
       infer _8,
@@ -182,8 +176,8 @@ export class AppEndpointBuilderProvider<
         infer _2,
         infer _4,
         infer _5,
-        infer _6,
         infer TNewOutputContents,
+        infer _6,
         infer _7,
         infer _8,
         infer _9
@@ -198,8 +192,8 @@ export class AppEndpointBuilderProvider<
         infer _4,
         infer _5,
         infer _6,
-        infer _7,
         infer TNewInputContents,
+        infer _7,
         infer _8,
         infer _9
       >
@@ -220,26 +214,48 @@ export class AppEndpointBuilderProvider<
           (TMetadataProviders & { [x: string]: TMetadataProvider })[P]
         >;
       },
-      [],
     );
   }
 
-  public getMetadataFinalResult(mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
-      infer _0,
-      infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _4,
-      infer _5,
-      infer _6,
-      infer _7,
-      infer TArg,
-      infer _8
-    >
-      ? TArg
-      : never;
-  }): {
+  public getMetadataFinalResult(
+    mdArgs: {
+      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
+        infer _0,
+        infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _4,
+        infer _5,
+        infer _6,
+        infer _7,
+        infer TArg,
+        infer _8
+      >
+        ? TArg
+        : never;
+    },
+    endpoints: ReadonlyArray<
+      common.AppEndpointMetadataResult<
+        TStateInfo,
+        {
+          [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
+            infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer TEndpointMD,
+            infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer _4, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer _5,
+            infer _6,
+            infer _7,
+            infer _8
+          >
+            ? TEndpointMD
+            : never;
+        }
+      >
+    >,
+  ): {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
       infer _0,
       infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -258,7 +274,7 @@ export class AppEndpointBuilderProvider<
     return data.transformEntries(this._mdProviders, (md, key) =>
       md.createFinalMetadata(
         mdArgs[key],
-        this._endpointMetadata.map(({ metadata, stateInfo }) => ({
+        endpoints.map(({ metadata, stateInfo }) => ({
           md: metadata[key],
           stateMD: Object.entries(stateInfo).reduce(
             (dict, [method, stateInfo]) => {

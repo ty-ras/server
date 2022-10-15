@@ -1,5 +1,6 @@
 import type * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
+import type * as ep from "@ty-ras/endpoint";
 
 export type MetadataProvidersBase<
   TStringDecoder,
@@ -82,6 +83,23 @@ export interface EndpointHandlerOutputWithHeaders<
 > {
   body: TOutput;
   headers: THeaderData;
+}
+
+export interface AppEndpointWithMetadata<
+  TContext,
+  TStateInfo,
+  TMetadata extends Record<string, unknown>,
+> {
+  endpoint: ep.AppEndpoint<TContext, TStateInfo>;
+  getMetadata: (
+    urlPrefix: string,
+  ) => AppEndpointMetadataResult<TStateInfo, TMetadata>;
+}
+
+export interface AppEndpointMetadataResult<TStateInfo, TMetadata> {
+  metadata: TMetadata;
+  // Key: ep.HttpMethod
+  stateInfo: Record<string, TStateInfo>;
 }
 
 export const handlerWithHeaders = <

@@ -324,10 +324,10 @@ export type EndpointSpecArgsWithBody<
   mdArgs: {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-      unknown,
-      infer _0,
+      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer _1,
+      infer _2,
+      infer _3,
       TOutputContentTypes,
       TInputContentTypes
     >

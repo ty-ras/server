@@ -41,7 +41,7 @@ test("Validate that response headers must be present in handler output if so spe
       {},
     )
     .createEndpoint({})
-    .getRegExpAndHandler("")
+    .endpoint.getRegExpAndHandler("")
     .handler("GET", {});
 
   if (maybeHandler.found == "handler") {
@@ -78,7 +78,7 @@ test("Validate that erroneous endpoint handler response propagates to output", a
       mdArgs: {},
     })
     .createEndpoint({})
-    .getRegExpAndHandler("")
+    .endpoint.getRegExpAndHandler("")
     .handler("GET", {});
 
   if (maybeHandler.found == "handler") {
@@ -98,9 +98,6 @@ test("Validate that building endpoint requires at least one method", (t) => {
     () =>
       new spec.AppEndpointBuilder({
         methods: {},
-        stateProvider: () => {
-          throw new Error("This should never be called");
-        },
         fragments: [],
         metadata: {},
         urlValidation: undefined,
@@ -123,7 +120,7 @@ test("Validate that endpoint returns handlers only for methods that are specifie
         mdArgs: {},
       })
       .createEndpoint({})
-      .getRegExpAndHandler("")
+      .endpoint.getRegExpAndHandler("")
       .handler("POST", {}),
     { found: "invalid-method", allowedMethods: ["GET"] },
   );
@@ -147,7 +144,7 @@ test("Validate that if response headers validation doesn't pass, the whole outpu
       mdArgs: {},
     })
     .createEndpoint({})
-    .getRegExpAndHandler("")
+    .endpoint.getRegExpAndHandler("")
     .handler("GET", {});
   if (maybeHandler.found === "handler") {
     // .like because can't customize function comparison
