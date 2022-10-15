@@ -2,22 +2,11 @@ import type * as method from "./methods";
 import type * as data from "@ty-ras/data";
 import type * as dataBE from "@ty-ras/data-backend";
 
-export interface AppEndpoint<
-  TContext,
-  TStateInfo,
-  TMetadata extends TMetadataBase,
-> {
+export interface AppEndpoint<TContext, TStateInfo> {
   getRegExpAndHandler: (
     groupNamePrefix: string,
   ) => FinalizedAppEndpoint<TContext, TStateInfo>;
-  getMetadata: (urlPrefix: string) => BuiltMetadata<TMetadata>;
 }
-
-export type BuiltMetadata<TMetadata> = {
-  [P in keyof TMetadata]: Array<TMetadata[P]>;
-};
-
-export type TMetadataBase = Record<string, unknown>;
 
 export interface FinalizedAppEndpoint<TContext, TStateInfo> {
   url: RegExp;

@@ -5,7 +5,6 @@ export * from "./utils";
 export * from "./methods";
 export type {
   AppEndpoint,
-  BuiltMetadata,
   DynamicHandlerGetter,
   DynamicHandlerResponse,
   EndpointStateValidator,
@@ -13,6 +12,5 @@ export type {
   MaybePromise,
   StaticAppEndpointHandler,
   StaticAppEndpointHandlerFunction,
-  TMetadataBase,
 } from "./endpoint";
 export * from "./cors";
