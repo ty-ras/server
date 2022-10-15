@@ -2,14 +2,10 @@ import type * as ep from "./endpoint";
 
 // TODO This is not optimal solution.
 // Refactor when issue #16 gets addressed.
-export const withCORSOptions = <
-  TContext,
-  TStateInfo,
-  TMetadata extends ep.TMetadataBase,
->(
-  ep: ep.AppEndpoint<TContext, TStateInfo, TMetadata>,
+export const withCORSOptions = <TContext, TStateInfo>(
+  ep: ep.AppEndpoint<TContext, TStateInfo>,
   { origin, allowHeaders }: CORSOptions,
-): ep.AppEndpoint<TContext, TStateInfo, TMetadata> => ({
+): ep.AppEndpoint<TContext, TStateInfo> => ({
   getRegExpAndHandler: (groupNamePrefix) => {
     const { handler, ...retVal } = ep.getRegExpAndHandler(groupNamePrefix);
     return {
@@ -66,7 +62,6 @@ export const withCORSOptions = <
       },
     };
   },
-  getMetadata: (urlPrefix) => ep.getMetadata(urlPrefix),
 });
 
 export interface CORSOptions {

@@ -11,8 +11,7 @@ const testCORSedEP = async (
   method: methods.HttpMethod,
   allowHeaders: spec.CORSOptions["allowHeaders"],
 ) => {
-  t.plan(7 + (method === "OPTIONS" ? 0 : 1));
-  const md = {};
+  t.plan(6 + (method === "OPTIONS" ? 0 : 1));
   const corsOptions: spec.CORSOptions = {
     origin: "origin",
     allowHeaders,
@@ -49,16 +48,10 @@ const testCORSedEP = async (
               : response,
         };
       },
-      getMetadata: () => md,
     },
     corsOptions,
   );
 
-  t.is(
-    corsEP.getMetadata("ignored"),
-    md,
-    "CORSed EP must return same metadata",
-  );
   const { url: seenURL, handler: seenHandler } =
     corsEP.getRegExpAndHandler("ignored");
   t.is(seenURL, url, "CORSed EP must return same URL");
