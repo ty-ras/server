@@ -9,12 +9,12 @@ export type MetadataProvidersBase<
   TInputContents extends data.TInputContentsBase,
 > = Record<
   string,
-  // We must use 'any' as 2nd parameter, otherwise we won't be able to use AppEndpointBuilderProvider with specific TMetadataProviders type as parameter to functions.
+  // We must use 'any' as some parameters, otherwise we won't be able to use AppEndpointBuilderProvider with specific TMetadataProviders type as parameter to functions.
   md.MetadataProvider<
     md.HKTArg,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
-    unknown,
+    any,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
