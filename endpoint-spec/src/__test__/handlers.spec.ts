@@ -37,8 +37,8 @@ const testWithSimpleEndpoint = async (
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail
     const { stateValidator, handler, ...rest } = maybeHandler.handler;
-    t.deepEqual(stateValidator.validator(undefined).error, "none");
-    t.deepEqual(stateValidator.stateInfo, undefined);
+    t.deepEqual(stateValidator.validator(common.STATE).error, "none");
+    t.deepEqual(stateValidator.stateInfo, common.STATE);
     t.deepEqual(rest, {});
     const args: Parameters<ep.StaticAppEndpointHandlerFunction<unknown>>[0] = {
       context: undefined,

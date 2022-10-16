@@ -195,4 +195,6 @@ export const createStateValidator = <TState>(
   validator: validatorFromValue(value),
 });
 
-export const state = createStateValidator<string>("state");
+export const STATE = "State";
+
+export const state = createStateValidator<string>(STATE);

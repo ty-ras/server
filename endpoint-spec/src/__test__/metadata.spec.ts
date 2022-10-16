@@ -64,7 +64,6 @@ const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.deepEqual(mdResult, {
     string: [
       "URLPrefix",
-      "InitialContext",
       "SingleEndpointMetadata",
       "/path",
       "GET",
@@ -89,7 +88,8 @@ const testWithSimpleEndpoint = (t: ExecutionContext, useBatch: boolean) => {
         requestHeadersSpec: undefined,
         responseHeadersSpec: undefined,
       },
-      "InitialContext",
+      "GET",
+      "State",
       "FinalResultArg",
     ],
   });
@@ -205,7 +205,7 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
   t.deepEqual(mdResult, {
     string: [
       "URLPrefix",
-      "InitialContext",
+      // "InitialContext",
       "SingleEndpointMetadata",
       "/path/",
       "urlParam",
@@ -261,7 +261,8 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
           },
         },
       },
-      "InitialContext",
+      "POST",
+      "State",
       "FinalResultArg",
     ],
   });
