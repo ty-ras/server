@@ -195,7 +195,7 @@ const performSuccessfulTest = async (
         expectedHeaders["transfer-encoding"] = "chunked";
       }
     } else {
-      expectedHeaders["content-length"] = "5";
+      expectedHeaders["content-length"] = `${responseData.length}`;
     }
   }
   t.deepEqual(response, {
