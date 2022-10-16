@@ -20,7 +20,7 @@ export type BatchSpecificationWithoutBody<
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > = BatchSpecificationWithoutBodyWithoutHandler<
@@ -95,7 +95,7 @@ export type BatchSpecificationWithoutBodyWithHeaders<
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > = BatchSpecificationWithoutBodyWithoutHandler<
@@ -177,7 +177,7 @@ export type BatchSpecificationWithoutBodyWithoutHandler<
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > = {
