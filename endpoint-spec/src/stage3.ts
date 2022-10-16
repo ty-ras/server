@@ -86,6 +86,7 @@ export class AppEndpointBuilder<
         getMetadata: (urlPrefix) => ({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           metadata: data.transformEntries(metadata, (md) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             md(urlPrefix),
           ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           stateInfo: Object.fromEntries(
