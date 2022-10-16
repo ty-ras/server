@@ -34,13 +34,13 @@ export class AppEndpointBuilder<
 > {
   public createEndpoint(mdArgs: {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer TArg,
-      unknown,
-      infer _0,
       infer _1,
       infer _2,
-      infer _3
+      infer _3,
+      infer _4,
+      infer _5
     >
       ? TArg
       : never;
@@ -49,13 +49,13 @@ export class AppEndpointBuilder<
     TStateInfo,
     {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
         infer TEndpointMD,
-        infer _0,
-        infer _1,
         infer _2,
-        infer _3
+        infer _3,
+        infer _4,
+        infer _5
       >
         ? TEndpointMD
         : never;
@@ -216,13 +216,13 @@ const constructMDResults = <
   >,
   mdArgs: {
     [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer TArg,
-      unknown,
-      infer _0,
       infer _1,
       infer _2,
-      infer _3
+      infer _3,
+      infer _4,
+      infer _5
     >
       ? TArg
       : never;

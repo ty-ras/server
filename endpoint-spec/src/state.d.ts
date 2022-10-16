@@ -87,7 +87,7 @@ export interface StaticAppEndpointBuilderSpec<
   mdArgs: {
     [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer _2,
       infer _3,
