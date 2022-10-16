@@ -19,8 +19,8 @@ export type MetadataProvidersBase<
     TStringEncoder,
     TOutputContents,
     TInputContents,
-    unknown,
-    unknown,
+    any,
+    any,
     unknown
   >
 >;
