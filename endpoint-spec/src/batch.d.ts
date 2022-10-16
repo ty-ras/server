@@ -20,7 +20,7 @@ export type BatchSpecificationWithoutBody<
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > = BatchSpecificationWithoutBodyWithoutHandler<
@@ -95,7 +95,7 @@ export type BatchSpecificationWithoutBodyWithHeaders<
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > = BatchSpecificationWithoutBodyWithoutHandler<
@@ -177,7 +177,7 @@ export type BatchSpecificationWithoutBodyWithoutHandler<
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > = {
@@ -259,12 +259,12 @@ export interface EndpointSpecArgsWithoutBody<
     string,
     md.MetadataProviderForEndpoints<
       md.HKTArg,
-      unknown,
-      unknown,
+      any,
+      any,
       any,
       any,
       TOutputContentTypes,
-      never
+      any
     >
   >,
 > {
@@ -277,7 +277,7 @@ export interface EndpointSpecArgsWithoutBody<
       infer _2,
       infer _3,
       TOutputContentTypes,
-      never
+      infer _4
     >
       ? md.Kind<
           TArg,
@@ -311,8 +311,8 @@ export type EndpointSpecArgsWithBody<
     string,
     md.MetadataProviderForEndpoints<
       md.HKTArg,
-      unknown,
-      unknown,
+      any,
+      any,
       any,
       any,
       TOutputContentTypes,
