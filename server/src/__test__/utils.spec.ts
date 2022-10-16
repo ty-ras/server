@@ -9,7 +9,6 @@ import type * as ep from "@ty-ras/endpoint";
 import type * as dataBE from "@ty-ras/data-backend";
 import type * as data from "@ty-ras/data";
 
-import * as rawBody from "raw-body";
 import * as stream from "stream";
 
 test("Validate checkURLPathNameForHandler works for valid input", (t) => {
@@ -133,7 +132,7 @@ test("Validate checkStateForHandler works for invalid data input", (t) => {
     });
     return [
       {
-        eventName: "onInvalidContext",
+        eventName: "onInvalidState",
         args: {
           ...EVENT_ARGS_NO_STATE,
           validationError: {
@@ -169,7 +168,7 @@ test("Validate checkStateForHandler works for invalid data input with protocol i
     });
     return [
       {
-        eventName: "onInvalidContext",
+        eventName: "onInvalidState",
         args: {
           ...EVENT_ARGS_NO_STATE,
           validationError: undefined,
@@ -483,7 +482,13 @@ test("Validate checkBodyForHandler works with valid input", async (t) => {
     contentType,
     input,
   }) => {
-    const bodyString = await rawBody.default(input, { encoding: "utf8" });
+    const bodyStrings: Array<string> = [];
+    for await (const chunk of input) {
+      bodyStrings.push(
+        chunk instanceof Buffer ? chunk.toString("utf8") : `${chunk}`,
+      );
+    }
+    const bodyString = bodyStrings.join("");
     return {
       error: "none",
       data: {

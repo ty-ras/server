@@ -32,13 +32,13 @@ const testWithSimpleEndpoint = async (
           .withoutBody(endpointHandler, common.outputSpec(responseBody), {})
   )
     .createEndpoint({})
-    .getRegExpAndHandler("")
+    .endpoint.getRegExpAndHandler("")
     .handler("GET", {});
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail
     const { stateValidator, handler, ...rest } = maybeHandler.handler;
-    t.deepEqual(stateValidator.validator(undefined).error, "none");
-    t.deepEqual(stateValidator.stateInfo, undefined);
+    t.deepEqual(stateValidator.validator(common.STATE).error, "none");
+    t.deepEqual(stateValidator.stateInfo, common.STATE);
     t.deepEqual(rest, {});
     const args: Parameters<ep.StaticAppEndpointHandlerFunction<unknown>>[0] = {
       context: undefined,
@@ -69,9 +69,7 @@ const testWithComplexEndpoint = async (
   const refinedState = "RefinedState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
   const endpointHandler = common.createComplexEndpointHandler(seenArgs);
-  const starter = spec
-    .startBuildingAPI()
-    .changeStateProvider(() => refinedState, {})
+  const starter = spec.startBuildingAPI()
     .atURL`/path/${"urlParam"}`.validateURLData(
     common.stringDecoderSpec(
       {
@@ -122,7 +120,7 @@ const testWithComplexEndpoint = async (
           )
   )
     .createEndpoint({})
-    .getRegExpAndHandler("")
+    .endpoint.getRegExpAndHandler("")
     .handler("POST", {});
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail

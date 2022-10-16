@@ -15,7 +15,7 @@ export class AppEndpointBuilder<
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -33,7 +33,7 @@ export class AppEndpointBuilder<
   TMetadataProviders
 > {
   public createEndpoint(mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer TArg,
       unknown,
@@ -44,11 +44,11 @@ export class AppEndpointBuilder<
     >
       ? TArg
       : never;
-  }): ep.AppEndpoint<
+  }): common.AppEndpointWithMetadata<
     TContext,
     TStateInfo,
     {
-      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+      [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
         infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
         infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
         infer TEndpointMD,
@@ -65,28 +65,35 @@ export class AppEndpointBuilder<
       const { urlValidation } = this._state;
       const metadata = constructMDResults(this._state, mdArgs);
       return {
-        getRegExpAndHandler: (groupNamePrefix) => ({
-          url: urlValidation
-            ? buildURLRegExp(
-                this._state.fragments,
-                urlValidation.args,
-                urlValidation.validation,
+        endpoint: {
+          getRegExpAndHandler: (groupNamePrefix) => ({
+            url: urlValidation
+              ? buildURLRegExp(
+                  this._state.fragments,
+                  urlValidation.args,
+                  urlValidation.validation,
+                  groupNamePrefix,
+                )
+              : new RegExp(ep.escapeRegExp(this._state.fragments.join(""))),
+            handler: (method) =>
+              checkMethodsForHandler(
+                this._state.methods,
+                method,
                 groupNamePrefix,
-              )
-            : new RegExp(ep.escapeRegExp(this._state.fragments.join(""))),
-          handler: (method) =>
-            checkMethodsForHandler(
-              this._state.methods,
-              method,
-              groupNamePrefix,
-            ),
-        }),
-        getMetadata: (urlPrefix) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          return data.transformEntries(metadata, (md) => [
-            md(urlPrefix),
-          ]) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+              ),
+          }),
         },
+        getMetadata: (urlPrefix) => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          metadata: data.transformEntries(metadata, (md) =>
+            md(urlPrefix),
+          ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          stateInfo: Object.fromEntries(
+            Object.entries(this._state.methods).map(
+              ([method, info]) => [method, info.stateInfo] as const,
+            ),
+          ),
+        }),
       };
     } else {
       throw new NoMethodsForEndpointError();
@@ -101,7 +108,7 @@ const checkMethodsForHandler = <
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataBuilderBase<
+  TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -187,7 +194,7 @@ const constructMDResults = <
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
-  TMetadata extends common.MetadataBuilderBase<
+  TMetadata extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -207,7 +214,7 @@ const constructMDResults = <
     TMetadata
   >,
   mdArgs: {
-    [P in keyof TMetadata]: TMetadata[P] extends md.MetadataBuilder<
+    [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
       infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer TArg,
       unknown,

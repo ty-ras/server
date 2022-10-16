@@ -13,7 +13,7 @@ export type BatchSpecificationWithoutBody<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
       unknown,
@@ -47,7 +47,7 @@ export type BatchSpecificationWithBody<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
       unknown,
@@ -88,7 +88,7 @@ export type BatchSpecificationWithoutBodyWithHeaders<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
       unknown,
@@ -130,7 +130,7 @@ export type BatchSpecificationWithBodyWithHeaders<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
       unknown,
@@ -170,7 +170,7 @@ export type BatchSpecificationWithoutBodyWithoutHandler<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
       unknown,
@@ -184,11 +184,11 @@ export type BatchSpecificationWithoutBodyWithoutHandler<
   method: TMethod;
   state: ep.EndpointStateValidator<TStateInfo, TState>;
 } & EndpointSpecArgsWithoutBody<
-  TEndpointArgs,
-  TMetadataProviders,
   TResponseHeaders,
   TOutput,
-  TOutputContentTypes
+  TOutputContentTypes,
+  TEndpointArgs,
+  TMetadataProviders
 >;
 
 export type BatchSpecificationWithBodyWithoutHandler<
@@ -203,7 +203,7 @@ export type BatchSpecificationWithBodyWithoutHandler<
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
       unknown,
@@ -217,13 +217,13 @@ export type BatchSpecificationWithBodyWithoutHandler<
   method: TMethod;
   state: ep.EndpointStateValidator<TStateInfo, TState>;
 } & EndpointSpecArgsWithBody<
-  TEndpointArgs,
-  TMetadataProviders,
   TResponseHeaders,
   TOutput,
   TOutputContentTypes,
   TInput,
-  TInputContentTypes
+  TInputContentTypes,
+  TEndpointArgs,
+  TMetadataProviders
 >;
 
 export interface BatchSpecificationQueryArgs<
@@ -251,10 +251,13 @@ export interface BatchSpecificationResponseHeaderArgs<
 }
 
 export interface EndpointSpecArgsWithoutBody<
+  TResponseHeaders,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       unknown,
       unknown,
@@ -264,18 +267,15 @@ export interface EndpointSpecArgsWithoutBody<
       never
     >
   >,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
 > {
   output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
   mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
       infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-      unknown,
-      infer _0,
       infer _1,
+      infer _2,
+      infer _3,
       TOutputContentTypes,
       never
     >
@@ -301,10 +301,15 @@ export interface EndpointSpecArgsWithoutBody<
 }
 
 export type EndpointSpecArgsWithBody<
+  TResponseHeaders,
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
+  TInput,
+  TInputContentTypes extends Record<string, unknown>,
   TEndpointArgs,
   TMetadataProviders extends Record<
     string,
-    md.MetadataBuilder<
+    md.MetadataProviderForEndpoints<
       md.HKTArg,
       unknown,
       unknown,
@@ -314,20 +319,15 @@ export type EndpointSpecArgsWithBody<
       TInputContentTypes
     >
   >,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
 > = EndpointSpecArgsJustBody<TInput, TInputContentTypes> & {
   output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
   mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataBuilder<
+    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-      unknown,
-      infer _0,
+      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
       infer _1,
+      infer _2,
+      infer _3,
       TOutputContentTypes,
       TInputContentTypes
     >

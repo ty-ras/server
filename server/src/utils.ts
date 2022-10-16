@@ -49,7 +49,7 @@ export const checkMethodForHandler = <TContext, TStateInfo>(
 export const checkStateForHandler = <TContext, TState>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events: evt.ServerEventEmitter<TContext, TState> | undefined,
-  validator: dataBE.StateValidator<unknown, TState>,
+  validator: dataBE.StateValidator<TState>,
   state: unknown,
 ) => {
   const validationResult = validator(state);
@@ -70,7 +70,7 @@ export const checkStateForHandler = <TContext, TState>(
     };
   } else {
     const isProtocolError = validationResult.error === "protocol-error";
-    events?.("onInvalidContext", {
+    events?.("onInvalidState", {
       ...eventArgs,
       validationError: isProtocolError ? undefined : validationResult,
     });

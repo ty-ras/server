@@ -188,11 +188,13 @@ export const createComplexEndpointHandler = <TRefinedContext, TState>(
   ),
 });
 
-export const createStateValidator = <T>(
-  value: T,
-): ep.EndpointStateValidator<unknown, T> => ({
+export const createStateValidator = <TState>(
+  value: TState,
+): ep.EndpointStateValidator<TState, TState> => ({
   stateInfo: value,
   validator: validatorFromValue(value),
 });
 
-export const state = createStateValidator<unknown>(undefined);
+export const STATE = "State";
+
+export const state = createStateValidator<string>(STATE);
