@@ -1,6 +1,6 @@
 {
   "name": "@ty-ras/endpoint-prefix",
-  "version": "0.11.2",
+  "version": "0.12.0",
   "author": {
     "name": "Stanislav Muhametsin",
     "email": "346799+stazz@users.noreply.github.com",
@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@ty-ras/endpoint": "0.11.4"
+    "@ty-ras/endpoint": "0.12.0"
   },
   "devDependencies": {
     "@babel/core": "7.19.3",
