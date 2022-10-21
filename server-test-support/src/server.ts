@@ -5,11 +5,11 @@ import * as destroy from "./destroy";
 import * as request from "./request";
 
 import type * as ep from "@ty-ras/endpoint";
+import * as serverUtils from "@ty-ras/server";
 
 import * as http from "http";
 import * as http2 from "http2";
 import * as https from "https";
-import * as net from "net";
 import * as stream from "stream";
 import * as rawBody from "raw-body";
 
@@ -45,7 +45,7 @@ export const testServer = async (
   try {
     // Start the server
     await (isDirectlyServer || !serverObj.customListen
-      ? listenAsync(server, host, port)
+      ? serverUtils.listenAsync(server, host, port)
       : serverObj.customListen(host, port));
     const requestOpts: http.RequestOptions = {
       protocol:
@@ -152,15 +152,6 @@ const getAppEndpoint = (
     },
   }),
 });
-
-const listenAsync = (server: net.Server, host: string, port: number) =>
-  new Promise<void>((resolve, reject) => {
-    try {
-      server.listen(port, host, () => resolve());
-    } catch (e) {
-      reject(e);
-    }
-  });
 
 const performSuccessfulTest = async (
   t: ava.ExecutionContext,
