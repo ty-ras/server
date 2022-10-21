@@ -17,12 +17,4 @@ module.exports = {
   rules: {
     "prettier/prettier": "error",
   },
-  overrides: [
-    {
-      "files": "*.mjs",
-      "parserOptions": {
-        "sourceType": "module"
-      }
-    }
-  ]
 };

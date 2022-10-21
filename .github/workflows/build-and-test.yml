@@ -80,16 +80,12 @@ jobs:
       # We still want to run build to catch any TS error possibly lurking somewhere.
       # Because we test first and build then, we can do compilation without __tests__ directory.
       # We re-add it to src folder in order to include it in published NPM package (if CD pipeline).
-      # Remember to also remove 'type' property from package.json, as it is no longer needed at this point.
       - id: compile
         name: Compile ${{ matrix.dir }}
         shell: bash
         run: |
           set -e
 
-          # We can't redirect immediately back to same file, because processes are async, and we will end up with empty package.json
-          cat '${{ matrix.dir }}/package.json' | jq -M 'del(.type)' > '${{ matrix.dir }}/package.json.new'
-          mv '${{ matrix.dir }}/package.json.new' '${{ matrix.dir }}/package.json'
           ./scripts/build.sh '${{ matrix.dir }}' ci
 
       - id: coverage
