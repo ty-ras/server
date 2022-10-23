@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@ty-ras/endpoint": "0.12.0"
+    "@ty-ras/endpoint": "0.12.2"
   },
   "devDependencies": {
     "@babel/core": "7.19.3",

@@ -7,7 +7,11 @@ import * as evt from "./events";
 import * as url from "url";
 import * as stream from "stream";
 
-export const typicalServerFlow = async <TContext, TStateInfo, TState>(
+export const typicalServerFlow = async <
+  TContext extends TContextBase,
+  TStateInfo,
+  TState,
+>(
   ctx: TContext,
   { url: regExp, handler }: ep.FinalizedAppEndpoint<TContext, TStateInfo>,
   events: evt.ServerEventEmitter<TContext, TState> | undefined,
@@ -22,6 +26,7 @@ export const typicalServerFlow = async <TContext, TStateInfo, TState>(
     sendContent,
   }: ServerFlowCallbacks<TContext, TStateInfo>, // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
+  // TODO refactor this to use functional constructs once the issue in ty-ras/data repository is done.
   try {
     const maybeURL = getURL(ctx);
     const parsedUrl =
@@ -36,10 +41,11 @@ export const typicalServerFlow = async <TContext, TStateInfo, TState>(
     );
     if (maybeEventArgs) {
       // We have a match -> get the handler that will handle our match
+      const method = getMethod(ctx) as ep.HttpMethod;
       const foundHandler = server.checkMethodForHandler(
         maybeEventArgs,
         events,
-        getMethod(ctx) as ep.HttpMethod,
+        method,
         handler,
       );
 
@@ -68,7 +74,6 @@ export const typicalServerFlow = async <TContext, TStateInfo, TState>(
             ...maybeEventArgs,
             state: stateValidation.state,
           };
-          ctx = eventArgs.ctx;
           // State was OK, validate url & query & body
           const [proceedAfterURL, url] = server.checkURLParametersForHandler(
             eventArgs,
@@ -111,6 +116,7 @@ export const typicalServerFlow = async <TContext, TStateInfo, TState>(
                     {
                       context: eventArgs.ctx,
                       state: eventArgs.state,
+                      method,
                       url,
                       headers,
                       body,
@@ -186,7 +192,7 @@ export interface ServerFlowCallbacks<TContext, TStateInfo> {
   getURL: (ctx: TContext) => url.URL | string | undefined;
   getMethod: (ctx: TContext) => string;
   getState: (ctx: TContext, stateInfo: TStateInfo) => ep.MaybePromise<unknown>;
-  getHeader: (ctx: TContext, headerName: string) => data.HeaderValue;
+  getHeader: (ctx: TContext, headerName: string) => data.ReadonlyHeaderValue;
   getRequestBody: (ctx: TContext) => stream.Readable | undefined;
   setHeader: (
     ctx: TContext,
@@ -203,4 +209,27 @@ export interface ServerFlowCallbacks<TContext, TStateInfo> {
     ctx: TContext,
     content: dataBE.DataValidatorResponseOutputSuccess["output"],
   ) => void | Promise<void>;
+}
+
+export interface TContextBase {
+  skipSettingStatusCode: boolean;
+  skipSendingBody: boolean;
+}
+
+// This is to fix Array.isArray type-inference not working for ReadonlyArray
+// https://github.com/microsoft/TypeScript/issues/17002#issuecomment-1217386617
+type IfUnknownOrAny<T, Y, N> = unknown extends T ? Y : N;
+
+type ArrayType<T> = IfUnknownOrAny<
+  T,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T[] extends T ? T[] : any[] & T,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Extract<T, readonly any[]>
+>;
+
+declare global {
+  interface ArrayConstructor {
+    isArray<T>(arg: T): arg is ArrayType<T>;
+  }
 }

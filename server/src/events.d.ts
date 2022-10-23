@@ -4,12 +4,12 @@ export type ServerEventEmitter<TContext, TState> = EventEmitter<
   VirtualRequestProcessingEvents<TContext, TState>
 >;
 
-export type EventEmitter<TVirtualEvents extends object> = <
+export type EventEmitter<TVirtualEvents extends object, TReturn = void> = <
   TEventName extends keyof TVirtualEvents,
 >(
   eventName: TEventName,
   eventArgs: TVirtualEvents[TEventName],
-) => void;
+) => TReturn;
 
 // This is 'virtual interface' -> instances of this interface are never meant to be created!
 // It is only used for typing purposes
@@ -20,7 +20,9 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
   // URL did not match combined regex
   onInvalidUrl: Omit<EventArgumentsWithoutState<TContext>, "groups">;
   // No handler for given HTTP method
-  onInvalidMethod: EventArgumentsWithoutState<TContext>;
+  onInvalidMethod: EventArgumentsWithoutState<TContext> & {
+    allowedMethods: ReadonlyArray<string>;
+  };
   // State required by endpoint failed passing validation
   onInvalidState: EventArgumentsWithoutState<TContext> &
     ValidationErrorArgs<data.DataValidatorResultError | undefined>;

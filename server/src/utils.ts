@@ -41,6 +41,7 @@ export const checkMethodForHandler = <TContext, TStateInfo>(
   if (!foundSuccess) {
     events?.("onInvalidMethod", {
       ...eventArgs,
+      allowedMethods: foundHandler.allowedMethods,
     });
   }
   return foundHandler;
@@ -167,7 +168,9 @@ export const checkHeadersForHandler = <TContext, TState>(
   headersValidation:
     | dataBE.RequestHeaderDataValidators<Record<string, unknown>>
     | undefined,
-  getHeaderValue: (headerName: string) => string | Array<string> | undefined,
+  getHeaderValue: (
+    headerName: string,
+  ) => string | ReadonlyArray<string> | undefined,
 ) => {
   let headers: dataBE.RuntimeAnyHeaders = {};
   let proceedToInvokeHandler = true;
