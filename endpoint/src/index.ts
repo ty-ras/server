@@ -13,4 +13,3 @@ export type {
   StaticAppEndpointHandler,
   StaticAppEndpointHandlerFunction,
 } from "./endpoint";
-export * from "./cors";
