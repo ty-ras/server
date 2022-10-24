@@ -371,10 +371,22 @@
   dependencies:
     "@ty-ras/data" "0.12.1"
 
+"@ty-ras/data-backend@0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-0.12.1.tgz#0bc6892340852627781e2d749216eb28f103d5ce"
+  integrity sha512-glSOvPW1zdcDLjsStJ/+1nSXvGRdkCAuGeHa1PuGqE0pwKnGkrv8aHsl1mgi8Iu+B/4Fe52Cvxrxn2znGivKig==
+  dependencies:
+    "@ty-ras/data" "0.12.3"
+
 "@ty-ras/data@0.12.1":
   version "0.12.1"
   resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.12.1.tgz#db9fc6d6609f6b70d1d4b747f79225639ec5e870"
   integrity sha512-g6EcrQ+GOD79zCqx4JeHUBt4Vw61n2Xz3Zsy4EXBtt+Yk6aN15pFf83t3eT3Tt1j2WBS9J0RfHziRgOryMHb5g==
+
+"@ty-ras/data@0.12.3":
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.12.3.tgz#89f50dab7180906ba8aa7e8930c5a0ccea5f2132"
+  integrity sha512-MW0TNixdi4fbqWsJAtUNPSxvGVn8YhkX2Y9RAOd/HxlJ/nrRn1CQLU2qCis5Zky7Xkc519WPJTr7+tmUer1alA==
 
 "@ty-ras/endpoint@0.12.0":
   version "0.12.0"
@@ -382,6 +394,13 @@
   integrity sha512-9FQyr0GOuhCEiS2yjaU4ByKAunSWT29BITXog6Ky9z1xN1FsSRN3P+pXjL2O7OYTdeUb+qGevsWfxQOwQWPCOw==
   dependencies:
     "@ty-ras/data-backend" "0.12.0"
+
+"@ty-ras/endpoint@0.12.2":
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-0.12.2.tgz#b981b32ca8229be1ab07bd479c9d92e024249d69"
+  integrity sha512-oOI+Y9PRXczxBaua1/fJZ690SUeENnWOosnxkym0lAbojGVwfmo1CQ395vYPvetmctqqmiOHD5N3cZBPmWKIYw==
+  dependencies:
+    "@ty-ras/data-backend" "0.12.1"
 
 "@ty-ras/metadata@0.12.0":
   version "0.12.0"

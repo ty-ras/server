@@ -3,8 +3,8 @@
 // Another option is rename .d.ts files into .ts files and end up with a bunch of empty .[m]js files and index.[m]js exporting those - not very optimal either.export * from "./headers";
 export type {
   EventArguments,
-  EventEmitter,
-  ServerEventEmitter,
+  EventHandler as EventEmitter,
+  ServerEventHandler as ServerEventEmitter,
   ValidationErrorArgs,
   VirtualRequestProcessingEvents,
   EventArgumentsWithoutState,

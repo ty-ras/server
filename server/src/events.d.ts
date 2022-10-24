@@ -1,10 +1,10 @@
 import type * as data from "@ty-ras/data";
 
-export type ServerEventEmitter<TContext, TState> = EventEmitter<
+export type ServerEventHandler<TContext, TState> = EventHandler<
   VirtualRequestProcessingEvents<TContext, TState>
 >;
 
-export type EventEmitter<TVirtualEvents extends object, TReturn = void> = <
+export type EventHandler<TVirtualEvents extends object, TReturn = void> = <
   TEventName extends keyof TVirtualEvents,
 >(
   eventName: TEventName,

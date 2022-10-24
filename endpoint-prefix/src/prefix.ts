@@ -26,7 +26,12 @@ export function atPrefix<TContext, TStateInfo>(
     .map((endpoint, idx) => ({ endpoint, idx }))
     .filter(({ endpoint }) => tryGetPrefix(endpoint) === "");
   if (topLevelEndpoints.length > 0) {
-    throw new InvalidEndpointsError(topLevelEndpoints.map(({ idx }) => idx));
+    if (prefix === "" && allEndpoints.length === 1) {
+      // Top-level prefix against one top-level prefixed endpoint = same endpoint
+      return allEndpoints[0];
+    } else {
+      throw new InvalidEndpointsError(topLevelEndpoints.map(({ idx }) => idx));
+    }
   }
   return new prefixedEndpoint.PrefixedEndpoint(prefix, allEndpoints);
 }

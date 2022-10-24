@@ -1,15 +1,14 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import test from "ava";
 import * as spec from "../flow";
 import * as evtUtil from "./events";
-import * as stream from "stream";
-import * as url from "url";
+import * as flowUtil from "./flow";
 
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: (method, groups) => ({
@@ -35,53 +34,57 @@ test("Validate typicalServerFlow works", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "getHeader",
-      args: ["Context", contentType],
+      args: [flowUtil.seenContext, contentType],
       returnValue: contentType,
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context"],
-      returnValue: dummyBody,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyBody,
     },
     {
       callbackName: "setHeader",
-      args: ["Context", "response-header-name", "response-header-value"],
+      args: [
+        flowUtil.seenContext,
+        "response-header-name",
+        "response-header-value",
+      ],
       returnValue: undefined,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 200, true],
+      args: [flowUtil.seenContext, 200, true],
       returnValue: undefined,
     },
     {
       callbackName: "setHeader",
-      args: ["Context", "Content-Type", "contentType"],
+      args: [flowUtil.seenContext, "Content-Type", "contentType"],
       returnValue: undefined,
     },
     {
       callbackName: "sendContent",
-      args: ["Context", "output"],
+      args: [flowUtil.seenContext, "output"],
       returnValue: undefined,
     },
   ]);
@@ -89,9 +92,9 @@ test("Validate typicalServerFlow works", async (t) => {
 
 test("Validate typicalServerFlow works with special values", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback("undefined");
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } =
+    flowUtil.createTrackingCallback("undefined");
+  await spec.createTypicalServerFlow(
     {
       url: /^(?<group>\/)$/,
       handler: (method, groups) => ({
@@ -114,38 +117,38 @@ test("Validate typicalServerFlow works with special values", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: undefined,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "getHeader",
-      args: ["Context", contentType],
+      args: [flowUtil.seenContext, contentType],
       returnValue: undefined,
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context"],
-      returnValue: dummyBody,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyBody,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 204, false],
+      args: [flowUtil.seenContext, 204, false],
       returnValue: undefined,
     },
   ]);
@@ -153,9 +156,8 @@ test("Validate typicalServerFlow works with special values", async (t) => {
 
 test("Validate typicalServerFlow works with special values 2", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback("array");
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback("array");
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: (method, groups) => ({
@@ -178,38 +180,38 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURLObject,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURLObject,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "getHeader",
-      args: ["Context", contentType],
+      args: [flowUtil.seenContext, contentType],
       returnValue: [contentType],
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context"],
-      returnValue: dummyBody,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyBody,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 204, false],
+      args: [flowUtil.seenContext, 204, false],
       returnValue: undefined,
     },
   ]);
@@ -217,27 +219,26 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
 
 test("Validate typicalServerFlow works with invalid URL", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /no-named-groups-will-match/,
       handler: () => {
         throw new Error(errorMessage);
       },
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 404, false],
+      args: [flowUtil.seenContext, 404, false],
       returnValue: undefined,
     },
   ]);
@@ -245,9 +246,8 @@ test("Validate typicalServerFlow works with invalid URL", async (t) => {
 
 test("Validate typicalServerFlow works with invalid method", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -255,28 +255,28 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
         allowedMethods: ["POST"],
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "setHeader",
-      args: ["Context", "Allow", "POST"],
+      args: [flowUtil.seenContext, "Allow", "POST"],
       returnValue: undefined,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 405, false],
+      args: [flowUtil.seenContext, 405, false],
       returnValue: undefined,
     },
   ]);
@@ -284,9 +284,8 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
 
 test("Validate typicalServerFlow works with invalid state", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -306,33 +305,33 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 500, true],
+      args: [flowUtil.seenContext, 500, true],
       returnValue: undefined,
     },
     {
       callbackName: "sendContent",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: undefined,
     },
   ]);
@@ -340,9 +339,8 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
 
 test("Validate typicalServerFlow works with invalid state and custom error", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -362,33 +360,33 @@ test("Validate typicalServerFlow works with invalid state and custom error", asy
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 403, true],
+      args: [flowUtil.seenContext, 403, true],
       returnValue: undefined,
     },
     {
       callbackName: "sendContent",
-      args: ["Context", "Body"],
+      args: [flowUtil.seenContext, "Body"],
       returnValue: undefined,
     },
   ]);
@@ -396,9 +394,8 @@ test("Validate typicalServerFlow works with invalid state and custom error", asy
 
 test("Validate typicalServerFlow works with invalid URL parameters", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -425,28 +422,28 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 400, false],
+      args: [flowUtil.seenContext, 400, false],
       returnValue: undefined,
     },
   ]);
@@ -454,9 +451,8 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
 
 test("Validate typicalServerFlow works with invalid query parameters", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -482,28 +478,28 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 400, false],
+      args: [flowUtil.seenContext, 400, false],
       returnValue: undefined,
     },
   ]);
@@ -511,9 +507,8 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
 
 test("Validate typicalServerFlow works with invalid headers", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -539,33 +534,33 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "getHeader",
-      args: ["Context", "headername"],
+      args: [flowUtil.seenContext, "headername"],
       returnValue: "headername",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 400, false],
+      args: [flowUtil.seenContext, 400, false],
       returnValue: undefined,
     },
   ]);
@@ -573,9 +568,8 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
 
 test("Validate typicalServerFlow works with invalid body", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -600,38 +594,38 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
       callbackName: "getHeader",
-      args: ["Context", contentType],
+      args: [flowUtil.seenContext, contentType],
       returnValue: contentType,
     },
     {
       callbackName: "getRequestBody",
-      args: ["Context"],
-      returnValue: dummyBody,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyBody,
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 422, false],
+      args: [flowUtil.seenContext, 422, false],
       returnValue: undefined,
     },
   ]);
@@ -639,9 +633,8 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
 
 test("Validate typicalServerFlow works with invalid output", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
-  await spec.typicalServerFlow(
-    "Context",
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => ({
@@ -662,37 +655,37 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
         },
       }),
     },
-    undefined,
     callbacks,
-  );
+    undefined,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       callbackName: "getURL",
-      returnValue: dummyURL,
+      returnValue: flowUtil.dummyURL,
     },
     {
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       callbackName: "getMethod",
       returnValue: "GET",
     },
     {
       callbackName: "getState",
-      args: ["Context", undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
-      args: ["Context", contentType],
+      args: [flowUtil.seenContext, contentType],
       callbackName: "getHeader",
       returnValue: contentType,
     },
     {
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       callbackName: "getRequestBody",
-      returnValue: dummyBody,
+      returnValue: flowUtil.dummyBody,
     },
     {
-      args: ["Context", 500, false],
+      args: [flowUtil.seenContext, 500, false],
       callbackName: "setStatusCode",
       returnValue: undefined,
     },
@@ -701,35 +694,34 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
 
 test("Validate typicalServerFlow works with throwing callback", async (t) => {
   t.plan(2);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
   const { seenEvents, emitter } = evtUtil.createTrackingEvents();
   const thrownError = new ThrownError();
   const regExp = /(?<group>path)/;
-  await spec.typicalServerFlow(
-    "Context",
+  await spec.createTypicalServerFlow(
     {
       url: regExp,
       handler: () => {
         throw thrownError;
       },
     },
-    emitter,
     callbacks,
-  );
+    emitter,
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 500, false, thrownError],
+      args: [flowUtil.seenContext, 500, false, thrownError],
       returnValue: undefined,
     },
   ]);
@@ -737,7 +729,7 @@ test("Validate typicalServerFlow works with throwing callback", async (t) => {
     {
       eventName: "onException",
       args: {
-        ctx: "Context",
+        ctx: flowUtil.seenContext,
         regExp,
         error: thrownError,
       },
@@ -747,130 +739,124 @@ test("Validate typicalServerFlow works with throwing callback", async (t) => {
 
 test("Validate typicalServerFlow works with throwing and throwing event emitter", async (t) => {
   t.plan(1);
-  const { seenCallbacks, callbacks } = createTrackingCallback();
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
   const thrownError = new ThrownError();
-  await spec.typicalServerFlow(
-    "Context",
+  await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
       handler: () => {
         throw thrownError;
       },
     },
+    callbacks,
     () => {
       throw new Error("This should be ignored");
     },
-    callbacks,
-  );
+  )(flowUtil.inputContext);
   t.deepEqual(seenCallbacks, [
     {
       callbackName: "getURL",
-      args: ["Context"],
-      returnValue: dummyURL,
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
     },
     {
       callbackName: "getMethod",
-      args: ["Context"],
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
       callbackName: "setStatusCode",
-      args: ["Context", 500, false, thrownError],
+      args: [flowUtil.seenContext, 500, false, thrownError],
       returnValue: undefined,
     },
   ]);
 });
 
-const createTrackingCallback = (
-  headerMode: "arg" | "array" | "undefined" = "arg",
-) => {
-  const seenCallbacks: AllCallbacksArray = [];
-  const callbacks: spec.ServerFlowCallbacks<unknown, unknown> = {
-    getURL: (...args) => {
-      const returnValue =
-        headerMode === "arg"
-          ? dummyURL
-          : headerMode === "undefined"
-          ? undefined
-          : dummyURLObject;
-      seenCallbacks.push({ callbackName: "getURL", args, returnValue });
-      return returnValue;
+test("Validate that setting skipSettingStatusCode and skipSendingBody works", async (c) => {
+  c.plan(2);
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: () => {
+        throw new Error("Just to simplify endpoint code");
+      },
     },
-    getMethod: (...args) => {
-      const returnValue = "GET";
-      seenCallbacks.push({ callbackName: "getMethod", args, returnValue });
-      return returnValue;
-    },
-    getState: (...args) => {
-      const returnValue = "State";
-      seenCallbacks.push({ callbackName: "getState", args, returnValue });
-      return returnValue;
-    },
-    getHeader: (...args) => {
-      let returnValue;
-      switch (headerMode) {
-        case "arg":
-          returnValue = args[1];
-          break;
-        case "undefined":
-          returnValue = undefined;
-          break;
-        default:
-          returnValue = [args[1]];
-      }
-      seenCallbacks.push({ callbackName: "getHeader", args, returnValue });
-      return returnValue;
-    },
-    getRequestBody: (...args) => {
-      const returnValue = dummyBody;
-      seenCallbacks.push({ callbackName: "getRequestBody", args, returnValue });
-      return returnValue;
-    },
-    setHeader: (...args) => {
-      seenCallbacks.push({
-        callbackName: "setHeader",
-        args,
-        returnValue: undefined,
-      });
-    },
-    setStatusCode: (...args) => {
-      seenCallbacks.push({
-        callbackName: "setStatusCode",
-        args,
-        returnValue: undefined,
-      });
-    },
-    sendContent: (...args) => {
-      seenCallbacks.push({
-        callbackName: "sendContent",
-        args,
-        returnValue: undefined,
-      });
-    },
-  };
-
-  return {
-    seenCallbacks,
     callbacks,
-  };
-};
-
-type AllCallbacksArray = Array<
-  KeysAndValuesAsUnion<spec.ServerFlowCallbacks<unknown, unknown>>
->;
-
-type KeysAndValuesAsUnion<T extends object> = {
-  [P in keyof T]: {
-    callbackName: P;
-    args: T[P] extends (...args: any) => any ? Parameters<T[P]> : never;
-    returnValue: T[P] extends (...args: any) => any ? ReturnType<T[P]> : never;
-  };
-}[keyof T];
-
-const dummyBody = stream.Readable.from(["Body"]);
-
-const dummyURL = "http://localhost/path";
-const dummyURLObject = new url.URL(dummyURL);
+    (evtName, evtData) => {
+      evtData.ctx.skipSettingStatusCode = true;
+    },
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "GET",
+    },
+    // Notice - setStatusCode will not be called!
+  ]);
+  seenCallbacks.length = 0;
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: () => ({
+        found: "handler",
+        handler: {
+          stateValidator: {
+            stateInfo: undefined,
+            validator: () => ({
+              error: "protocol-error",
+              body: "body",
+              statusCode: 999,
+            }),
+          },
+          handler: () => {
+            throw new Error("This should never be called.");
+          },
+        },
+      }),
+    },
+    callbacks,
+    (evtName, evtData) => {
+      evtData.ctx.skipSendingBody = true;
+    },
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getURL",
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getMethod",
+      returnValue: "GET",
+    },
+    {
+      args: [flowUtil.seenContext, undefined],
+      callbackName: "getState",
+      returnValue: "State",
+    },
+    {
+      args: [
+        {
+          ...flowUtil.seenContext,
+          skipSendingBody: true,
+        },
+        999,
+        true,
+      ],
+      callbackName: "setStatusCode",
+      returnValue: undefined,
+    },
+    // Notice - sendContent will not be called!
+  ]);
+});
 
 const getHumanReadableMessage = () => "";
 

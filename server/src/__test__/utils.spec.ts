@@ -89,7 +89,10 @@ test("Validate checkMethodForHandler works for invalid input", (t) => {
     return [
       {
         eventName: "onInvalidMethod",
-        args: EVENT_ARGS_NO_STATE,
+        args: {
+          ...EVENT_ARGS_NO_STATE,
+          allowedMethods: [],
+        },
       },
     ];
   });
@@ -604,6 +607,7 @@ test("Validate invokeHandler works on valid output", async (t) => {
     const expectedArgs = {
       context: "Context",
       state: "State",
+      method: "GET" as const,
       url: {},
       headers: {},
       query: {},
@@ -648,6 +652,7 @@ test("Validate invokeHandler works on invalid output", async (t) => {
     const expectedArgs = {
       context: "Context",
       state: "State",
+      method: "GET" as const,
       url: {},
       headers: {},
       query: {},
@@ -690,7 +695,7 @@ test("Validate invokeHandler works on invalid output", async (t) => {
 const withoutAndWithEvents = (
   t: ExecutionContext,
   runTest: (
-    emitter: evt.ServerEventEmitter<any, any> | undefined,
+    emitter: evt.ServerEventHandler<any, any> | undefined,
   ) => evtUtil.AllEventsArray | void,
   postProcessEvents?: (seenEvents: evtUtil.AllEventsArray) => void,
 ) => {
@@ -704,7 +709,7 @@ const withoutAndWithEvents = (
 const withoutAndWithEventsAsync = async (
   t: ExecutionContext,
   runTest: (
-    emitter: evt.ServerEventEmitter<any, any> | undefined,
+    emitter: evt.ServerEventHandler<any, any> | undefined,
   ) => Promise<evtUtil.AllEventsArray | void>,
   postProcessEvents?: (seenEvents: evtUtil.AllEventsArray) => void,
 ) => {

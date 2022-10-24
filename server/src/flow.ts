@@ -7,191 +7,216 @@ import * as evt from "./events";
 import * as url from "url";
 import * as stream from "stream";
 
-export const typicalServerFlow = async <
+export const createTypicalServerFlow = <
   TContext extends TContextBase,
   TStateInfo,
   TState,
 >(
-  ctx: TContext,
+  // Notice - endpoints don't have GetContext<TContext> as their context!
+  // The extra fields of GetContext<TContext> are meant to be used only by event handler!
   { url: regExp, handler }: ep.FinalizedAppEndpoint<TContext, TStateInfo>,
-  events: evt.ServerEventEmitter<TContext, TState> | undefined,
-  {
-    getURL,
-    getMethod,
-    getState,
-    getHeader,
-    getRequestBody,
-    setHeader,
-    setStatusCode,
-    sendContent,
-  }: ServerFlowCallbacks<TContext, TStateInfo>, // eslint-disable-next-line sonarjs/cognitive-complexity
-) => {
-  // TODO refactor this to use functional constructs once the issue in ty-ras/data repository is done.
-  try {
-    const maybeURL = getURL(ctx);
-    const parsedUrl =
-      maybeURL instanceof url.URL
-        ? maybeURL
-        : new url.URL(maybeURL ?? "", "http://example.com");
-    const maybeEventArgs = server.checkURLPathNameForHandler(
-      ctx,
-      events,
-      parsedUrl,
-      regExp,
-    );
-    if (maybeEventArgs) {
-      // We have a match -> get the handler that will handle our match
-      const method = getMethod(ctx) as ep.HttpMethod;
-      const foundHandler = server.checkMethodForHandler(
-        maybeEventArgs,
+  callbacks: ServerFlowCallbacks<TContext, TStateInfo>,
+  events: evt.ServerEventHandler<GetContext<TContext>, TState> | undefined,
+): ((context: TContext) => Promise<void>) => {
+  const cb: ServerFlowCallbacks<GetContext<TContext>, TStateInfo> = {
+    ...callbacks,
+    setStatusCode: (...params) => {
+      if (!params[0].skipSettingStatusCode) {
+        callbacks.setStatusCode(...params);
+      }
+    },
+    sendContent: async (...params) => {
+      if (!params[0].skipSendingBody) {
+        await callbacks.sendContent(...params);
+      }
+    },
+  };
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  return async (_ctx) => {
+    // TODO refactor this to use functional constructs once the issue in ty-ras/data repository is done.
+    const ctx: GetContext<TContext> = {
+      ..._ctx,
+      skipSendingBody: false,
+      skipSettingStatusCode: false,
+    };
+    try {
+      const maybeURL = cb.getURL(ctx);
+      const parsedUrl =
+        maybeURL instanceof url.URL
+          ? maybeURL
+          : new url.URL(maybeURL ?? "", "http://example.com");
+      const maybeEventArgs = server.checkURLPathNameForHandler(
+        ctx,
         events,
-        method,
-        handler,
+        parsedUrl,
+        regExp,
       );
-
-      if (foundHandler.found === "handler") {
-        const {
-          handler: {
-            stateValidator,
-            urlValidator,
-            headerValidator,
-            queryValidator,
-            bodyValidator,
-            handler,
-          },
-        } = foundHandler;
-        // At this point, check context state.
-        // State typically includes things like username etc, so verifying it as a first thing before checking body is meaningful.
-        // Also, allow the context state checker return custom status code, e.g. 401 for when lacking credentials.
-        const stateValidation = server.checkStateForHandler(
+      if (maybeEventArgs) {
+        // We have a match -> get the handler that will handle our match
+        const method = cb.getMethod(ctx) as ep.HttpMethod;
+        const foundHandler = server.checkMethodForHandler(
           maybeEventArgs,
           events,
-          stateValidator.validator,
-          await getState(ctx, stateValidator.stateInfo),
+          method,
+          handler,
         );
-        if (stateValidation.result === "state") {
-          const eventArgs = {
-            ...maybeEventArgs,
-            state: stateValidation.state,
-          };
-          // State was OK, validate url & query & body
-          const [proceedAfterURL, url] = server.checkURLParametersForHandler(
-            eventArgs,
+
+        if (foundHandler.found === "handler") {
+          const {
+            handler: {
+              stateValidator,
+              urlValidator,
+              headerValidator,
+              queryValidator,
+              bodyValidator,
+              handler,
+            },
+          } = foundHandler;
+          // At this point, check context state.
+          // State typically includes things like username etc, so verifying it as a first thing before checking body is meaningful.
+          // Also, allow the context state checker return custom status code, e.g. 401 for when lacking credentials.
+          const stateValidation = server.checkStateForHandler(
+            maybeEventArgs,
             events,
-            urlValidator,
+            stateValidator.validator,
+            await cb.getState(ctx, stateValidator.stateInfo),
           );
-          if (proceedAfterURL) {
-            const [proceedAfterQuery, query] = server.checkQueryForHandler(
+          if (stateValidation.result === "state") {
+            const eventArgs = {
+              ...maybeEventArgs,
+              state: stateValidation.state,
+            };
+            // State was OK, validate url & query & body
+            const [proceedAfterURL, url] = server.checkURLParametersForHandler(
               eventArgs,
               events,
-              queryValidator,
-              // parsedUrl.search.substring(1), // Remove leading '?'
-              Object.fromEntries(parsedUrl.searchParams.entries()),
+              urlValidator,
             );
-            if (proceedAfterQuery) {
-              const [proceedAfterHeaders, headers] =
-                server.checkHeadersForHandler(
-                  eventArgs,
-                  events,
-                  headerValidator,
-                  (headerName) => getHeader(ctx, headerName),
-                );
-              if (proceedAfterHeaders) {
-                const reqContentType = getHeader(ctx, "content-type") ?? "";
-                const [proceedAfterBody, body] =
-                  await server.checkBodyForHandler(
+            if (proceedAfterURL) {
+              const [proceedAfterQuery, query] = server.checkQueryForHandler(
+                eventArgs,
+                events,
+                queryValidator,
+                // parsedUrl.search.substring(1), // Remove leading '?'
+                Object.fromEntries(parsedUrl.searchParams.entries()),
+              );
+              if (proceedAfterQuery) {
+                const [proceedAfterHeaders, headers] =
+                  server.checkHeadersForHandler(
                     eventArgs,
                     events,
-                    bodyValidator,
-                    Array.isArray(reqContentType)
-                      ? reqContentType[0]
-                      : reqContentType,
-                    getRequestBody(ctx),
+                    headerValidator,
+                    (headerName) => cb.getHeader(ctx, headerName),
                   );
-                if (proceedAfterBody) {
-                  const retVal = await server.invokeHandler(
-                    eventArgs,
-                    events,
-                    handler,
-                    {
-                      context: eventArgs.ctx,
-                      state: eventArgs.state,
-                      method,
-                      url,
-                      headers,
-                      body,
-                      query,
-                    },
-                  );
-                  switch (retVal.error) {
-                    case "none":
+                if (proceedAfterHeaders) {
+                  const reqContentType =
+                    cb.getHeader(ctx, "content-type") ?? "";
+                  const [proceedAfterBody, body] =
+                    await server.checkBodyForHandler(
+                      eventArgs,
+                      events,
+                      bodyValidator,
+                      Array.isArray(reqContentType)
+                        ? reqContentType[0]
+                        : reqContentType,
+                      cb.getRequestBody(ctx),
+                    );
+                  if (proceedAfterBody) {
+                    const retVal = await server.invokeHandler(
+                      eventArgs,
+                      events,
+                      handler,
                       {
-                        const { contentType, output, headers } = retVal.data;
-                        if (headers) {
-                          for (const [hdrName, hdrValue] of Object.entries(
-                            headers,
-                          )) {
-                            if (hdrValue !== undefined) {
-                              setHeader(ctx, hdrName, hdrValue);
+                        context: eventArgs.ctx,
+                        state: eventArgs.state,
+                        method,
+                        url,
+                        headers,
+                        body,
+                        query,
+                      },
+                    );
+                    switch (retVal.error) {
+                      case "none":
+                        {
+                          const { contentType, output, headers } = retVal.data;
+                          if (headers) {
+                            for (const [hdrName, hdrValue] of Object.entries(
+                              headers,
+                            )) {
+                              if (hdrValue !== undefined) {
+                                cb.setHeader(ctx, hdrName, hdrValue);
+                              }
                             }
                           }
+                          const hasOutput = output !== undefined;
+                          cb.setStatusCode(
+                            ctx,
+                            hasOutput ? 200 : 204,
+                            hasOutput,
+                          );
+                          if (hasOutput) {
+                            cb.setHeader(ctx, "Content-Type", contentType);
+                            await cb.sendContent(ctx, output);
+                          }
                         }
-                        const hasOutput = output !== undefined;
-                        setStatusCode(ctx, hasOutput ? 200 : 204, hasOutput);
-                        if (hasOutput) {
-                          setHeader(ctx, "Content-Type", contentType);
-                          await sendContent(ctx, output);
-                        }
+                        break;
+                      case "error": {
+                        // Internal Server Error
+                        cb.setStatusCode(ctx, 500, false);
                       }
-                      break;
-                    case "error": {
-                      // Internal Server Error
-                      setStatusCode(ctx, 500, false);
                     }
+                  } else {
+                    // Body failed validation
+                    cb.setStatusCode(ctx, 422, false);
                   }
                 } else {
-                  // Body failed validation
-                  setStatusCode(ctx, 422, false);
+                  // Headers validation failed
+                  cb.setStatusCode(ctx, 400, false);
                 }
               } else {
-                // Headers validation failed
-                setStatusCode(ctx, 400, false);
+                // Query parameters failed validation
+                cb.setStatusCode(ctx, 400, false);
               }
             } else {
-              // Query parameters failed validation
-              setStatusCode(ctx, 400, false);
+              // While URL matched regex, the parameters failed further validation
+              cb.setStatusCode(ctx, 400, false);
             }
           } else {
-            // While URL matched regex, the parameters failed further validation
-            setStatusCode(ctx, 400, false);
+            // Context validation failed - set status code
+            cb.setStatusCode(
+              ctx,
+              stateValidation.customStatusCode ?? 500,
+              true,
+            ); // Internal server error
+            await cb.sendContent(ctx, stateValidation.customBody);
           }
         } else {
-          // Context validation failed - set status code
-          setStatusCode(ctx, stateValidation.customStatusCode ?? 500, true); // Internal server error
-          await sendContent(ctx, stateValidation.customBody);
+          if (!ctx.skipSettingStatusCode) {
+            cb.setHeader(ctx, "Allow", foundHandler.allowedMethods.join(","));
+            cb.setStatusCode(ctx, 405, false);
+          }
         }
       } else {
-        setHeader(ctx, "Allow", foundHandler.allowedMethods.join(","));
-        setStatusCode(ctx, 405, false);
+        // Not Found
+        cb.setStatusCode(ctx, 404, false);
       }
-    } else {
-      // Not Found
-      setStatusCode(ctx, 404, false);
+    } catch (error) {
+      try {
+        events?.("onException", { ctx, regExp, error });
+      } catch {
+        // Not that much we can do.
+      }
+      cb.setStatusCode(ctx, 500, false, error);
     }
-  } catch (error) {
-    try {
-      events?.("onException", { ctx, regExp, error });
-    } catch {
-      // Not that much we can do.
-    }
-    setStatusCode(ctx, 500, false, error);
-  }
+  };
 };
 
-export interface ServerFlowCallbacks<TContext, TStateInfo> {
+export type TContextBase = object;
+
+export interface ServerFlowCallbacksStatic<TContext> {
   getURL: (ctx: TContext) => url.URL | string | undefined;
   getMethod: (ctx: TContext) => string;
-  getState: (ctx: TContext, stateInfo: TStateInfo) => ep.MaybePromise<unknown>;
   getHeader: (ctx: TContext, headerName: string) => data.ReadonlyHeaderValue;
   getRequestBody: (ctx: TContext) => stream.Readable | undefined;
   setHeader: (
@@ -211,10 +236,18 @@ export interface ServerFlowCallbacks<TContext, TStateInfo> {
   ) => void | Promise<void>;
 }
 
-export interface TContextBase {
+export type ServerFlowCallbacks<TContext, TStateInfo> =
+  ServerFlowCallbacksStatic<TContext> & {
+    getState: (
+      ctx: TContext,
+      stateInfo: TStateInfo,
+    ) => ep.MaybePromise<unknown>;
+  };
+
+export type GetContext<TContext> = TContext & {
   skipSettingStatusCode: boolean;
   skipSendingBody: boolean;
-}
+};
 
 // This is to fix Array.isArray type-inference not working for ReadonlyArray
 // https://github.com/microsoft/TypeScript/issues/17002#issuecomment-1217386617
