@@ -113,7 +113,7 @@ export const customizeTrackingCallback = ({
   };
 };
 
-type AllCallbacksArray = Array<
+export type AllCallbacksArray = Array<
   KeysAndValuesAsUnion<flow.ServerFlowCallbacks<unknown, unknown>>
 >;
 

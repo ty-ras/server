@@ -1,9 +1,10 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import test from "ava";
+import test, { ExecutionContext } from "ava";
 import * as spec from "../flow";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
+import type * as stream from "stream";
 
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
@@ -857,6 +858,216 @@ test("Validate that setting skipSettingStatusCode and skipSendingBody works", as
     // Notice - sendContent will not be called!
   ]);
 });
+
+const validateServerFlowForHEADMethod = async (
+  c: ExecutionContext,
+  output: string | undefined | stream.Readable | Buffer,
+  extraCalls: flowUtil.AllCallbacksArray,
+  contentTypeSuffix: string | undefined = "utf-8",
+) => {
+  c.plan(2);
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getMethod: () => "HEAD",
+  });
+  const seenMethods: Array<string> = [];
+  const contentType = `contentType${
+    contentTypeSuffix ? `; charset=${contentTypeSuffix}` : ""
+  }`;
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: (method) => {
+        seenMethods.push(method);
+        return method === "GET"
+          ? {
+              found: "handler",
+              handler: {
+                stateValidator: {
+                  stateInfo: undefined,
+                  validator: () => ({
+                    error: "none",
+                    data: "Context",
+                  }),
+                },
+                handler: () => ({
+                  error: "none",
+                  data: {
+                    contentType,
+                    output,
+                    headers: {
+                      "should-be-sent": "value",
+                    },
+                  },
+                }),
+              },
+            }
+          : {
+              found: "invalid-method",
+              allowedMethods: ["GET"],
+            };
+      },
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "HEAD",
+    },
+    {
+      callbackName: "getState",
+      args: [flowUtil.seenContext, undefined],
+      returnValue: "State",
+    },
+    {
+      callbackName: "getHeader",
+      args: [flowUtil.seenContext, "content-type"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "getRequestBody",
+      args: [flowUtil.seenContext],
+      returnValue: flowUtil.dummyBody,
+    },
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "should-be-sent", "value"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: [flowUtil.seenContext, output === undefined ? 204 : 200, false],
+      returnValue: undefined,
+    },
+    ...extraCalls,
+  ]);
+  c.deepEqual(seenMethods, ["HEAD", "GET"]);
+};
+
+test(
+  "Validate typicalServerFlow handles HEAD method correctly for empty response",
+  validateServerFlowForHEADMethod,
+  undefined,
+  [
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "Content-Length", "0"],
+      returnValue: undefined,
+    },
+  ],
+);
+
+test(
+  "Validate typicalServerFlow handles HEAD method correctly for string",
+  validateServerFlowForHEADMethod,
+  "Data",
+  [
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "Content-Length", "8"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        flowUtil.seenContext,
+        "Content-Type",
+        "contentType; charset=utf16le",
+      ],
+      returnValue: undefined,
+    },
+  ],
+  "utf16le",
+);
+
+test(
+  "Validate typicalServerFlow handles HEAD method correctly for string without charset suffix",
+  validateServerFlowForHEADMethod,
+  "Data",
+  [
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "Content-Length", "4"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "Content-Type", "contentType"],
+      returnValue: undefined,
+    },
+  ],
+  "",
+);
+
+test(
+  "Validate typicalServerFlow handles HEAD method correctly for Buffer",
+  validateServerFlowForHEADMethod,
+  Buffer.from("Hello", "utf-8"),
+  [
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "Content-Length", "5"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        flowUtil.seenContext,
+        "Content-Type",
+        "contentType; charset=utf-8",
+      ],
+      returnValue: undefined,
+    },
+  ],
+);
+
+test(
+  "Validate typicalServerFlow handles HEAD method correctly for Readable",
+  validateServerFlowForHEADMethod,
+  flowUtil.dummyBody,
+  [
+    {
+      callbackName: "setHeader",
+      args: [
+        flowUtil.seenContext,
+        "Content-Type",
+        "contentType; charset=utf-8",
+      ],
+      returnValue: undefined,
+    },
+  ],
+);
+
+// test("Validate typicalServerFlow handles HEAD method correctly when no GET method available", async (c) => {
+//   c.plan(1);
+//   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+//     getMethod: () => "HEAD",
+//   });
+//   const seenMethods: Array<string> = [];
+//   await spec.createTypicalServerFlow(
+//     {
+//       url: /(?<group>path)/,
+//       handler: (method) => {
+//         seenMethods.push(method);
+//         return {
+//           found: "invalid-method",
+//           allowedMethods: ["POST"],
+//         };
+//       },
+//     },
+//     callbacks,
+//     undefined,
+//   )(flowUtil.inputContext);
+//   c.deepEqual(seenCallbacks, []);
+//   c.deepEqual(seenMethods, ["HEAD"]);
+// });
 
 const getHumanReadableMessage = () => "";
 

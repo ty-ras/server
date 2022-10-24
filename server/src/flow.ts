@@ -53,13 +53,27 @@ export const createTypicalServerFlow = <
       );
       if (maybeEventArgs) {
         // We have a match -> get the handler that will handle our match
-        const method = cb.getMethod(ctx) as ep.HttpMethod;
-        const foundHandler = server.checkMethodForHandler(
+        let method = cb.getMethod(ctx) as ep.HttpMethod;
+        let foundHandler = server.checkMethodForHandler(
           maybeEventArgs,
           events,
           method,
           handler,
         );
+        const sendBody = method !== "HEAD";
+        if (
+          foundHandler.found !== "handler" &&
+          !sendBody &&
+          foundHandler.allowedMethods.includes("GET")
+        ) {
+          method = "GET";
+          foundHandler = server.checkMethodForHandler(
+            maybeEventArgs,
+            events,
+            method,
+            handler,
+          );
+        }
 
         if (foundHandler.found === "handler") {
           const {
@@ -153,11 +167,38 @@ export const createTypicalServerFlow = <
                           cb.setStatusCode(
                             ctx,
                             hasOutput ? 200 : 204,
-                            hasOutput,
+                            sendBody && hasOutput,
                           );
+                          if (
+                            !sendBody &&
+                            !(output instanceof stream.Readable)
+                          ) {
+                            const charsetIdx =
+                              contentType.indexOf(CHARSET_MARKER);
+                            cb.setHeader(
+                              ctx,
+                              "Content-Length",
+                              `${
+                                output === undefined
+                                  ? 0
+                                  : typeof output === "string"
+                                  ? Buffer.byteLength(
+                                      output,
+                                      charsetIdx > 0
+                                        ? (contentType.substring(
+                                            charsetIdx + CHARSET_MARKER.length,
+                                          ) as BufferEncoding)
+                                        : undefined,
+                                    )
+                                  : output.byteLength
+                              }`,
+                            );
+                          }
                           if (hasOutput) {
                             cb.setHeader(ctx, "Content-Type", contentType);
-                            await cb.sendContent(ctx, output);
+                            if (sendBody) {
+                              await cb.sendContent(ctx, output);
+                            }
                           }
                         }
                         break;
@@ -266,3 +307,5 @@ declare global {
     isArray<T>(arg: T): arg is ArrayType<T>;
   }
 }
+
+const CHARSET_MARKER = "charset=";
