@@ -141,40 +141,40 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
   c.deepEqual(seenCallbacks, [
     // Server flow calls these
     {
-      args: [contextWithoutModifications],
       callbackName: "getURL",
+      args: [contextWithoutModifications],
       returnValue: flowUtil.dummyURL,
     },
     {
-      args: [contextWithoutModifications],
       callbackName: "getMethod",
+      args: [contextWithoutModifications],
       returnValue: "GET",
     },
     {
-      args: [contextWithoutModifications, undefined],
       callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
       returnValue: "State",
     },
     {
-      args: [contextWithoutModifications, "content-type"],
       callbackName: "getHeader",
+      args: [contextWithoutModifications, "content-type"],
       returnValue: undefined,
     },
     {
-      args: [contextWithoutModifications],
       callbackName: "getRequestBody",
+      args: [contextWithoutModifications],
       returnValue: flowUtil.dummyBody,
     },
     // This is called by CORS handler when reacting to onSuccessfulInvocationEnd event.
     {
-      args: [contextWithoutModifications, "Access-Control-Allow-Origin", "*"],
       callbackName: "setHeader",
+      args: [contextWithoutModifications, "Access-Control-Allow-Origin", "*"],
       returnValue: undefined,
     },
     // This is called by server flow again. Notice that CORS callback does *not* set status code since this is not a preflight request.
     {
-      args: [contextWithoutModifications, 204, false],
       callbackName: "setStatusCode",
+      args: [contextWithoutModifications, 204, false],
       returnValue: undefined,
     },
   ]);
@@ -209,49 +209,330 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
   c.deepEqual(seenCallbacks, [
     // Two first invocations are by server flow
     {
-      args: [contextWithoutModifications],
       callbackName: "getURL",
+      args: [contextWithoutModifications],
       returnValue: flowUtil.dummyURL,
     },
     {
-      args: [contextWithoutModifications],
       callbackName: "getMethod",
+      args: [contextWithoutModifications],
       returnValue: "OPTIONS",
     },
     // Now CORS flow kicks in, starting by asking method (since this is interpreted as pre-flight request)
     {
-      args: [contextWithoutModifications],
       callbackName: "getMethod",
+      args: [contextWithoutModifications],
       returnValue: "OPTIONS",
     },
     // CORS flow asks for origin header - because CORS options origin provider is a callback instead of static string
     {
-      args: [contextWithoutModifications, "origin"],
       callbackName: "getHeader",
+      args: [contextWithoutModifications, "origin"],
       returnValue: expectedRequestOrigin,
     },
     // CORS flow uses the origin that the callback provided
     {
+      callbackName: "setHeader",
       args: [
         contextWithoutModifications,
         "Access-Control-Allow-Origin",
         "custom-origin",
       ],
-      callbackName: "setHeader",
       returnValue: undefined,
     },
     // CORS flow also sets the "Vary" header
     {
-      args: [contextWithoutModifications, "Vary", "Origin"],
       callbackName: "setHeader",
+      args: [contextWithoutModifications, "Vary", "Origin"],
       returnValue: undefined,
     },
     // CORS flow finally sets the status code
     {
-      args: [contextWithoutModifications, 200, false],
       callbackName: "setStatusCode",
+      args: [contextWithoutModifications, 200, false],
       returnValue: undefined,
     },
   ]);
   c.deepEqual(seenRequestOrigin, expectedRequestOrigin);
+});
+
+test("Validate that CORS callbacks invoke custom allow headers callback", async (c) => {
+  c.plan(2);
+  const expectedRequestAllowHeaders = "header1,header2";
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getMethod: () => "OPTIONS",
+    getHeader: () => expectedRequestAllowHeaders,
+  });
+  let seenRequestAllowHeaders: data.ReadonlyHeaderValue;
+  const handler = spec.createCORSHandler(callbacks, {
+    allowOrigin: "*",
+    allowHeaders: (requestedHeaders) => {
+      seenRequestAllowHeaders = requestedHeaders;
+      return "header1";
+    },
+  });
+  await flow.createTypicalServerFlow(
+    {
+      url: flowUtil.dummyURLRegexp,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: ["GET"],
+      }),
+    },
+    callbacks,
+    handler,
+  )(flowUtil.inputContext);
+  const contextWithoutModifications = flowUtil.seenContext;
+  c.deepEqual(seenCallbacks, [
+    // Two first invocations are by server flow
+    {
+      callbackName: "getURL",
+      args: [contextWithoutModifications],
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "OPTIONS",
+    },
+    // Now CORS flow kicks in, starting by asking method (since this is interpreted as pre-flight request)
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "OPTIONS",
+    },
+    // Next, origin is set (as it is simply static string)
+    {
+      callbackName: "setHeader",
+      args: [contextWithoutModifications, "Access-Control-Allow-Origin", "*"],
+      returnValue: undefined,
+    },
+    // CORS flow then asks for Access-Control-Request-Headers
+    {
+      callbackName: "getHeader",
+      args: [contextWithoutModifications, "Access-Control-Request-Headers"],
+      returnValue: expectedRequestAllowHeaders,
+    },
+    // CORS flow sets the Access-Control-Allow-Headers to the value provided by callback
+    {
+      callbackName: "setHeader",
+      args: [
+        contextWithoutModifications,
+        "Access-Control-Allow-Headers",
+        "header1",
+      ],
+      returnValue: undefined,
+    },
+    // CORS flow finally sets the status code
+    {
+      callbackName: "setStatusCode",
+      args: [contextWithoutModifications, 200, false],
+      returnValue: undefined,
+    },
+  ]);
+  c.deepEqual(seenRequestAllowHeaders, expectedRequestAllowHeaders);
+});
+
+test("Validate that CORS callbacks check for given callback before proceeding", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  const handler = spec.createCORSHandler(
+    callbacks,
+    {
+      allowOrigin: "*",
+    },
+    // Filter which always just returns false
+    () => false,
+  );
+  await flow.createTypicalServerFlow(
+    {
+      url: flowUtil.dummyURLRegexp,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: ["GET"],
+      }),
+    },
+    callbacks,
+    handler,
+  )(flowUtil.inputContext);
+  const contextWithoutModifications = flowUtil.seenContext;
+  c.deepEqual(seenCallbacks, [
+    // All of the invocations are via server flow
+    {
+      callbackName: "getURL",
+      args: [contextWithoutModifications],
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "GET",
+    },
+    {
+      callbackName: "setHeader",
+      args: [contextWithoutModifications, "Allow", "GET"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: [contextWithoutModifications, 405, false],
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate that CORS callbacks don't mistake normal method mismatch for preflight request", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  const handler = spec.createCORSHandler(callbacks, {
+    allowOrigin: "*",
+  });
+  await flow.createTypicalServerFlow(
+    {
+      url: flowUtil.dummyURLRegexp,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: ["GET"],
+      }),
+    },
+    callbacks,
+    handler,
+  )(flowUtil.inputContext);
+  const contextWithoutModifications = flowUtil.seenContext;
+  c.deepEqual(seenCallbacks, [
+    // Server flow starts by asking for URL and method
+    {
+      callbackName: "getURL",
+      args: [contextWithoutModifications],
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "GET",
+    },
+    // CORS flow kicks in via onInvalidMethod event, asking for method as well
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "GET",
+    },
+    // CORS flow sets Allow-Origin
+    {
+      callbackName: "setHeader",
+      args: [contextWithoutModifications, "Access-Control-Allow-Origin", "*"],
+      returnValue: undefined,
+    },
+    // Server flow resumes again, setting Allow header and status code
+    {
+      callbackName: "setHeader",
+      args: [contextWithoutModifications, "Allow", "GET"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: [contextWithoutModifications, 405, false],
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate that CORS callbacks work for all static options", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getMethod: () => "OPTIONS",
+  });
+  const allowMethods = ["POST", "PUT"] as const;
+  const handler = spec.createCORSHandler(callbacks, {
+    allowOrigin: "*",
+    allowHeaders: ["header1", "header2"],
+    allowMethods,
+    allowCredentials: true,
+    exposeHeaders: ["header1"],
+    maxAge: 1000,
+  });
+  await flow.createTypicalServerFlow(
+    {
+      url: flowUtil.dummyURLRegexp,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: [...allowMethods],
+      }),
+    },
+    callbacks,
+    handler,
+  )(flowUtil.inputContext);
+  const contextWithoutModifications = flowUtil.seenContext;
+  c.deepEqual(seenCallbacks, [
+    // Server flow starts by asking for URL and method
+    {
+      callbackName: "getURL",
+      args: [contextWithoutModifications],
+      returnValue: flowUtil.dummyURL,
+    },
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "OPTIONS",
+    },
+    // CORS flow kicks in via onInvalidMethod event, asking for method as well
+    {
+      callbackName: "getMethod",
+      args: [contextWithoutModifications],
+      returnValue: "OPTIONS",
+    },
+    // CORS flow detects this to be preflight request, and sets Allow-Origin, Expose-Headers, Allow-Credentials, Max-Age, Allow-Headers, and Allow-Methods headers.
+    // It then also sets status code.
+    {
+      callbackName: "setHeader",
+      args: [contextWithoutModifications, "Access-Control-Allow-Origin", "*"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        contextWithoutModifications,
+        "Access-Control-Expose-Headers",
+        "header1",
+      ],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        contextWithoutModifications,
+        "Access-Control-Allow-Credentials",
+        "true",
+      ],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [contextWithoutModifications, "Access-Control-Max-Age", "1000"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        contextWithoutModifications,
+        "Access-Control-Allow-Headers",
+        "header1,header2",
+      ],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        contextWithoutModifications,
+        "Access-Control-Allow-Methods",
+        "POST,PUT",
+      ],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: [contextWithoutModifications, 200, false],
+      returnValue: undefined,
+    },
+  ]);
 });

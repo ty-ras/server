@@ -214,7 +214,7 @@ export const createTypicalServerFlow = <
 
 export type TContextBase = object;
 
-export interface ServerFlowCallbacksStatic<TContext> {
+export interface ServerFlowCallbacksWithoutState<TContext> {
   getURL: (ctx: TContext) => url.URL | string | undefined;
   getMethod: (ctx: TContext) => string;
   getHeader: (ctx: TContext, headerName: string) => data.ReadonlyHeaderValue;
@@ -237,7 +237,7 @@ export interface ServerFlowCallbacksStatic<TContext> {
 }
 
 export type ServerFlowCallbacks<TContext, TStateInfo> =
-  ServerFlowCallbacksStatic<TContext> & {
+  ServerFlowCallbacksWithoutState<TContext> & {
     getState: (
       ctx: TContext,
       stateInfo: TStateInfo,
