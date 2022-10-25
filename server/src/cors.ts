@@ -79,7 +79,7 @@ export interface CORSOptions {
 }
 
 export type CORSFlowCallbacks<TContext> = Pick<
-  flow.ServerFlowCallbacks<flow.GetContext<TContext>, never>,
+  flow.ServerFlowCallbacks<TContext, never>,
   "getMethod" | "getHeader" | "setHeader" | "setStatusCode"
 >;
 
