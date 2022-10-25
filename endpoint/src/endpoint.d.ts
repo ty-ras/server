@@ -50,7 +50,6 @@ export type StaticAppEndpointHandlerFunction<TContext> = (args: {
   context: TContext;
   state: unknown;
   url: unknown;
-  method: method.HttpMethod;
   headers: dataBE.RuntimeAnyHeaders;
   query: unknown;
   body: unknown;
