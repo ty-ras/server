@@ -11,7 +11,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
     getMethod: () => "OPTIONS",
   });
-  const handler = spec.createCORSHandler(callbacks, {
+  const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
     allowMethods: true,
   });
@@ -101,7 +101,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
     getMethod: () => method,
   });
-  const handler = spec.createCORSHandler(callbacks, {
+  const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
   });
   await flow.createTypicalServerFlow(
@@ -188,7 +188,7 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
     getHeader: () => expectedRequestOrigin,
   });
   let seenRequestOrigin: data.ReadonlyHeaderValue;
-  const handler = spec.createCORSHandler(callbacks, {
+  const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: (originFromRequest) => {
       seenRequestOrigin = originFromRequest;
       return "custom-origin";
@@ -264,7 +264,7 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
     getHeader: () => expectedRequestAllowHeaders,
   });
   let seenRequestAllowHeaders: data.ReadonlyHeaderValue;
-  const handler = spec.createCORSHandler(callbacks, {
+  const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
     allowHeaders: (requestedHeaders) => {
       seenRequestAllowHeaders = requestedHeaders;
@@ -336,7 +336,7 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
 test("Validate that CORS callbacks check for given callback before proceeding", async (c) => {
   c.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  const handler = spec.createCORSHandler(
+  const handler = spec.createCORSHandlerGeneric(
     callbacks,
     {
       allowOrigin: "*",
@@ -384,7 +384,7 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
 test("Validate that CORS callbacks don't mistake normal method mismatch for preflight request", async (c) => {
   c.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  const handler = spec.createCORSHandler(callbacks, {
+  const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
   });
   await flow.createTypicalServerFlow(
@@ -443,7 +443,7 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
     getMethod: () => "OPTIONS",
   });
   const allowMethods = ["POST", "PUT"] as const;
-  const handler = spec.createCORSHandler(callbacks, {
+  const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
     allowHeaders: ["header1", "header2"],
     allowMethods,

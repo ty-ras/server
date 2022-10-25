@@ -3,7 +3,7 @@ import type * as ep from "@ty-ras/endpoint";
 import type * as evt from "./events";
 import type * as flow from "./flow";
 
-export const createCORSHandler = <TContext extends flow.TContextBase>(
+export const createCORSHandlerGeneric = <TContext extends flow.TContextBase>(
   { getMethod, ...callbacks }: CORSFlowCallbacks<TContext>,
   options: CORSOptions,
   proceed?: evt.EventHandler<
