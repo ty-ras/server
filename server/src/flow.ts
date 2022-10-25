@@ -53,7 +53,7 @@ export const createTypicalServerFlow = <
       );
       if (maybeEventArgs) {
         // We have a match -> get the handler that will handle our match
-        let method = cb.getMethod(ctx) as ep.HttpMethod;
+        const method = cb.getMethod(ctx) as ep.HttpMethod;
         let foundHandler = server.checkMethodForHandler(
           maybeEventArgs,
           events,
@@ -66,11 +66,10 @@ export const createTypicalServerFlow = <
           !sendBody &&
           foundHandler.allowedMethods.includes("GET")
         ) {
-          method = "GET";
           foundHandler = server.checkMethodForHandler(
             maybeEventArgs,
             events,
-            method,
+            "GET",
             handler,
           );
         }
@@ -143,7 +142,6 @@ export const createTypicalServerFlow = <
                       {
                         context: eventArgs.ctx,
                         state: eventArgs.state,
-                        method,
                         url,
                         headers,
                         body,
