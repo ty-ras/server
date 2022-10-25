@@ -4,7 +4,7 @@ import test, { ExecutionContext } from "ava";
 import * as spec from "../flow";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
-import type * as stream from "stream";
+import * as stream from "stream";
 
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
@@ -865,7 +865,8 @@ const validateServerFlowForHEADMethod = async (
   extraCalls: flowUtil.AllCallbacksArray,
   contentTypeSuffix: string | undefined = "utf-8",
 ) => {
-  c.plan(2);
+  const isReadable = output instanceof stream.Readable;
+  c.plan(isReadable ? 3 : 2);
   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
     getMethod: () => "HEAD",
   });
@@ -949,6 +950,9 @@ const validateServerFlowForHEADMethod = async (
     ...extraCalls,
   ]);
   c.deepEqual(seenMethods, ["HEAD", "GET"]);
+  if (isReadable) {
+    c.true(output.destroyed);
+  }
 };
 
 test(
@@ -1045,29 +1049,52 @@ test(
   ],
 );
 
-// test("Validate typicalServerFlow handles HEAD method correctly when no GET method available", async (c) => {
-//   c.plan(1);
-//   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
-//     getMethod: () => "HEAD",
-//   });
-//   const seenMethods: Array<string> = [];
-//   await spec.createTypicalServerFlow(
-//     {
-//       url: /(?<group>path)/,
-//       handler: (method) => {
-//         seenMethods.push(method);
-//         return {
-//           found: "invalid-method",
-//           allowedMethods: ["POST"],
-//         };
-//       },
-//     },
-//     callbacks,
-//     undefined,
-//   )(flowUtil.inputContext);
-//   c.deepEqual(seenCallbacks, []);
-//   c.deepEqual(seenMethods, ["HEAD"]);
-// });
+test("Validate typicalServerFlow handles HEAD method correctly when no GET method available", async (c) => {
+  c.plan(2);
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getMethod: () => "HEAD",
+  });
+  const seenMethods: Array<string> = [];
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: (method) => {
+        seenMethods.push(method);
+        return {
+          found: "invalid-method",
+          allowedMethods: ["POST"],
+        };
+      },
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    // Server flow gets URL and method
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: "/path",
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "HEAD",
+    },
+    // Since allowed methods did not contain "GET", normal procedure resumes to return 405 with Allow header set.
+    {
+      callbackName: "setHeader",
+      args: [flowUtil.seenContext, "Allow", "POST"],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setStatusCode",
+      args: [flowUtil.seenContext, 405, false],
+      returnValue: undefined,
+    },
+  ]);
+  c.deepEqual(seenMethods, ["HEAD"]);
+});
 
 const getHumanReadableMessage = () => "";
 

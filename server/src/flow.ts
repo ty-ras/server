@@ -169,30 +169,32 @@ export const createTypicalServerFlow = <
                             hasOutput ? 200 : 204,
                             sendBody && hasOutput,
                           );
-                          if (
-                            !sendBody &&
-                            !(output instanceof stream.Readable)
-                          ) {
-                            const charsetIdx =
-                              contentType.indexOf(CHARSET_MARKER);
-                            cb.setHeader(
-                              ctx,
-                              "Content-Length",
-                              `${
-                                output === undefined
-                                  ? 0
-                                  : typeof output === "string"
-                                  ? Buffer.byteLength(
-                                      output,
-                                      charsetIdx > 0
-                                        ? (contentType.substring(
-                                            charsetIdx + CHARSET_MARKER.length,
-                                          ) as BufferEncoding)
-                                        : undefined,
-                                    )
-                                  : output.byteLength
-                              }`,
-                            );
+                          if (!sendBody) {
+                            if (output instanceof stream.Readable) {
+                              output.destroy();
+                            } else {
+                              const charsetIdx =
+                                contentType.indexOf(CHARSET_MARKER);
+                              cb.setHeader(
+                                ctx,
+                                "Content-Length",
+                                `${
+                                  output === undefined
+                                    ? 0
+                                    : typeof output === "string"
+                                    ? Buffer.byteLength(
+                                        output,
+                                        charsetIdx > 0
+                                          ? (contentType.substring(
+                                              charsetIdx +
+                                                CHARSET_MARKER.length,
+                                            ) as BufferEncoding)
+                                          : undefined,
+                                      )
+                                    : output.byteLength
+                                }`,
+                              );
+                            }
                           }
                           if (hasOutput) {
                             cb.setHeader(ctx, "Content-Type", contentType);
