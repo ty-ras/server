@@ -277,3 +277,27 @@ test("Validate atPrefix detects top-level prefix", (t) => {
     },
   );
 });
+
+test("Validate atPrefix detects top-level prefix but doesn't throw if prefix string is also empty", (t) => {
+  t.plan(2);
+  const topLevel = spec.atPrefix("", {
+    getRegExpAndHandler: () => {
+      throw new Error("This should never be called");
+    },
+  });
+  t.is(
+    spec.atPrefix("", topLevel),
+    topLevel,
+    "When prefixing just top-level-prefixed endpoint with top-level prefix (empty string), the top-level-prefixed endpoint itself must be returned.",
+  );
+
+  t.throws(
+    () => spec.atPrefix("", topLevel, topLevel),
+    {
+      instanceOf: spec.InvalidEndpointsError,
+      message:
+        "Endpoints at indices 0, 1 were top-level endpoints and thus unprefixable.",
+    },
+    "When top-level-prefixed endpoint is just one of many when doing another top-level prefix, exception must be thrown.",
+  );
+});

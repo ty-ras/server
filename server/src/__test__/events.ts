@@ -3,7 +3,7 @@ import type * as evt from "../events";
 
 export const createTrackingEvents = () => {
   const seenEvents: AllEventsArray = [];
-  const emitter: evt.ServerEventEmitter<any, any> = (eventName, args) =>
+  const emitter: evt.ServerEventHandler<any, any> = (eventName, args) =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     seenEvents.push({ eventName: eventName as any, args: args as any });
   return {
