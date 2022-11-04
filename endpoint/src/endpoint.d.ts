@@ -21,12 +21,17 @@ export type DynamicHandlerGetter<TContext, TStateInfo> = (
 export type DynamicHandlerResponse<TContext, TStateInfo> =
   | {
       found: "invalid-method";
-      allowedMethods: Array<method.HttpMethod>;
+      allowedMethods: Array<EndpointMethodInformation<TStateInfo>>;
     }
   | {
       found: "handler";
       handler: StaticAppEndpointHandler<TContext, TStateInfo>;
     };
+
+export interface EndpointMethodInformation<TStateInfo> {
+  method: method.HttpMethod;
+  stateValidator: EndpointStateValidator<TStateInfo, unknown>;
+}
 
 export type StaticAppEndpointHandler<TContext, TStateInfo> = {
   stateValidator: EndpointStateValidator<TStateInfo, unknown>;
