@@ -6,6 +6,7 @@ import type * as evt from "./events";
 
 import * as stream from "stream";
 import * as u from "url";
+import * as util from "util";
 
 export const checkURLPathNameForHandler = <TContext>(
   ctx: TContext,
@@ -30,21 +31,50 @@ export const checkURLPathNameForHandler = <TContext>(
     : undefined;
 };
 
-export const checkMethodForHandler = <TContext, TStateInfo>(
+export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events: evt.ServerEventHandler<TContext, never> | undefined,
-  method: ep.HttpMethod,
-  handler: ep.DynamicHandlerGetter<TContext, TStateInfo>,
+  allowedMethods: Array<ep.EndpointMethodInformation<TStateInfo>>,
+  validateStateInfo: (
+    stateInfo: ep.EndpointStateValidator<TStateInfo, unknown>,
+  ) => Promise<boolean>,
 ) => {
-  const foundHandler = handler(method, eventArgs.groups);
-  const foundSuccess = foundHandler.found === "handler";
-  if (!foundSuccess) {
-    events?.("onInvalidMethod", {
-      ...eventArgs,
-      allowedMethods: foundHandler.allowedMethods,
-    });
-  }
-  return foundHandler;
+  // Group methods by state infos
+  const methodsGroupedByStateInfos: Array<{
+    stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
+    methods: Array<ep.HttpMethod>;
+  }> = [];
+  allowedMethods.forEach(({ method, stateValidator }) => {
+    const idx = methodsGroupedByStateInfos.findIndex((s) =>
+      util.isDeepStrictEqual(
+        s.stateValidator.stateInfo,
+        stateValidator.stateInfo,
+      ),
+    );
+    if (idx >= 0) {
+      methodsGroupedByStateInfos[idx].methods.push(method);
+    } else {
+      methodsGroupedByStateInfos.push({ stateValidator, methods: [method] });
+    }
+  });
+
+  // Now validate state infos, and only include methods which pass validation (e.g. authorization header)
+  const allowedMethodsSentToClient = (
+    await Promise.all(
+      methodsGroupedByStateInfos.map(async (info) =>
+        (await validateStateInfo(info.stateValidator)) ? info.methods : [],
+      ),
+    )
+  ).flat();
+
+  events?.("onInvalidMethod", {
+    ...eventArgs,
+    allowedMethods: allowedMethods.map(({ method }) => method),
+    // Create copy of array to prevent accidental modifications
+    allowedMethodsSentToClient: [...allowedMethodsSentToClient],
+  });
+
+  return allowedMethodsSentToClient;
 };
 
 export const checkStateForHandler = <TContext, TState>(

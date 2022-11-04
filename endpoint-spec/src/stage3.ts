@@ -91,7 +91,8 @@ export class AppEndpointBuilder<
           ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           stateInfo: Object.fromEntries(
             Object.entries(this._state.methods).map(
-              ([method, info]) => [method, info.stateInfo] as const,
+              ([method, info]) =>
+                [method, info.stateValidator.stateInfo] as const,
             ),
           ),
         }),
@@ -137,7 +138,12 @@ const checkMethodsForHandler = <
       }
     : {
         found: "invalid-method" as const,
-        allowedMethods: Object.keys(state) as Array<ep.HttpMethod>,
+        allowedMethods: Object.entries(state).map(
+          ([method, { stateValidator }]) => ({
+            method: method as ep.HttpMethod,
+            stateValidator,
+          }),
+        ),
       };
 
 function* getURLItemsInOrder<TStringDecoder>(

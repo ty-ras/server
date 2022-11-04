@@ -6,8 +6,6 @@ import * as common from "./common";
 import * as data from "@ty-ras/data";
 import type * as ep from "@ty-ras/endpoint";
 
-// 'Adhoc' flow of using the library - as opposed to typical flow which uses batch specifications.
-
 const testWithSimpleEndpoint = async (
   t: ExecutionContext,
   useBatch: boolean,
@@ -69,17 +67,11 @@ const testWithComplexEndpoint = async (
   const refinedState = "RefinedState";
   const seenArgs: Array<spec.EndpointHandlerArgs<unknown, string>> = [];
   const endpointHandler = common.createComplexEndpointHandler(seenArgs);
-  const starter = spec.startBuildingAPI()
-    .atURL`/path/${"urlParam"}`.validateURLData(
-    common.stringDecoderSpec(
-      {
-        urlParam: "urlParamValue",
-      },
-      () => ({
-        regExp: /.*/,
-      }),
-    ),
-  );
+  const starter = spec.startBuildingAPI().atURL`/path/${common.urlParam(
+    "urlParam",
+    "urlParamValue",
+    /.*/,
+  )}`;
   const query = common.stringDecoderSpec(
     {
       queryParam: "queryParamValue",

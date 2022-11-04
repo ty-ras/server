@@ -25,17 +25,23 @@ export const createCORSHandlerGeneric = <TContext extends flow.TContextBase>(
       const { ctx, ...evtData } = eventData;
       switch (eventName) {
         case "onInvalidMethod":
-          headerSetter(
-            ctx,
-            getMethod(ctx) === "OPTIONS"
-              ? (
-                  evtData as unknown as evt.VirtualRequestProcessingEvents<
-                    never,
-                    never
-                  >["onInvalidMethod"]
-                ).allowedMethods
-              : undefined,
-          );
+          {
+            const allowedMethods =
+              getMethod(ctx) === "OPTIONS"
+                ? (
+                    evtData as unknown as evt.VirtualRequestProcessingEvents<
+                      never,
+                      never
+                    >["onInvalidMethod"]
+                  ).allowedMethodsSentToClient
+                : undefined;
+            headerSetter(
+              ctx,
+              allowedMethods && allowedMethods.length > 0
+                ? allowedMethods
+                : undefined,
+            );
+          }
           break;
         case "onSuccessfulInvocationEnd":
         case "onInvalidUrl":
@@ -59,20 +65,15 @@ export const createCORSHandlerGeneric = <TContext extends flow.TContextBase>(
 
 export interface CORSOptions {
   // These two are used only for preflight-requests
-  allowMethods?: true | ReadonlyMaybeArrayData<ep.HttpMethod>;
+  allowMethods?:
+    | true
+    | ReadonlyMaybeArrayData<ep.HttpMethod>
+    | CallbackWithRequestHeader<MaybeArrayData>;
   allowHeaders?:
     | ReadonlyMaybeArrayData
-    | ((
-        requestedHeaders: data.ReadonlyHeaderValue,
-        getHeader: (headerName: string) => data.ReadonlyStringValue,
-      ) => MaybeArrayData);
+    | CallbackWithRequestHeader<MaybeArrayData>;
   // The remaining values are used for all requests.
-  allowOrigin:
-    | string
-    | ((
-        origin: data.ReadonlyHeaderValue,
-        getHeader: (headerName: string) => data.ReadonlyStringValue,
-      ) => string);
+  allowOrigin: string | CallbackWithRequestHeader<string>;
   exposeHeaders?: ReadonlyMaybeArrayData;
   maxAge?: number;
   allowCredentials?: boolean;
@@ -88,6 +89,14 @@ export type MaybeArrayData = data.OneOrMany<string>;
 export type ReadonlyMaybeArrayData<TData = string> =
   | TData
   | ReadonlyArray<TData>;
+
+export type CallbackWithRequestHeader<T> = (
+  requestHeaderValue: data.ReadonlyHeaderValue,
+  getHeader: GetHeaderFromRequest,
+) => T;
+export type GetHeaderFromRequest = (
+  headerName: string,
+) => data.ReadonlyHeaderValue;
 
 const createHeaderSetterCallback = <TContext>(
   {
@@ -154,18 +163,25 @@ const createHeaderSetterCallback = <TContext>(
         "Access-Control-Allow-Headers",
         allowHeadersValue,
         (v) =>
-          typeof v === "function"
-            ? v(getHeader(ctx, "Access-Control-Request-Headers"), (hdrName) =>
-                getHeader(ctx, hdrName),
-              )
-            : v,
+          callWithHeaderFromRequest(
+            v,
+            (hdrName) => getHeader(ctx, hdrName),
+            "Access-Control-Request-Headers",
+          ),
       );
       setHeaderIfNeeded(
         setHeader,
         ctx,
         "Access-Control-Allow-Methods",
         allowMethodsValue,
-        (v) => (v === true ? [...preflightAllowedMethods] : v),
+        (v) =>
+          v === true
+            ? joinStringArrayIfNeeded(preflightAllowedMethods)
+            : callWithHeaderFromRequest(
+                v,
+                (hdrName) => getHeader(ctx, hdrName),
+                "Access-Control-Request-Method",
+              ),
       );
       // Also set status code + notify server flow that it should skip setting status code.
       setStatusCode(ctx, 200, false);
@@ -219,3 +235,12 @@ function setHeaderIfNeeded<TContext, TValue>(
     );
   }
 }
+
+const callWithHeaderFromRequest = (
+  callback: string | CallbackWithRequestHeader<MaybeArrayData>,
+  getHeader: (headerName: string) => data.ReadonlyHeaderValue,
+  requestHeaderName: string,
+) =>
+  typeof callback === "function"
+    ? callback(getHeader(requestHeaderName), getHeader)
+    : callback;

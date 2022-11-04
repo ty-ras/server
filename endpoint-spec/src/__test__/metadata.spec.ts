@@ -108,16 +108,11 @@ const testWithComplexEndpoint = (t: ExecutionContext, useBatch: boolean) => {
       createMetadataProvider(),
       (stateInfo) => stateInfo,
     );
-  const starter = builder.atURL`/path/${"urlParam"}`.validateURLData(
-    common.stringDecoderSpec(
-      {
-        urlParam: "urlParamValue",
-      },
-      () => ({
-        regExp: /.*/,
-      }),
-    ),
-  );
+  const starter = builder.atURL`/path/${common.urlParam(
+    "urlParam",
+    "urlParamValue",
+    /.*/,
+  )}`;
   const query = common.stringDecoderSpec(
     {
       queryParam: "queryParamValue",
