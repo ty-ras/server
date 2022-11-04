@@ -12,4 +12,5 @@ export type {
   MaybePromise,
   StaticAppEndpointHandler,
   StaticAppEndpointHandlerFunction,
+  EndpointMethodInformation,
 } from "./endpoint";
