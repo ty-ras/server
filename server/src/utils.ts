@@ -34,44 +34,54 @@ export const checkURLPathNameForHandler = <TContext>(
 export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events: evt.ServerEventHandler<TContext, never> | undefined,
-  allowedMethods: Array<ep.EndpointMethodInformation<TStateInfo>>,
-  validateStateInfo: (
-    stateInfo: ep.EndpointStateValidator<TStateInfo, unknown>,
-  ) => Promise<boolean>,
+  allowedMethodsInfo: Array<ep.EndpointMethodInformation<TStateInfo>>,
+  validateStateInfo:
+    | ((
+        stateInfo: ep.EndpointStateValidator<TStateInfo, unknown>,
+      ) => Promise<boolean>)
+    | undefined,
 ) => {
-  // Group methods by state infos
-  const methodsGroupedByStateInfos: Array<{
-    stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
-    methods: Array<ep.HttpMethod>;
-  }> = [];
-  allowedMethods.forEach(({ method, stateValidator }) => {
-    const idx = methodsGroupedByStateInfos.findIndex((s) =>
-      util.isDeepStrictEqual(
-        s.stateValidator.stateInfo,
-        stateValidator.stateInfo,
-      ),
-    );
-    if (idx >= 0) {
-      methodsGroupedByStateInfos[idx].methods.push(method);
-    } else {
-      methodsGroupedByStateInfos.push({ stateValidator, methods: [method] });
-    }
-  });
+  let allowedMethodsFiltered: Array<ep.HttpMethod> | undefined;
+  if (validateStateInfo) {
+    // Group methods by state infos
+    const methodsGroupedByStateInfos: Array<{
+      stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
+      methods: Array<ep.HttpMethod>;
+    }> = [];
+    allowedMethodsInfo.forEach(({ method, stateValidator }) => {
+      const idx = methodsGroupedByStateInfos.findIndex((s) =>
+        util.isDeepStrictEqual(
+          s.stateValidator.stateInfo,
+          stateValidator.stateInfo,
+        ),
+      );
+      if (idx >= 0) {
+        methodsGroupedByStateInfos[idx].methods.push(method);
+      } else {
+        methodsGroupedByStateInfos.push({ stateValidator, methods: [method] });
+      }
+    });
 
-  // Now validate state infos, and only include methods which pass validation (e.g. authorization header)
-  const allowedMethodsSentToClient = (
-    await Promise.all(
-      methodsGroupedByStateInfos.map(async (info) =>
-        (await validateStateInfo(info.stateValidator)) ? info.methods : [],
-      ),
-    )
-  ).flat();
+    // Now validate state infos, and only include methods which pass validation (e.g. authorization header)
+    allowedMethodsFiltered = (
+      await Promise.all(
+        methodsGroupedByStateInfos.map(async (info) =>
+          (await validateStateInfo(info.stateValidator)) ? info.methods : [],
+        ),
+      )
+    ).flat();
+  }
 
+  const allowedMethods = allowedMethodsInfo.map(({ method }) => method);
+  // Create copy of array to prevent accidental modifications
+  const allowedMethodsSentToClient =
+    allowedMethodsFiltered === undefined
+      ? allowedMethods
+      : [...allowedMethodsFiltered];
   events?.("onInvalidMethod", {
     ...eventArgs,
-    allowedMethods: allowedMethods.map(({ method }) => method),
-    // Create copy of array to prevent accidental modifications
-    allowedMethodsSentToClient: [...allowedMethodsSentToClient],
+    allowedMethods,
+    allowedMethodsSentToClient,
   });
 
   return allowedMethodsSentToClient;

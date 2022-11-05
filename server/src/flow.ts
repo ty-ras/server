@@ -228,10 +228,12 @@ export const createTypicalServerFlow = <
               maybeEventArgs,
               events,
               foundHandler.allowedMethods,
-              async (stateValidator) =>
-                stateValidator.validator(
-                  await cb.getState(ctx, stateValidator.stateInfo),
-                ).error === "none",
+              method === "OPTIONS"
+                ? undefined
+                : async (stateValidator) =>
+                    stateValidator.validator(
+                      await cb.getState(ctx, stateValidator.stateInfo),
+                    ).error === "none",
             );
 
           if (!ctx.skipSettingStatusCode) {
