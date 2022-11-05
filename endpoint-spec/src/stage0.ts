@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as ep from "@ty-ras/endpoint";
 import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
@@ -11,11 +14,8 @@ export const startBuildingAPI = <TContext, TStateInfo>() =>
     TStateInfo,
     unknown,
     unknown,
-    // eslint-disable-next-line @typescript-eslint/ban-types
     {},
-    // eslint-disable-next-line @typescript-eslint/ban-types
     {},
-    // eslint-disable-next-line @typescript-eslint/ban-types
     {}
   >({}, {});
 
@@ -43,81 +43,61 @@ export class AppEndpointBuilderProvider<
     },
   ) {}
 
-  public atURL(fragments: TemplateStringsArray): AppEndpointBuilderInitial<
+  public atURL<
+    TArgs extends Array<URLParameterSpec<string, any, TStringDecoder>>,
+  >(
+    fragments: TemplateStringsArray,
+    ...args: TArgs
+  ): AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
-    {}, // eslint-disable-line @typescript-eslint/ban-types
+    TArgs extends []
+      ? {}
+      : common.EndpointHandlerArgsWithURL<URLParameterReducer<TArgs>>,
     ep.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
     TInputContents,
     TMetadataProviders
-  >;
-  public atURL<TArgs extends [string, ...Array<string>]>(
-    fragments: TemplateStringsArray,
-    ...args: TArgs
-  ): URLDataNames<
-    TContext,
-    TStateInfo,
-    TArgs[number],
-    TStringDecoder,
-    TStringEncoder,
-    TOutputContents,
-    TInputContents,
-    TMetadataProviders
-  >;
-  public atURL<TArgs extends [string, ...Array<string>]>(
-    fragments: TemplateStringsArray,
-    ...args: TArgs
-  ):
-    | AppEndpointBuilderInitial<
-        TContext,
-        TStateInfo,
-        {}, // eslint-disable-line @typescript-eslint/ban-types
-        ep.HttpMethod,
-        TStringDecoder,
-        TStringEncoder,
-        TOutputContents,
-        TInputContents,
-        TMetadataProviders
-      >
-    | URLDataNames<
-        TContext,
-        TStateInfo,
-        TArgs[number],
-        TStringDecoder,
-        TStringEncoder,
-        TOutputContents,
-        TInputContents,
-        TMetadataProviders
-      > {
-    if (args.length > 0) {
-      // URL template has arguments -> return URL data validator which allows to build endpoints
-      return {
-        validateURLData: (validation) => {
-          return new AppEndpointBuilderInitial({
-            fragments,
-            methods: {},
-            // TODO fix this typing (may require extracting this method into class, as anonymous methods with method generic arguments don't behave well)
-            metadata: this._mdProviders,
-            urlValidation: {
-              args,
-              validation,
-            },
-          });
-        },
-      };
-    } else {
-      // URL has no arguments -> return builder which can build endpoints without URL validation
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return new AppEndpointBuilderInitial({
-        fragments,
-        methods: {},
-        metadata: this._mdProviders,
-        urlValidation: undefined,
-      });
-    }
+  > {
+    return new AppEndpointBuilderInitial({
+      fragments,
+      methods: {},
+      metadata: this._mdProviders,
+      urlValidation:
+        args.length > 0
+          ? {
+              args: args.map(({ name }) => name),
+              validation: {
+                validators: Object.fromEntries(
+                  args.map(({ name, validator }) => [name, validator] as const),
+                ) as dataBE.StringDataValidators<
+                  URLParameterReducer<TArgs>,
+                  string,
+                  true
+                >,
+                metadata: Object.fromEntries(
+                  args.map(
+                    ({
+                      name,
+                      decoder,
+                      regExp,
+                    }): [
+                      string,
+                      dataBE.URLParameterValidationAdditionalMetadata &
+                        dataBE.WithDecoder<TStringDecoder>,
+                    ] => [name, { decoder, regExp }],
+                  ),
+                ) as dataBE.StringDataValidatorSpecMetadata<
+                  keyof URLParameterReducer<TArgs> & string,
+                  dataBE.WithDecoder<TStringDecoder> &
+                    dataBE.URLParameterValidationAdditionalMetadata
+                >,
+              },
+            }
+          : undefined,
+    });
   }
 
   public withMetadataProvider<
@@ -221,9 +201,9 @@ export class AppEndpointBuilderProvider<
     mdArgs: {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
         infer _0,
-        infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _1,
+        infer _2,
+        infer _3,
         infer _4,
         infer _5,
         infer _6,
@@ -239,12 +219,12 @@ export class AppEndpointBuilderProvider<
         TStateInfo,
         {
           [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
-            infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-            infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer _,
+            infer _1,
             infer TEndpointMD,
-            infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
-            infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
-            infer _4, // eslint-disable-line @typescript-eslint/no-unused-vars
+            infer _2,
+            infer _3,
+            infer _4,
             infer _5,
             infer _6,
             infer _7,
@@ -258,10 +238,10 @@ export class AppEndpointBuilderProvider<
   ): {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
       infer _0,
-      infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _4, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _1,
+      infer _2,
+      infer _3,
+      infer _4,
       infer _5,
       infer _6,
       infer _7,
@@ -288,10 +268,10 @@ export class AppEndpointBuilderProvider<
     ) as {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProvider<
         infer _0,
-        infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _2, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _3, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _4, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _1,
+        infer _2,
+        infer _3,
+        infer _4,
         infer _5,
         infer _6,
         infer _7,
@@ -302,40 +282,6 @@ export class AppEndpointBuilderProvider<
         : never;
     };
   }
-}
-
-export interface URLDataNames<
-  TContext,
-  TStateInfo,
-  TNames extends string,
-  TStringDecoder,
-  TStringEncoder,
-  TOutputContents extends dataBE.TOutputContentsBase,
-  TInputContents extends dataBE.TInputContentsBase,
-  TMetadataProviders extends common.MetadataProvidersBase<
-    TStringDecoder,
-    TStringEncoder,
-    TOutputContents,
-    TInputContents
-  >,
-> {
-  validateURLData: <
-    TValidation extends {
-      [P in TNames]: unknown;
-    },
-  >(
-    validation: dataBE.URLParameterValidatorSpec<TValidation, TStringDecoder>,
-  ) => AppEndpointBuilderInitial<
-    TContext,
-    TStateInfo,
-    common.EndpointHandlerArgsWithURL<TValidation>,
-    ep.HttpMethod,
-    TStringDecoder,
-    TStringEncoder,
-    TOutputContents,
-    TInputContents,
-    TMetadataProviders
-  >;
 }
 
 export type StateExtractor<TStateInfo, TMetadataProvider> =
@@ -353,3 +299,26 @@ export type StateExtractor<TStateInfo, TMetadataProvider> =
   >
     ? (stateInfo: TStateInfo) => TStateMD
     : never;
+
+export interface URLParameterSpec<TName extends string, TRuntime, TDecoder> {
+  name: TName;
+  decoder: TDecoder;
+  validator: data.DataValidator<string, TRuntime>;
+  regExp: RegExp;
+}
+
+// Tuple reducer spotted from https://stackoverflow.com/questions/69085499/typescript-convert-tuple-type-to-object
+export type URLParameterReducer<
+  Arr extends Array<unknown>,
+  Result extends Record<string, unknown> = {},
+> = Arr extends []
+  ? Result
+  : Arr extends [infer Head, ...infer Tail]
+  ? URLParameterReducer<
+      [...Tail],
+      Result &
+        (Head extends URLParameterSpec<infer TName, infer TRuntime, infer _>
+          ? Record<TName, TRuntime>
+          : {})
+    >
+  : Readonly<Result>;

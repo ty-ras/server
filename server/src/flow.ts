@@ -54,24 +54,14 @@ export const createTypicalServerFlow = <
       if (maybeEventArgs) {
         // We have a match -> get the handler that will handle our match
         const method = cb.getMethod(ctx) as ep.HttpMethod;
-        let foundHandler = server.checkMethodForHandler(
-          maybeEventArgs,
-          events,
-          method,
-          handler,
-        );
+        let foundHandler = handler(method, maybeEventArgs.groups);
         const sendBody = method !== "HEAD";
         if (
           foundHandler.found !== "handler" &&
           !sendBody &&
-          foundHandler.allowedMethods.includes("GET")
+          foundHandler.allowedMethods.some(({ method }) => method === "GET")
         ) {
-          foundHandler = server.checkMethodForHandler(
-            maybeEventArgs,
-            events,
-            "GET",
-            handler,
-          );
+          foundHandler = handler("GET", maybeEventArgs.groups);
         }
 
         if (foundHandler.found === "handler") {
@@ -233,9 +223,24 @@ export const createTypicalServerFlow = <
             await cb.sendContent(ctx, stateValidation.customBody);
           }
         } else {
+          const allowedMethodsSentToClient =
+            await server.invokeInvalidMethodEvent(
+              maybeEventArgs,
+              events,
+              foundHandler.allowedMethods,
+              async (stateValidator) =>
+                stateValidator.validator(
+                  await cb.getState(ctx, stateValidator.stateInfo),
+                ).error === "none",
+            );
+
           if (!ctx.skipSettingStatusCode) {
-            cb.setHeader(ctx, "Allow", foundHandler.allowedMethods.join(","));
-            cb.setStatusCode(ctx, 405, false);
+            const statusCode =
+              allowedMethodsSentToClient.length > 0 ? 405 : 404;
+            if (statusCode === 405) {
+              cb.setHeader(ctx, "Allow", allowedMethodsSentToClient.join(","));
+            }
+            cb.setStatusCode(ctx, statusCode, false);
           }
         }
       } else {

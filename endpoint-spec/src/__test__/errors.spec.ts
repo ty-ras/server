@@ -122,7 +122,15 @@ test("Validate that endpoint returns handlers only for methods that are specifie
       .createEndpoint({})
       .endpoint.getRegExpAndHandler("")
       .handler("POST", {}),
-    { found: "invalid-method", allowedMethods: ["GET"] },
+    {
+      found: "invalid-method",
+      allowedMethods: [
+        {
+          method: "GET",
+          stateValidator: common.state,
+        },
+      ],
+    },
   );
 });
 

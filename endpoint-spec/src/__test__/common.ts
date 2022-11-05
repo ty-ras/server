@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as data from "@ty-ras/data";
-import type * as dataBE from "@ty-ras/data-backend";
+import * as dataBE from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
 import * as rawBody from "raw-body";
 import * as spec from "..";
@@ -198,3 +198,14 @@ export const createStateValidator = <TState>(
 export const STATE = "State";
 
 export const state = createStateValidator<string>(STATE);
+
+export const urlParam = <TName extends string, TValue extends string>(
+  name: TName,
+  value: TValue,
+  regExp: RegExp,
+): spec.URLParameterSpec<TName, TValue, TValue> => ({
+  name,
+  regExp,
+  decoder: value,
+  validator: validatorFromValue(value),
+});

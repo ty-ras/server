@@ -1,4 +1,5 @@
 import type * as data from "@ty-ras/data";
+import type * as ep from "@ty-ras/endpoint";
 
 export type ServerEventHandler<TContext, TState> = EventHandler<
   VirtualRequestProcessingEvents<TContext, TState>
@@ -21,7 +22,8 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
   onInvalidUrl: Omit<EventArgumentsWithoutState<TContext>, "groups">;
   // No handler for given HTTP method
   onInvalidMethod: EventArgumentsWithoutState<TContext> & {
-    allowedMethods: ReadonlyArray<string>;
+    allowedMethods: ReadonlyArray<ep.HttpMethod>;
+    allowedMethodsSentToClient: ReadonlyArray<ep.HttpMethod>;
   };
   // State required by endpoint failed passing validation
   onInvalidState: EventArgumentsWithoutState<TContext> &

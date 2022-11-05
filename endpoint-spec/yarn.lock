@@ -364,10 +364,10 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.3.tgz#472eaab5f15c1ffdd7f8628bd4c4f753995ec79e"
   integrity sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==
 
-"@ty-ras/data-backend@0.12.1":
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-0.12.1.tgz#0bc6892340852627781e2d749216eb28f103d5ce"
-  integrity sha512-glSOvPW1zdcDLjsStJ/+1nSXvGRdkCAuGeHa1PuGqE0pwKnGkrv8aHsl1mgi8Iu+B/4Fe52Cvxrxn2znGivKig==
+"@ty-ras/data-backend@0.12.3":
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-0.12.3.tgz#cbc946e20178782cb2b60c6ea18cddc57ecc6d1a"
+  integrity sha512-2xkxfzSoZ2L+0lH7++kPltpdbrMyfjPxLvL9P9Q02pt+ekZmEQ9qJnJCDQ3JW7oCZNUmNFZcZwUoMOA7MltHmA==
   dependencies:
     "@ty-ras/data" "0.12.3"
 
@@ -376,19 +376,19 @@
   resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.12.3.tgz#89f50dab7180906ba8aa7e8930c5a0ccea5f2132"
   integrity sha512-MW0TNixdi4fbqWsJAtUNPSxvGVn8YhkX2Y9RAOd/HxlJ/nrRn1CQLU2qCis5Zky7Xkc519WPJTr7+tmUer1alA==
 
-"@ty-ras/endpoint@0.12.3":
-  version "0.12.3"
-  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-0.12.3.tgz#551d5bbbb2523317ee07dae8733b079fd864c671"
-  integrity sha512-F9AQXO9XcRqpa4k4ogXp9Nzoizl/f53Sl91B1RlME9fURmUZlqdp2fdf5SdMeDgWzSG5oPVICdDxjyGWZogYBQ==
+"@ty-ras/endpoint@0.12.6":
+  version "0.12.6"
+  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-0.12.6.tgz#6e6f92544beebad5e6d2258355a4af56485ea6f1"
+  integrity sha512-E60F9dtMvKEmAuGHT0fX4bwmA+2TyNKGaqo/EmHZskGGw+9f8XQ1w2+qrYoJeextmaCEA+TCrdLraVRmQDO0AA==
   dependencies:
-    "@ty-ras/data-backend" "0.12.1"
+    "@ty-ras/data-backend" "0.12.3"
 
-"@ty-ras/metadata@0.12.2":
-  version "0.12.2"
-  resolved "https://registry.yarnpkg.com/@ty-ras/metadata/-/metadata-0.12.2.tgz#c8986875fe774e83721db432ae3ce6b9e7b28c86"
-  integrity sha512-RuT+mcigv/ActXrJVRCxVt2UI0JHeoZXZ8NKQAwQxB55rD3wvN5HwvP5FyCJZcD0P/dzegSxf7IZmO3+7aGRmA==
+"@ty-ras/metadata@0.12.4":
+  version "0.12.4"
+  resolved "https://registry.yarnpkg.com/@ty-ras/metadata/-/metadata-0.12.4.tgz#88905494120bec90bd1c14e6849f3404a5d84eb7"
+  integrity sha512-33VGgLZnoAZ2FlFKCJpa6IwFfx+2Z+AC76ncRL9YTpxOX7ov7UQXtVEcyp/7xVkjgpiO/Aq6JvMXq52+Z1nrKA==
   dependencies:
-    "@ty-ras/endpoint" "0.12.3"
+    "@ty-ras/endpoint" "0.12.6"
 
 "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"

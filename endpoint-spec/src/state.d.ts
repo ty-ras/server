@@ -72,7 +72,7 @@ export interface StaticAppEndpointBuilderSpec<
   >,
 > {
   builder: StaticAppEndpointBuilder<TContext, TStateInfo>;
-  stateInfo: TStateInfo;
+  stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
   requestHeadersSpec?: data.RequestHeaderDataValidatorSpecMetadata<
     string,
     TStringDecoder

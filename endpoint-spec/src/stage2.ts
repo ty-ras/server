@@ -430,7 +430,7 @@ const createStaticEndpointSpec = <
     >,
     "mdArgs"
   > = {
-    stateInfo: stateValidator.stateInfo,
+    stateValidator,
     outputValidation: outputSpec,
     builder: (groupNamePrefix) =>
       stripUndefineds({
