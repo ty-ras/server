@@ -203,7 +203,7 @@ export const urlParam = <TName extends string, TValue extends string>(
   name: TName,
   value: TValue,
   regExp: RegExp,
-): dataBE.URLParameterSpec<TName, TValue, TValue> => ({
+): spec.URLParameterSpec<TName, TValue, TValue> => ({
   name,
   regExp,
   decoder: value,
