@@ -184,9 +184,9 @@ const createHeaderSetterCallback = <TContext>(
               ),
       );
       // Also set status code + notify server flow that it should skip setting status code.
-      setStatusCode(ctx, 204, false);
+      // Notice! The status code must be 200 (and not e.g. 204), because... Well, I have no idea why, but browsers don't like that.
+      setStatusCode(ctx, 200, false);
       ctx.skipSettingStatusCode = true;
-      ctx.skipSendingBody = true;
     }
   };
 };

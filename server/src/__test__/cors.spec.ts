@@ -89,7 +89,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
     // This is called by CORS handler - only for preflight request
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 204, false],
+      args: [contextWithoutModifications, 200, false],
       returnValue: undefined,
     },
     // Notice a lack of setStatusCode call and also lack of setting "Allow" header by server flow - this is because CORS handler set `skipSettingStatusCode` of the context to true.
@@ -119,7 +119,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
                   error: "none",
                   data: {
                     contentType: "contentType",
-                    output: "Hello",
+                    output: undefined,
                   },
                 }),
               },
@@ -170,32 +170,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
     // This is called by server flow again. Notice that CORS callback does *not* set status code since this is not a preflight request.
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 200, true],
-      returnValue: undefined,
-    },
-    {
-      callbackName: "setHeader",
-      args: [
-        {
-          context: "Context",
-          skipSendingBody: false,
-          skipSettingStatusCode: false,
-        },
-        "Content-Type",
-        "contentType",
-      ],
-      returnValue: undefined,
-    },
-    {
-      callbackName: "sendContent",
-      args: [
-        {
-          context: "Context",
-          skipSendingBody: false,
-          skipSettingStatusCode: false,
-        },
-        "Hello",
-      ],
+      args: [contextWithoutModifications, 204, false],
       returnValue: undefined,
     },
   ]);
@@ -278,7 +253,7 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
     // CORS flow finally sets the status code
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 204, false],
+      args: [contextWithoutModifications, 200, false],
       returnValue: undefined,
     },
   ]);
@@ -363,7 +338,7 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
     // CORS flow finally sets the status code
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 204, false],
+      args: [contextWithoutModifications, 200, false],
       returnValue: undefined,
     },
   ]);
@@ -596,7 +571,7 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
     },
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 204, false],
+      args: [contextWithoutModifications, 200, false],
       returnValue: undefined,
     },
   ]);
