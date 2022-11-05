@@ -44,7 +44,7 @@ export class AppEndpointBuilderProvider<
   ) {}
 
   public atURL<
-    TArgs extends Array<URLParameterSpec<string, any, TStringDecoder>>,
+    TArgs extends Array<URLParameterInfo<string, any, TStringDecoder>>,
   >(
     fragments: TemplateStringsArray,
     ...args: TArgs
@@ -300,7 +300,7 @@ export type StateExtractor<TStateInfo, TMetadataProvider> =
     ? (stateInfo: TStateInfo) => TStateMD
     : never;
 
-export interface URLParameterSpec<TName extends string, TRuntime, TDecoder> {
+export interface URLParameterInfo<TName extends string, TRuntime, TDecoder> {
   name: TName;
   decoder: TDecoder;
   validator: data.DataValidator<string, TRuntime>;
@@ -317,7 +317,7 @@ export type URLParameterReducer<
   ? URLParameterReducer<
       [...Tail],
       Result &
-        (Head extends URLParameterSpec<infer TName, infer TRuntime, infer _>
+        (Head extends URLParameterInfo<infer TName, infer TRuntime, infer _>
           ? Record<TName, TRuntime>
           : {})
     >

@@ -203,7 +203,7 @@ export const urlParam = <TName extends string, TValue extends string>(
   name: TName,
   value: TValue,
   regExp: RegExp,
-): spec.URLParameterSpec<TName, TValue, TValue> => ({
+): spec.URLParameterInfo<TName, TValue, TValue> => ({
   name,
   regExp,
   decoder: value,
