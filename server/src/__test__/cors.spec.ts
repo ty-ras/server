@@ -15,6 +15,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
     allowOrigin: "*",
     allowMethods: true,
   });
+  const stateValidator = flowUtil.createStateValidator();
   await flow.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
@@ -22,18 +23,12 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
         return method === "OPTIONS"
           ? {
               found: "invalid-method",
-              allowedMethods: ["GET"],
+              allowedMethods: [{ method: "GET", stateValidator }],
             }
           : {
               found: "handler" as const,
               handler: {
-                stateValidator: {
-                  stateInfo: undefined,
-                  validator: () => ({
-                    error: "none",
-                    data: undefined,
-                  }),
-                },
+                stateValidator,
                 handler: () => ({
                   error: "none",
                   data: {
@@ -62,6 +57,12 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
     },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
+      returnValue: "State",
+    },
     // At this point CORS handler will react to onInvalidMethod event.
     // This is called by CORS handler
     {
@@ -81,14 +82,14 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
       args: [
         contextWithoutModifications,
         "Access-Control-Allow-Methods",
-        ["GET"],
+        "GET",
       ],
       returnValue: undefined,
     },
     // This is called by CORS handler - only for preflight request
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 200, false],
+      args: [contextWithoutModifications, 204, false],
       returnValue: undefined,
     },
     // Notice a lack of setStatusCode call and also lack of setting "Allow" header by server flow - this is because CORS handler set `skipSettingStatusCode` of the context to true.
@@ -104,6 +105,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
   const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
   });
+  const stateValidator = flowUtil.createStateValidator();
   await flow.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
@@ -112,25 +114,19 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
           ? {
               found: "handler" as const,
               handler: {
-                stateValidator: {
-                  stateInfo: undefined,
-                  validator: () => ({
-                    error: "none",
-                    data: undefined,
-                  }),
-                },
+                stateValidator,
                 handler: () => ({
                   error: "none",
                   data: {
                     contentType: "contentType",
-                    output: undefined,
+                    output: "Hello",
                   },
                 }),
               },
             }
           : {
               found: "invalid-method",
-              allowedMethods: [method],
+              allowedMethods: [{ method, stateValidator }],
             };
       },
     },
@@ -174,7 +170,32 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
     // This is called by server flow again. Notice that CORS callback does *not* set status code since this is not a preflight request.
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 204, false],
+      args: [contextWithoutModifications, 200, true],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "setHeader",
+      args: [
+        {
+          context: "Context",
+          skipSendingBody: false,
+          skipSettingStatusCode: false,
+        },
+        "Content-Type",
+        "contentType",
+      ],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "sendContent",
+      args: [
+        {
+          context: "Context",
+          skipSendingBody: false,
+          skipSettingStatusCode: false,
+        },
+        "Hello",
+      ],
       returnValue: undefined,
     },
   ]);
@@ -199,7 +220,9 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
         found: "invalid-method",
-        allowedMethods: ["GET"],
+        allowedMethods: [
+          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+        ],
       }),
     },
     callbacks,
@@ -217,6 +240,12 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
       callbackName: "getMethod",
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
+    },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
+      returnValue: "State",
     },
     // Now CORS flow kicks in, starting by asking method (since this is interpreted as pre-flight request)
     {
@@ -249,7 +278,7 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
     // CORS flow finally sets the status code
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 200, false],
+      args: [contextWithoutModifications, 204, false],
       returnValue: undefined,
     },
   ]);
@@ -276,7 +305,9 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
         found: "invalid-method",
-        allowedMethods: ["GET"],
+        allowedMethods: [
+          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+        ],
       }),
     },
     callbacks,
@@ -294,6 +325,12 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
       callbackName: "getMethod",
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
+    },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
+      returnValue: "State",
     },
     // Now CORS flow kicks in, starting by asking method (since this is interpreted as pre-flight request)
     {
@@ -326,7 +363,7 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
     // CORS flow finally sets the status code
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 200, false],
+      args: [contextWithoutModifications, 204, false],
       returnValue: undefined,
     },
   ]);
@@ -349,7 +386,9 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
         found: "invalid-method",
-        allowedMethods: ["GET"],
+        allowedMethods: [
+          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+        ],
       }),
     },
     callbacks,
@@ -368,6 +407,13 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
       args: [contextWithoutModifications],
       returnValue: "GET",
     },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
+      returnValue: "State",
+    },
+    // CORS flow does not kick in, so the server flow proceeds normally
     {
       callbackName: "setHeader",
       args: [contextWithoutModifications, "Allow", "GET"],
@@ -392,7 +438,9 @@ test("Validate that CORS callbacks don't mistake normal method mismatch for pref
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
         found: "invalid-method",
-        allowedMethods: ["GET"],
+        allowedMethods: [
+          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+        ],
       }),
     },
     callbacks,
@@ -410,6 +458,12 @@ test("Validate that CORS callbacks don't mistake normal method mismatch for pref
       callbackName: "getMethod",
       args: [contextWithoutModifications],
       returnValue: "GET",
+    },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
+      returnValue: "State",
     },
     // CORS flow kicks in via onInvalidMethod event, asking for method as well
     {
@@ -456,7 +510,12 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
         found: "invalid-method",
-        allowedMethods: [...allowMethods],
+        allowedMethods: [
+          ...allowMethods.map((method) => ({
+            method,
+            stateValidator: flowUtil.createStateValidator(),
+          })),
+        ],
       }),
     },
     callbacks,
@@ -475,7 +534,13 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
     },
-    // CORS flow kicks in via onInvalidMethod event, asking for method as well
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [contextWithoutModifications, undefined],
+      returnValue: "State",
+    },
+    // CORS flow kicks in via onInvalidMethod event invoked by utils.invokeInvalidMethodEvent, asking for method as well
     {
       callbackName: "getMethod",
       args: [contextWithoutModifications],
@@ -531,7 +596,7 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
     },
     {
       callbackName: "setStatusCode",
-      args: [contextWithoutModifications, 200, false],
+      args: [contextWithoutModifications, 204, false],
       returnValue: undefined,
     },
   ]);

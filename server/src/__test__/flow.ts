@@ -5,6 +5,7 @@ import type * as flow from "../flow";
 import * as stream from "stream";
 import * as url from "url";
 import * as data from "@ty-ras/data";
+import type * as ep from "@ty-ras/endpoint";
 
 export const createTrackingCallback = (
   headerMode: "arg" | "array" | "undefined" = "arg",
@@ -150,12 +151,26 @@ export const deepCopyArgs = <TArgs extends Array<any>>([
 export const deepCopy = <T>(value: T): T => {
   if (typeof value === "object") {
     if (Array.isArray(value)) {
-      value = value.map(deepCopy) as T;
+      value = value.map(deepCopy) as unknown as T;
     } else {
-      value = (
-        value === null ? null : data.transformEntries(value, deepCopy)
-      ) as T;
+      value = (value === null
+        ? null
+        : data.transformEntries(
+            value as unknown as object,
+            deepCopy,
+          )) as unknown as T;
     }
   }
   return value;
 };
+
+export const createStateValidator = (): ep.EndpointStateValidator<
+  unknown,
+  unknown
+> => ({
+  stateInfo: undefined,
+  validator: () => ({
+    error: "none",
+    data: undefined,
+  }),
+});

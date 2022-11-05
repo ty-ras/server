@@ -5,7 +5,7 @@ import test, { ExecutionContext } from "ava";
 import * as spec from "../utils";
 import type * as evt from "../events";
 import * as evtUtil from "./events";
-import type * as ep from "@ty-ras/endpoint";
+import * as flowUtil from "./flow";
 import type * as dataBE from "@ty-ras/data-backend";
 import type * as data from "@ty-ras/data";
 
@@ -56,42 +56,77 @@ test("Validate checkURLPathNameForHandler works for invalid input", (t) => {
   });
 });
 
-test("Validate checkMethodForHandler works for valid input", (t) => {
+test("Validate invokeInvalidMethodEvent works for always-true state validator", async (t) => {
   t.plan(3);
-  withoutAndWithEvents(t, (emitter) => {
-    const handler: ep.DynamicHandlerResponse<any, any> = {
-      found: "handler",
-      handler: {} as any,
-    };
-    const retVal = spec.checkMethodForHandler(
-      EVENT_ARGS,
-      emitter,
-      "GET",
-      () => handler,
-    );
-    t.is(retVal, handler);
-  });
-});
-test("Validate checkMethodForHandler works for invalid input", (t) => {
-  t.plan(3);
-  withoutAndWithEvents(t, (emitter) => {
-    const handler: ep.DynamicHandlerResponse<any, any> = {
-      found: "invalid-method",
-      allowedMethods: [],
-    };
-    const retVal = spec.checkMethodForHandler(
+  await withoutAndWithEventsAsync(t, async (emitter) => {
+    const allowedMethodsSentToClient = await spec.invokeInvalidMethodEvent(
       EVENT_ARGS_NO_STATE,
       emitter,
-      "GET",
-      () => handler,
+      [{ method: "GET", stateValidator: flowUtil.createStateValidator() }],
+      () => Promise.resolve(true),
     );
-    t.is(retVal, handler);
+    t.deepEqual(allowedMethodsSentToClient, ["GET"]);
     return [
       {
         eventName: "onInvalidMethod",
         args: {
           ...EVENT_ARGS_NO_STATE,
-          allowedMethods: [],
+          allowedMethods: ["GET"],
+          allowedMethodsSentToClient: ["GET"],
+        },
+      },
+    ];
+  });
+});
+
+test("Validate invokeInvalidMethodEvent works for always-false state validator", async (t) => {
+  t.plan(3);
+  await withoutAndWithEventsAsync(t, async (emitter) => {
+    const allowedMethodsSentToClient = await spec.invokeInvalidMethodEvent(
+      EVENT_ARGS_NO_STATE,
+      emitter,
+      [{ method: "GET", stateValidator: flowUtil.createStateValidator() }],
+      () => Promise.resolve(false),
+    );
+    t.deepEqual(allowedMethodsSentToClient, []);
+    return [
+      {
+        eventName: "onInvalidMethod",
+        args: {
+          ...EVENT_ARGS_NO_STATE,
+          allowedMethods: ["GET"],
+          allowedMethodsSentToClient: [],
+        },
+      },
+    ];
+  });
+});
+
+test("Validate invokeInvalidMethodEvent works for always-false state validator with multiple methods but same state", async (t) => {
+  t.plan(5);
+  await withoutAndWithEventsAsync(t, async (emitter) => {
+    let stateInvocationCount = 0;
+    const allowedMethodsSentToClient = await spec.invokeInvalidMethodEvent(
+      EVENT_ARGS_NO_STATE,
+      emitter,
+      [
+        { method: "GET", stateValidator: flowUtil.createStateValidator() },
+        { method: "POST", stateValidator: flowUtil.createStateValidator() },
+      ],
+      () => {
+        ++stateInvocationCount;
+        return Promise.resolve(false);
+      },
+    );
+    t.deepEqual(allowedMethodsSentToClient, []);
+    t.deepEqual(stateInvocationCount, 1);
+    return [
+      {
+        eventName: "onInvalidMethod",
+        args: {
+          ...EVENT_ARGS_NO_STATE,
+          allowedMethods: ["GET", "POST"],
+          allowedMethodsSentToClient: [],
         },
       },
     ];

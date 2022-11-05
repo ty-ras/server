@@ -184,8 +184,9 @@ const createHeaderSetterCallback = <TContext>(
               ),
       );
       // Also set status code + notify server flow that it should skip setting status code.
-      setStatusCode(ctx, 200, false);
+      setStatusCode(ctx, 204, false);
       ctx.skipSettingStatusCode = true;
+      ctx.skipSendingBody = true;
     }
   };
 };

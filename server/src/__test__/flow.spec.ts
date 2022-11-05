@@ -253,7 +253,9 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
       url: /(?<group>path)/,
       handler: () => ({
         found: "invalid-method",
-        allowedMethods: ["POST"],
+        allowedMethods: [
+          { method: "POST", stateValidator: flowUtil.createStateValidator() },
+        ],
       }),
     },
     callbacks,
@@ -269,6 +271,12 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
       callbackName: "getMethod",
       args: [flowUtil.seenContext],
       returnValue: "GET",
+    },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [flowUtil.seenContext, undefined],
+      returnValue: "State",
     },
     {
       callbackName: "setHeader",
@@ -874,6 +882,7 @@ const validateServerFlowForHEADMethod = async (
   const contentType = `contentType${
     contentTypeSuffix ? `; charset=${contentTypeSuffix}` : ""
   }`;
+  const stateValidator = flowUtil.createStateValidator();
   await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
@@ -883,13 +892,7 @@ const validateServerFlowForHEADMethod = async (
           ? {
               found: "handler",
               handler: {
-                stateValidator: {
-                  stateInfo: undefined,
-                  validator: () => ({
-                    error: "none",
-                    data: "Context",
-                  }),
-                },
+                stateValidator,
                 handler: () => ({
                   error: "none",
                   data: {
@@ -904,7 +907,7 @@ const validateServerFlowForHEADMethod = async (
             }
           : {
               found: "invalid-method",
-              allowedMethods: ["GET"],
+              allowedMethods: [{ method: "GET", stateValidator }],
             };
       },
     },
@@ -1062,7 +1065,9 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
         seenMethods.push(method);
         return {
           found: "invalid-method",
-          allowedMethods: ["POST"],
+          allowedMethods: [
+            { method: "POST", stateValidator: flowUtil.createStateValidator() },
+          ],
         };
       },
     },
@@ -1081,6 +1086,12 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
       args: [flowUtil.seenContext],
       returnValue: "HEAD",
     },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [flowUtil.seenContext, undefined],
+      returnValue: "State",
+    },
     // Since allowed methods did not contain "GET", normal procedure resumes to return 405 with Allow header set.
     {
       callbackName: "setHeader",
@@ -1094,6 +1105,65 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
     },
   ]);
   c.deepEqual(seenMethods, ["HEAD"]);
+});
+
+test("Validate typicalServerFlow sends 404 when none of potential endpoint state validations passes", async (c) => {
+  c.plan(2);
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  const seenMethods: Array<string> = [];
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: (method) => {
+        seenMethods.push(method);
+        return {
+          found: "invalid-method",
+          allowedMethods: [
+            {
+              method: "POST",
+              stateValidator: {
+                stateInfo: undefined,
+                validator: () => ({
+                  error: "error",
+                  errorInfo: undefined,
+                  getHumanReadableMessage,
+                }),
+              },
+            },
+          ],
+        };
+      },
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+
+  c.deepEqual(seenCallbacks, [
+    // Server flow gets URL and method
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: "/path",
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "GET",
+    },
+    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
+    {
+      callbackName: "getState",
+      args: [flowUtil.seenContext, undefined],
+      returnValue: "State",
+    },
+    // No 'Allow' header is set, but instead 404 is returned
+    {
+      callbackName: "setStatusCode",
+      args: [flowUtil.seenContext, 404, false],
+      returnValue: undefined,
+    },
+  ]);
+  c.deepEqual(seenMethods, ["GET"]);
 });
 
 const getHumanReadableMessage = () => "";
