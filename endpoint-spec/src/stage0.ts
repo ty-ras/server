@@ -44,7 +44,7 @@ export class AppEndpointBuilderProvider<
   ) {}
 
   public atURL<
-    TArgs extends Array<dataBE.URLParameterSpec<string, any, TStringDecoder>>,
+    TArgs extends Array<URLParameterSpec<string, any, TStringDecoder>>,
   >(
     fragments: TemplateStringsArray,
     ...args: TArgs
@@ -300,6 +300,13 @@ export type StateExtractor<TStateInfo, TMetadataProvider> =
     ? (stateInfo: TStateInfo) => TStateMD
     : never;
 
+export interface URLParameterSpec<TName extends string, TRuntime, TDecoder> {
+  name: TName;
+  decoder: TDecoder;
+  validator: data.DataValidator<string, TRuntime>;
+  regExp: RegExp;
+}
+
 // Tuple reducer spotted from https://stackoverflow.com/questions/69085499/typescript-convert-tuple-type-to-object
 export type URLParameterReducer<
   Arr extends Array<unknown>,
@@ -310,11 +317,7 @@ export type URLParameterReducer<
   ? URLParameterReducer<
       [...Tail],
       Result &
-        (Head extends dataBE.URLParameterSpec<
-          infer TName,
-          infer TRuntime,
-          infer _
-        >
+        (Head extends URLParameterSpec<infer TName, infer TRuntime, infer _>
           ? Record<TName, TRuntime>
           : {})
     >
