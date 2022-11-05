@@ -57,12 +57,6 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
     },
-    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
-    {
-      callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
-      returnValue: "State",
-    },
     // At this point CORS handler will react to onInvalidMethod event.
     // This is called by CORS handler
     {
@@ -216,12 +210,6 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
     },
-    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
-    {
-      callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
-      returnValue: "State",
-    },
     // Now CORS flow kicks in, starting by asking method (since this is interpreted as pre-flight request)
     {
       callbackName: "getMethod",
@@ -300,12 +288,6 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
       callbackName: "getMethod",
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
-    },
-    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
-    {
-      callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
-      returnValue: "State",
     },
     // Now CORS flow kicks in, starting by asking method (since this is interpreted as pre-flight request)
     {
@@ -508,12 +490,6 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
       callbackName: "getMethod",
       args: [contextWithoutModifications],
       returnValue: "OPTIONS",
-    },
-    // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
-    {
-      callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
-      returnValue: "State",
     },
     // CORS flow kicks in via onInvalidMethod event invoked by utils.invokeInvalidMethodEvent, asking for method as well
     {
