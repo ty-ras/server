@@ -129,7 +129,7 @@ type KeysAndValuesAsUnion<T extends object> = {
 export const dummyBody = stream.Readable.from(["Body"]);
 
 export const dummyURL = "/path";
-export const dummyURLObject = new url.URL(`http://localhost${dummyURL}`);
+export const dummyURLObject = new url.URL(`http://example.com${dummyURL}`);
 export const dummyURLRegexp = /(?<group_name>\/path)/;
 
 export const inputContext = {

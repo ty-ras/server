@@ -82,7 +82,7 @@ export const createTypicalServerFlow = <
             maybeEventArgs,
             events,
             stateValidator.validator,
-            await cb.getState(ctx, stateValidator.stateInfo),
+            await cb.getState(ctx, parsedUrl, stateValidator.stateInfo),
           );
           if (stateValidation.result === "state") {
             const eventArgs = {
@@ -100,7 +100,6 @@ export const createTypicalServerFlow = <
                 eventArgs,
                 events,
                 queryValidator,
-                // parsedUrl.search.substring(1), // Remove leading '?'
                 Object.fromEntries(parsedUrl.searchParams.entries()),
               );
               if (proceedAfterQuery) {
@@ -232,7 +231,11 @@ export const createTypicalServerFlow = <
                 ? undefined
                 : async (stateValidator) =>
                     stateValidator.validator(
-                      await cb.getState(ctx, stateValidator.stateInfo),
+                      await cb.getState(
+                        ctx,
+                        parsedUrl,
+                        stateValidator.stateInfo,
+                      ),
                     ).error === "none",
             );
 
@@ -288,6 +291,7 @@ export type ServerFlowCallbacks<TContext, TStateInfo> =
   ServerFlowCallbacksWithoutState<TContext> & {
     getState: (
       ctx: TContext,
+      url: url.URL,
       stateInfo: TStateInfo,
     ) => ep.MaybePromise<unknown>;
   };
