@@ -51,7 +51,7 @@ test("Validate typicalServerFlow works", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -134,7 +134,7 @@ test("Validate typicalServerFlow works with special values", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, new URL("http://example.com"), undefined],
       returnValue: "State",
     },
     {
@@ -197,7 +197,7 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -275,7 +275,7 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -330,7 +330,7 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -385,7 +385,7 @@ test("Validate typicalServerFlow works with invalid state and custom error", asy
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -447,7 +447,7 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -503,7 +503,7 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -559,7 +559,7 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -619,7 +619,7 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -680,7 +680,7 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -837,21 +837,22 @@ test("Validate that setting skipSettingStatusCode and skipSendingBody works", as
   )(flowUtil.inputContext);
   c.deepEqual(seenCallbacks, [
     {
-      args: [flowUtil.seenContext],
       callbackName: "getURL",
+      args: [flowUtil.seenContext],
       returnValue: flowUtil.dummyURL,
     },
     {
-      args: [flowUtil.seenContext],
       callbackName: "getMethod",
+      args: [flowUtil.seenContext],
       returnValue: "GET",
     },
     {
-      args: [flowUtil.seenContext, undefined],
       callbackName: "getState",
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
+      callbackName: "setStatusCode",
       args: [
         {
           ...flowUtil.seenContext,
@@ -860,7 +861,6 @@ test("Validate that setting skipSettingStatusCode and skipSendingBody works", as
         999,
         true,
       ],
-      callbackName: "setStatusCode",
       returnValue: undefined,
     },
     // Notice - sendContent will not be called!
@@ -927,7 +927,7 @@ const validateServerFlowForHEADMethod = async (
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -1089,7 +1089,7 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     // Since allowed methods did not contain "GET", normal procedure resumes to return 405 with Allow header set.
@@ -1153,7 +1153,7 @@ test("Validate typicalServerFlow sends 404 when none of potential endpoint state
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, undefined],
+      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     // No 'Allow' header is set, but instead 404 is returned

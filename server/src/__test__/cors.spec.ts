@@ -142,7 +142,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
     },
     {
       callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
+      args: [contextWithoutModifications, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     {
@@ -367,7 +367,7 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
+      args: [contextWithoutModifications, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     // CORS flow does not kick in, so the server flow proceeds normally
@@ -419,7 +419,7 @@ test("Validate that CORS callbacks don't mistake normal method mismatch for pref
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [contextWithoutModifications, undefined],
+      args: [contextWithoutModifications, flowUtil.dummyURLObject, undefined],
       returnValue: "State",
     },
     // CORS flow kicks in via onInvalidMethod event, asking for method as well
