@@ -1,6 +1,6 @@
-import * as ep from "@ty-ras/endpoint";
-import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
+import * as dataBE from "@ty-ras/data-backend";
+import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
 import type * as state from "./state";
 import type * as common from "./common";
@@ -10,7 +10,7 @@ export class AppEndpointBuilder<
   TContext,
   TStateInfo,
   TArgsURL extends object,
-  TAllowedMethods extends ep.HttpMethod,
+  TAllowedMethods extends data.HttpMethod,
   TStringDecoder,
   TStringEncoder,
   TOutputContents extends dataBE.TOutputContentsBase,
@@ -128,7 +128,7 @@ const checkMethodsForHandler = <
       TMetadataProviders
     >;
   },
-  method: ep.HttpMethod,
+  method: data.HttpMethod,
   groupNamePrefix: string,
 ): ep.DynamicHandlerResponse<TContext, TStateInfo> =>
   method in state
@@ -140,7 +140,7 @@ const checkMethodsForHandler = <
         found: "invalid-method" as const,
         allowedMethods: Object.entries(state).map(
           ([method, { stateValidator }]) => ({
-            method: method as ep.HttpMethod,
+            method: method as data.HttpMethod,
             stateValidator,
           }),
         ),

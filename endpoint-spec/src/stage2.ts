@@ -1,6 +1,6 @@
-import * as ep from "@ty-ras/endpoint";
-import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
+import * as dataBE from "@ty-ras/data-backend";
+import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
 import * as common from "./common";
 import type * as state from "./state";
@@ -11,7 +11,7 @@ export class AppEndpointBuilderForMethods<
   TStateInfo,
   TState,
   TArgsURL extends object,
-  TAllowedMethods extends ep.HttpMethod,
+  TAllowedMethods extends data.HttpMethod,
   TArgsHeaders extends object,
   TArgsQuery extends object,
   TStringDecoder,
@@ -71,7 +71,7 @@ export class AppEndpointBuilderForMethods<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<ep.HttpMethod, TAllowedMethods>,
+    Exclude<data.HttpMethod, TAllowedMethods>,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -99,7 +99,7 @@ export class AppEndpointBuilderForMethods<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<ep.HttpMethod, TAllowedMethods>,
+    Exclude<data.HttpMethod, TAllowedMethods>,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -135,7 +135,7 @@ export class AppEndpointBuilderForMethods<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<ep.HttpMethod, TAllowedMethods>,
+    Exclude<data.HttpMethod, TAllowedMethods>,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -180,7 +180,7 @@ export class AppEndpointBuilderForMethodsAndBody<
   TStateInfo,
   TState,
   TArgsURL extends object,
-  TAllowedMethods extends ep.HttpMethod,
+  TAllowedMethods extends data.HttpMethod,
   TArgsHeaders extends object,
   TArgsQuery extends object,
   TStringDecoder,
@@ -234,7 +234,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<ep.HttpMethod, TAllowedMethods>,
+    Exclude<data.HttpMethod, TAllowedMethods>,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -275,7 +275,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<ep.HttpMethod, TAllowedMethods>,
+    Exclude<data.HttpMethod, TAllowedMethods>,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -324,7 +324,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<ep.HttpMethod, TAllowedMethods>,
+    Exclude<data.HttpMethod, TAllowedMethods>,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -507,7 +507,7 @@ const createStaticAppEndpointHandlerFunction =
     );
     const validatorResult = validator(body);
     let outputResult:
-      | data.DataValidatorResultError
+      | dataBE.DataValidatorResponseOutputError
       | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>;
     if (validatorResult.error === "none") {
       if (responseHeadersValidators) {

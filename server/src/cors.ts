@@ -1,5 +1,4 @@
 import type * as data from "@ty-ras/data";
-import type * as ep from "@ty-ras/endpoint";
 import type * as evt from "./events";
 import type * as flow from "./flow";
 
@@ -67,7 +66,7 @@ export interface CORSOptions {
   // These two are used only for preflight-requests
   allowMethods?:
     | true
-    | ReadonlyMaybeArrayData<ep.HttpMethod>
+    | ReadonlyMaybeArrayData<data.HttpMethod>
     | CallbackWithRequestHeader<MaybeArrayData>;
   allowHeaders?:
     | ReadonlyMaybeArrayData

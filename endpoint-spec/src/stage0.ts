@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as ep from "@ty-ras/endpoint";
-import * as dataBE from "@ty-ras/data-backend";
 import * as data from "@ty-ras/data";
+import * as dataBE from "@ty-ras/data-backend";
+import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
 import type * as common from "./common";
 import { AppEndpointBuilderInitial } from ".";
@@ -54,7 +54,7 @@ export class AppEndpointBuilderProvider<
     TArgs extends []
       ? {}
       : common.EndpointHandlerArgsWithURL<URLParameterReducer<TArgs>>,
-    ep.HttpMethod,
+    data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,

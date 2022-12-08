@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import test, { ExecutionContext } from "ava";
 import type * as ep from "@ty-ras/endpoint";
+import type * as data from "@ty-ras/data";
 import * as spec from "../prefix";
 
 test("Validate atPrefix works with no endpoints", (t) => {
@@ -38,7 +39,7 @@ const testOneURLWithPrefix = (
     }),
   };
   const responses: Partial<
-    Record<ep.HttpMethod, ep.DynamicHandlerResponse<unknown, unknown>>
+    Record<data.HttpMethod, ep.DynamicHandlerResponse<unknown, unknown>>
   > = {
     // Create copies of singleEP because using t.is below
     GET: {
@@ -69,9 +70,12 @@ const testOneURLWithPrefix = (
     new RegExp(`${prefix}((?<${groupName}>${isTopLevel ? `^` : ""}url$))`),
   );
   for (const method of ["GET", "POST", "DELETE", "PUT", "OPTIONS"] as const) {
-    const prefixedResponse = prefixedHandler.handler(method as ep.HttpMethod, {
-      [groupName]: "url",
-    });
+    const prefixedResponse = prefixedHandler.handler(
+      method as data.HttpMethod,
+      {
+        [groupName]: "url",
+      },
+    );
     const expectedResponse = responses[method];
     if (expectedResponse) {
       t.is(
@@ -145,7 +149,7 @@ const testTwoURLsWithPrefix = (
     }),
   };
   const responses: Partial<
-    Record<ep.HttpMethod, ep.DynamicHandlerResponse<unknown, unknown>>
+    Record<data.HttpMethod, ep.DynamicHandlerResponse<unknown, unknown>>
   > = {
     // Create copies of singleEP because using t.is below
     GET: {
@@ -198,7 +202,7 @@ const testTwoURLsWithPrefix = (
   for (const method of ["GET", "POST", "DELETE", "PUT", "OPTIONS"] as const) {
     for (const groupName of groupNames) {
       const prefixedResponse = prefixedHandler.handler(
-        method as ep.HttpMethod,
+        method as data.HttpMethod,
         {
           [groupName]: "will-be-ignored-because-no-url-parameter-parsing",
         },

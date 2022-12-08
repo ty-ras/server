@@ -41,12 +41,12 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
       ) => Promise<boolean>)
     | undefined,
 ) => {
-  let allowedMethodsFiltered: Array<ep.HttpMethod> | undefined;
+  let allowedMethodsFiltered: Array<data.HttpMethod> | undefined;
   if (validateStateInfo) {
     // Group methods by state infos
     const methodsGroupedByStateInfos: Array<{
       stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
-      methods: Array<ep.HttpMethod>;
+      methods: Array<data.HttpMethod>;
     }> = [];
     allowedMethodsInfo.forEach(({ method, stateValidator }) => {
       const idx = methodsGroupedByStateInfos.findIndex((s) =>
@@ -113,7 +113,7 @@ export const checkStateForHandler = <TContext, TState>(
     const isProtocolError = validationResult.error === "protocol-error";
     events?.("onInvalidState", {
       ...eventArgs,
-      validationError: isProtocolError ? undefined : validationResult,
+      validationError: validationResult,
     });
     validatedContextOrError = {
       result: "error",

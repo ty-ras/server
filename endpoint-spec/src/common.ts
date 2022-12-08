@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
 import type * as ep from "@ty-ras/endpoint";
@@ -12,7 +13,6 @@ export type MetadataProvidersBase<
   // We must use 'any' as some parameters, otherwise we won't be able to use AppEndpointBuilderProvider with specific TMetadataProviders type as parameter to functions.
   md.MetadataProvider<
     md.HKTArg,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
     any,
     TStringDecoder,
