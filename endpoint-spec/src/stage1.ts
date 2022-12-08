@@ -1,5 +1,6 @@
+import * as data from "@ty-ras/data";
+import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
-import * as data from "@ty-ras/data-backend";
 import * as common from "./common";
 import type * as state from "./state";
 import type * as batch from "./batch";
@@ -13,11 +14,11 @@ export class AppEndpointBuilderInitial<
   TContext,
   TStateInfo,
   TArgsURL extends object,
-  TAllowedMethods extends ep.HttpMethod,
+  TAllowedMethods extends data.HttpMethod,
   TStringDecoder,
   TStringEncoder,
-  TOutputContents extends data.TOutputContentsBase,
-  TInputContents extends data.TInputContentsBase,
+  TOutputContents extends dataBE.TOutputContentsBase,
+  TInputContents extends dataBE.TInputContentsBase,
   TMetadataProviders extends common.MetadataProvidersBase<
     TStringDecoder,
     TStringEncoder,
@@ -38,7 +39,7 @@ export class AppEndpointBuilderInitial<
   ) {}
 
   public forMethod<TMethod extends TAllowedMethods, TState>(
-    method: TMethod & ep.HttpMethodWithoutBody,
+    method: TMethod & data.HttpMethodWithoutBody,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
   ): AppEndpointBuilderForMethods<
     TContext,
@@ -55,7 +56,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public forMethod<TMethod extends TAllowedMethods, TState>(
-    method: TMethod & ep.HttpMethodWithBody,
+    method: TMethod & data.HttpMethodWithBody,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
   ): AppEndpointBuilderForMethodsAndBody<
     TContext,
@@ -74,11 +75,11 @@ export class AppEndpointBuilderInitial<
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
   >(
-    method: TMethod & ep.HttpMethodWithoutBody,
+    method: TMethod & data.HttpMethodWithoutBody,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
+    query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
   ): AppEndpointBuilderForMethods<
     TContext,
     TStateInfo,
@@ -97,11 +98,11 @@ export class AppEndpointBuilderInitial<
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
   >(
-    method: TMethod & ep.HttpMethodWithBody,
+    method: TMethod & data.HttpMethodWithBody,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
+    query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
   ): AppEndpointBuilderForMethodsAndBody<
     TContext,
     TStateInfo,
@@ -120,13 +121,13 @@ export class AppEndpointBuilderInitial<
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
-    THeaderData extends data.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
-    method: TMethod & ep.HttpMethodWithoutBody,
+    method: TMethod & data.HttpMethodWithoutBody,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
-    headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
+    query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
+    headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
   ): AppEndpointBuilderForMethods<
     TContext,
     TStateInfo,
@@ -146,13 +147,13 @@ export class AppEndpointBuilderInitial<
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
-    THeaderData extends data.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
-    method: TMethod & ep.HttpMethodWithBody,
+    method: TMethod & data.HttpMethodWithBody,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-    query: data.QueryValidatorSpec<TQuery, TStringDecoder>,
-    headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
+    query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
+    headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
   ): AppEndpointBuilderForMethodsAndBody<
     TContext,
     TStateInfo,
@@ -172,14 +173,14 @@ export class AppEndpointBuilderInitial<
   forMethod<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
-    THeaderData extends data.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-    query?: data.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
+    query?: dataBE.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers?:
-      | data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
+      | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
     | AppEndpointBuilderForMethods<
@@ -220,14 +221,14 @@ export class AppEndpointBuilderInitial<
   private _forMethod<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
     THeaderData extends Record<string, unknown>,
   >(
     method: TMethod,
     endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-    query: data.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
+    query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers:
-      | data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
+      | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
     | AppEndpointBuilderForMethods<
@@ -298,7 +299,7 @@ export class AppEndpointBuilderInitial<
       headerInfo.headers = headers;
     }
 
-    return ep.isMethodWithoutRequestBody(method)
+    return data.isMethodWithoutRequestBody(method)
       ? new AppEndpointBuilderForMethods(
           this._state,
           endpointState,
@@ -337,7 +338,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -347,7 +348,7 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    THeaderData extends data.RuntimeAnyHeaders,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TOutput,
   >(
     spec: batch.BatchSpecificationWithoutBody<
@@ -370,7 +371,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -380,7 +381,7 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
     TOutput,
   >(
     spec: batch.BatchSpecificationWithoutBody<
@@ -403,7 +404,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -413,8 +414,8 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
-    THeaderData extends data.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TOutput,
   >(
     spec: batch.BatchSpecificationWithoutBody<
@@ -439,7 +440,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -447,7 +448,7 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
     TInput,
     TOutput,
@@ -474,7 +475,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -482,9 +483,9 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
     TInput,
     TOutput,
   >(
@@ -509,7 +510,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -517,9 +518,9 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
-    THeaderData extends data.RuntimeAnyHeaders,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TInput,
     TOutput,
   >(
@@ -544,7 +545,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -552,10 +553,10 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
-    THeaderData extends data.RuntimeAnyHeaders,
-    TQuery extends data.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
     TInput,
     TOutput,
   >(
@@ -583,7 +584,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -594,7 +595,7 @@ export class AppEndpointBuilderInitial<
     TMethod extends TAllowedMethods,
     TState,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TContext,
@@ -618,7 +619,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -628,9 +629,9 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    THeaderData extends data.RuntimeAnyHeaders,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TContext,
@@ -653,7 +654,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -663,9 +664,9 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TContext,
@@ -688,7 +689,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -698,10 +699,10 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
-    THeaderData extends data.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithoutBodyWithHeaders<
       TContext,
@@ -724,7 +725,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -732,11 +733,11 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
     TInput,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithBodyWithHeaders<
       TContext,
@@ -761,7 +762,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -769,12 +770,12 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
+    TQuery extends dataBE.RuntimeAnyQuery,
     TInput,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithBodyWithHeaders<
       TContext,
@@ -796,7 +797,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -804,12 +805,12 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
-    THeaderData extends data.RuntimeAnyHeaders,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TInput,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithBodyWithHeaders<
       TContext,
@@ -831,7 +832,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -839,13 +840,13 @@ export class AppEndpointBuilderInitial<
     TMetadataProviders
   >;
   public batchSpec<
-    TMethod extends TAllowedMethods & ep.HttpMethodWithBody,
+    TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
-    THeaderData extends data.RuntimeAnyHeaders,
-    TQuery extends data.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
     TInput,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: batch.BatchSpecificationWithBodyWithHeaders<
       TContext,
@@ -869,7 +870,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,
@@ -879,18 +880,18 @@ export class AppEndpointBuilderInitial<
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
-    TQuery extends data.RuntimeAnyQuery,
-    THeaderData extends data.RuntimeAnyHeaders,
+    TQuery extends dataBE.RuntimeAnyQuery,
+    THeaderData extends dataBE.RuntimeAnyHeaders,
     TInput,
     TOutput,
-    TResponseHeaderData extends data.RuntimeAnyHeaders,
+    TResponseHeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     spec: (
       | batch.BatchSpecificationWithoutBody<
           TContext,
           TStateInfo,
           TState,
-          TMethod & ep.HttpMethodWithoutBody,
+          TMethod & data.HttpMethodWithoutBody,
           TOutput,
           TOutputContents,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -901,7 +902,7 @@ export class AppEndpointBuilderInitial<
           TContext,
           TStateInfo,
           TState,
-          TMethod & ep.HttpMethodWithBody,
+          TMethod & data.HttpMethodWithBody,
           TOutput,
           TOutputContents,
           TInput,
@@ -914,7 +915,7 @@ export class AppEndpointBuilderInitial<
           TContext,
           TStateInfo,
           TState,
-          TMethod & ep.HttpMethodWithoutBody,
+          TMethod & data.HttpMethodWithoutBody,
           TOutput,
           TOutputContents,
           TResponseHeaderData,
@@ -927,7 +928,7 @@ export class AppEndpointBuilderInitial<
           TContext,
           TStateInfo,
           TState,
-          TMethod & ep.HttpMethodWithBody,
+          TMethod & data.HttpMethodWithBody,
           TOutput,
           TOutputContents,
           TResponseHeaderData,
@@ -947,7 +948,7 @@ export class AppEndpointBuilderInitial<
     TContext,
     TStateInfo,
     TArgsURL,
-    Exclude<TAllowedMethods, TMethod> & ep.HttpMethod,
+    Exclude<TAllowedMethods, TMethod> & data.HttpMethod,
     TStringDecoder,
     TStringEncoder,
     TOutputContents,

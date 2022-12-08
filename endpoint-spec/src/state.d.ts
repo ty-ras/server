@@ -1,5 +1,6 @@
+import * as data from "@ty-ras/data";
+import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
-import * as data from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
 
 export interface AppEndpointBuilderState<
@@ -7,8 +8,8 @@ export interface AppEndpointBuilderState<
   TStateInfo,
   TStringDecoder,
   TStringEncoder,
-  TOutputContents extends data.TOutputContentsBase,
-  TInputContents extends data.TInputContentsBase,
+  TOutputContents extends dataBE.TOutputContentsBase,
+  TInputContents extends dataBE.TInputContentsBase,
   TMetadata extends Record<
     string,
     md.MetadataProviderForEndpoints<
@@ -25,7 +26,7 @@ export interface AppEndpointBuilderState<
   fragments: ReadonlyArray<string>;
   methods: Partial<
     Record<
-      ep.HttpMethod,
+      data.HttpMethod,
       StaticAppEndpointBuilderSpec<
         TContext,
         TStateInfo,
@@ -44,8 +45,8 @@ export interface AppEndpointBuilderState<
 export type URLValidationInfo<TStringDecoder> =
   | {
       args: ReadonlyArray<string>;
-      validation: data.URLParameterValidatorSpec<
-        data.RuntimeAnyURLData,
+      validation: dataBE.URLParameterValidatorSpec<
+        dataBE.RuntimeAnyURLData,
         TStringDecoder
       >;
     }
@@ -56,8 +57,8 @@ export interface StaticAppEndpointBuilderSpec<
   TStateInfo,
   TStringDecoder,
   TStringEncoder,
-  TOutputContents extends data.TOutputContentsBase,
-  TInputContents extends data.TInputContentsBase,
+  TOutputContents extends dataBE.TOutputContentsBase,
+  TInputContents extends dataBE.TInputContentsBase,
   TMetadata extends Record<
     string,
     md.MetadataProviderForEndpoints<
@@ -73,17 +74,20 @@ export interface StaticAppEndpointBuilderSpec<
 > {
   builder: StaticAppEndpointBuilder<TContext, TStateInfo>;
   stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
-  requestHeadersSpec?: data.RequestHeaderDataValidatorSpecMetadata<
+  requestHeadersSpec?: dataBE.RequestHeaderDataValidatorSpecMetadata<
     string,
     TStringDecoder
   >;
-  responseHeadersSpec?: data.ResponseHeaderDataValidatorSpecMetadata<
+  responseHeadersSpec?: dataBE.ResponseHeaderDataValidatorSpecMetadata<
     string,
     TStringEncoder
   >;
-  queryValidation?: data.QueryDataValidatorSpecMetadata<string, TStringDecoder>;
-  inputValidation?: data.DataValidatorResponseInputValidatorSpec<TInputContents>;
-  outputValidation: data.DataValidatorResponseOutputValidatorSpec<TOutputContents>;
+  queryValidation?: dataBE.QueryDataValidatorSpecMetadata<
+    string,
+    TStringDecoder
+  >;
+  inputValidation?: dataBE.DataValidatorResponseInputValidatorSpec<TInputContents>;
+  outputValidation: dataBE.DataValidatorResponseOutputValidatorSpec<TOutputContents>;
   mdArgs: {
     [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
