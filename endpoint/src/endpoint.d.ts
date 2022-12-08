@@ -1,4 +1,3 @@
-import type * as method from "./methods";
 import type * as data from "@ty-ras/data";
 import type * as dataBE from "@ty-ras/data-backend";
 
@@ -14,7 +13,7 @@ export interface FinalizedAppEndpoint<TContext, TStateInfo> {
 }
 
 export type DynamicHandlerGetter<TContext, TStateInfo> = (
-  method: method.HttpMethod,
+  method: data.HttpMethod,
   groups: Record<string, string | undefined>,
 ) => DynamicHandlerResponse<TContext, TStateInfo>;
 
@@ -29,7 +28,7 @@ export type DynamicHandlerResponse<TContext, TStateInfo> =
     };
 
 export interface EndpointMethodInformation<TStateInfo> {
-  method: method.HttpMethod;
+  method: data.HttpMethod;
   stateValidator: EndpointStateValidator<TStateInfo, unknown>;
 }
 
