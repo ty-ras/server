@@ -4,6 +4,7 @@ import test, { ExecutionContext } from "ava";
 import * as spec from "../flow";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
+import * as dataBE from "@ty-ras/data-backend";
 import * as stream from "stream";
 
 test("Validate typicalServerFlow works", async (t) => {
@@ -51,7 +52,7 @@ test("Validate typicalServerFlow works", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -134,7 +135,7 @@ test("Validate typicalServerFlow works with special values", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, new URL("http://example.com"), undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -197,7 +198,7 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -275,7 +276,7 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -330,7 +331,7 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -385,7 +386,7 @@ test("Validate typicalServerFlow works with invalid state and custom error", asy
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -447,7 +448,7 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -503,7 +504,7 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -559,7 +560,7 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -619,7 +620,7 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -680,7 +681,7 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -848,7 +849,7 @@ test("Validate that setting skipSettingStatusCode and skipSendingBody works", as
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -927,7 +928,7 @@ const validateServerFlowForHEADMethod = async (
     },
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     {
@@ -1089,7 +1090,7 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     // Since allowed methods did not contain "GET", normal procedure resumes to return 405 with Allow header set.
@@ -1153,7 +1154,7 @@ test("Validate typicalServerFlow sends 404 when none of potential endpoint state
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [flowUtil.seenContext, flowUtil.dummyURLObject, undefined],
+      args: [flowUtil.seenContext, undefined],
       returnValue: "State",
     },
     // No 'Allow' header is set, but instead 404 is returned
@@ -1164,6 +1165,179 @@ test("Validate typicalServerFlow sends 404 when none of potential endpoint state
     },
   ]);
   c.deepEqual(seenMethods, ["GET"]);
+});
+
+test("Validate typicalServerFlow works with thrown HTTPError", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  const error = new dataBE.HTTPError(401, "body");
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: () => ({
+        found: "handler",
+        handler: {
+          stateValidator: flowUtil.createStateValidator(),
+          handler: () => {
+            throw error;
+          },
+        },
+      }),
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    // Server flow gets URL and method
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: "/path",
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "GET",
+    },
+    // Server flow validates state
+    {
+      args: [flowUtil.seenContext, undefined],
+      callbackName: "getState",
+      returnValue: "State",
+    },
+    // Server flow gets content type
+    {
+      args: [flowUtil.seenContext, "content-type"],
+      callbackName: "getHeader",
+      returnValue: "content-type",
+    },
+    // Server flow gets request body
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getRequestBody",
+      returnValue: flowUtil.dummyBody,
+    },
+    // Server flow invokes the handler, which throws an error
+    // Status code and body must propagate to response
+    {
+      callbackName: "setStatusCode",
+      args: [flowUtil.seenContext, 401, true, error],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "sendContent",
+      args: [flowUtil.seenContext, "body"],
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate typicalServerFlow works with returned HTTPProtocolError", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: () => ({
+        found: "handler",
+        handler: {
+          stateValidator: flowUtil.createStateValidator(),
+          handler: () => ({
+            error: "protocol-error",
+            statusCode: 401,
+            body: "body",
+          }),
+        },
+      }),
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    // Server flow gets URL and method
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: "/path",
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "GET",
+    },
+    // Server flow validates state
+    {
+      args: [flowUtil.seenContext, undefined],
+      callbackName: "getState",
+      returnValue: "State",
+    },
+    // Server flow gets content type
+    {
+      args: [flowUtil.seenContext, "content-type"],
+      callbackName: "getHeader",
+      returnValue: "content-type",
+    },
+    // Server flow gets request body
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getRequestBody",
+      returnValue: flowUtil.dummyBody,
+    },
+    // Server flow invokes the handler, which returns an error object.
+    // Status code and body must propagate to response
+    {
+      callbackName: "setStatusCode",
+      args: [flowUtil.seenContext, 401, true],
+      returnValue: undefined,
+    },
+    {
+      callbackName: "sendContent",
+      args: [flowUtil.seenContext, "body"],
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate typicalServerFlow works when sendBody throws inside error handler", async (c) => {
+  c.plan(1);
+  const error = new dataBE.HTTPError(401, "body");
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getURL: () => "/path",
+    sendContent: () => {
+      throw new Error("This should be catched");
+    },
+  });
+  await spec.createTypicalServerFlow(
+    {
+      url: /(?<group>path)/,
+      handler: () => {
+        throw error;
+      },
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    // Server flow gets URL and method
+    {
+      callbackName: "getURL",
+      args: [flowUtil.seenContext],
+      returnValue: "/path",
+    },
+    {
+      callbackName: "getMethod",
+      args: [flowUtil.seenContext],
+      returnValue: "GET",
+    },
+    // At this point handler throws HTTP error
+    // Server flow catches error and invokes status code + send content callbacks
+    // The send content callback will throw, and must be catched
+    {
+      callbackName: "setStatusCode",
+      args: [flowUtil.seenContext, 401, true, error],
+      returnValue: undefined,
+    },
+  ]);
 });
 
 const getHumanReadableMessage = () => "";

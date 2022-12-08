@@ -1,6 +1,6 @@
-import * as ep from "@ty-ras/endpoint";
-import type * as data from "@ty-ras/data";
-import type * as dataBE from "@ty-ras/data-backend";
+import type * as ep from "@ty-ras/endpoint";
+import * as data from "@ty-ras/data";
+import * as dataBE from "@ty-ras/data-backend";
 import * as server from "./utils";
 import * as evt from "./events";
 
@@ -53,7 +53,7 @@ export const createTypicalServerFlow = <
       );
       if (maybeEventArgs) {
         // We have a match -> get the handler that will handle our match
-        const method = cb.getMethod(ctx) as ep.HttpMethod;
+        const method = cb.getMethod(ctx) as data.HttpMethod;
         let foundHandler = handler(method, maybeEventArgs.groups);
         const sendBody = method !== "HEAD";
         if (
@@ -82,7 +82,7 @@ export const createTypicalServerFlow = <
             maybeEventArgs,
             events,
             stateValidator.validator,
-            await cb.getState(ctx, parsedUrl, stateValidator.stateInfo),
+            await cb.getState(ctx, stateValidator.stateInfo),
           );
           if (stateValidation.result === "state") {
             const eventArgs = {
@@ -137,64 +137,64 @@ export const createTypicalServerFlow = <
                         query,
                       },
                     );
-                    switch (retVal.error) {
-                      case "none":
-                        {
-                          const { contentType, output, headers } = retVal.data;
-                          if (headers) {
-                            for (const [hdrName, hdrValue] of Object.entries(
-                              headers,
-                            )) {
-                              if (hdrValue !== undefined) {
-                                cb.setHeader(ctx, hdrName, hdrValue);
-                              }
-                            }
-                          }
-                          const hasOutput = output !== undefined;
-                          cb.setStatusCode(
-                            ctx,
-                            hasOutput ? 200 : 204,
-                            sendBody && hasOutput,
-                          );
-                          if (!sendBody) {
-                            if (output instanceof stream.Readable) {
-                              output.destroy();
-                            } else {
-                              const charsetIdx =
-                                contentType.indexOf(CHARSET_MARKER);
-                              cb.setHeader(
-                                ctx,
-                                "Content-Length",
-                                `${
-                                  output === undefined
-                                    ? 0
-                                    : typeof output === "string"
-                                    ? Buffer.byteLength(
-                                        output,
-                                        charsetIdx > 0
-                                          ? (contentType.substring(
-                                              charsetIdx +
-                                                CHARSET_MARKER.length,
-                                            ) as BufferEncoding)
-                                          : undefined,
-                                      )
-                                    : output.byteLength
-                                }`,
-                              );
-                            }
-                          }
-                          if (hasOutput) {
-                            cb.setHeader(ctx, "Content-Type", contentType);
-                            if (sendBody) {
-                              await cb.sendContent(ctx, output);
-                            }
+                    if (retVal.error === "none") {
+                      const { contentType, output, headers } = retVal.data;
+                      if (headers) {
+                        for (const [hdrName, hdrValue] of Object.entries(
+                          headers,
+                        )) {
+                          if (hdrValue !== undefined) {
+                            cb.setHeader(ctx, hdrName, hdrValue);
                           }
                         }
-                        break;
-                      case "error": {
-                        // Internal Server Error
-                        cb.setStatusCode(ctx, 500, false);
                       }
+                      const hasOutput = output !== undefined;
+                      cb.setStatusCode(
+                        ctx,
+                        hasOutput ? 200 : 204,
+                        sendBody && hasOutput,
+                      );
+                      if (!sendBody) {
+                        if (output instanceof stream.Readable) {
+                          output.destroy();
+                        } else {
+                          const charsetIdx =
+                            contentType.indexOf(CHARSET_MARKER);
+                          cb.setHeader(
+                            ctx,
+                            "Content-Length",
+                            `${
+                              output === undefined
+                                ? 0
+                                : typeof output === "string"
+                                ? Buffer.byteLength(
+                                    output,
+                                    charsetIdx > 0
+                                      ? (contentType.substring(
+                                          charsetIdx + CHARSET_MARKER.length,
+                                        ) as BufferEncoding)
+                                      : undefined,
+                                  )
+                                : output.byteLength
+                            }`,
+                          );
+                        }
+                      }
+                      if (hasOutput) {
+                        cb.setHeader(ctx, "Content-Type", contentType);
+                        if (sendBody) {
+                          await cb.sendContent(ctx, output);
+                        }
+                      }
+                    } else {
+                      // Internal Server Error
+                      await sendCodeAndBody(
+                        cb,
+                        ctx,
+                        retVal.error === "protocol-error"
+                          ? retVal
+                          : { statusCode: 500, body: undefined },
+                      );
                     }
                   } else {
                     // Body failed validation
@@ -231,11 +231,7 @@ export const createTypicalServerFlow = <
                 ? undefined
                 : async (stateValidator) =>
                     stateValidator.validator(
-                      await cb.getState(
-                        ctx,
-                        parsedUrl,
-                        stateValidator.stateInfo,
-                      ),
+                      await cb.getState(ctx, stateValidator.stateInfo),
                     ).error === "none",
             );
 
@@ -258,7 +254,18 @@ export const createTypicalServerFlow = <
       } catch {
         // Not that much we can do.
       }
-      cb.setStatusCode(ctx, 500, false, error);
+      try {
+        await sendCodeAndBody(
+          cb,
+          ctx,
+          error instanceof dataBE.HTTPError
+            ? { statusCode: error.statusCode, body: error.body }
+            : { statusCode: 500, body: undefined },
+          { error },
+        );
+      } catch {
+        // TODO add method to callbacks to close the stream in this case.
+      }
     }
   };
 };
@@ -291,7 +298,6 @@ export type ServerFlowCallbacks<TContext, TStateInfo> =
   ServerFlowCallbacksWithoutState<TContext> & {
     getState: (
       ctx: TContext,
-      url: url.URL,
       stateInfo: TStateInfo,
     ) => ep.MaybePromise<unknown>;
   };
@@ -320,3 +326,24 @@ declare global {
 }
 
 const CHARSET_MARKER = "charset=";
+
+const sendCodeAndBody = async <TContext>(
+  cb: ServerFlowCallbacksWithoutState<TContext>,
+  ctx: GetContext<TContext>,
+  codeAndBody: { statusCode: number; body: string | undefined },
+  error?: { error: unknown },
+) => {
+  const willCallSendContent = codeAndBody.body !== undefined;
+  const args: Parameters<typeof cb["setStatusCode"]> = [
+    ctx,
+    codeAndBody.statusCode,
+    willCallSendContent,
+  ];
+  if (error) {
+    args.push(error.error);
+  }
+  cb.setStatusCode(...args);
+  if (willCallSendContent) {
+    await cb.sendContent(ctx, codeAndBody.body);
+  }
+};

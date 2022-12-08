@@ -3,7 +3,6 @@ import test from "ava";
 import * as spec from "../cors";
 import * as flowUtil from "./flow";
 import * as flow from "../flow";
-import type * as ep from "@ty-ras/endpoint";
 import type * as data from "@ty-ras/data";
 
 test("Validate that CORS callbacks intercept preflight call correctly", async (c) => {
@@ -92,7 +91,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
 
 test("Validate that CORS callbacks intercept normal call correctly", async (c) => {
   c.plan(1);
-  const method: ep.HttpMethod = "GET";
+  const method: data.HttpMethod = "GET";
   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
     getMethod: () => method,
   });
@@ -142,7 +141,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
     },
     {
       callbackName: "getState",
-      args: [contextWithoutModifications, flowUtil.dummyURLObject, undefined],
+      args: [contextWithoutModifications, undefined],
       returnValue: "State",
     },
     {
@@ -367,7 +366,7 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [contextWithoutModifications, flowUtil.dummyURLObject, undefined],
+      args: [contextWithoutModifications, undefined],
       returnValue: "State",
     },
     // CORS flow does not kick in, so the server flow proceeds normally
@@ -419,7 +418,7 @@ test("Validate that CORS callbacks don't mistake normal method mismatch for pref
     // Server flow detects that no suitable method found, so it invokes utils.invokeInvalidMethodEvent, which in turn asks to get a state
     {
       callbackName: "getState",
-      args: [contextWithoutModifications, flowUtil.dummyURLObject, undefined],
+      args: [contextWithoutModifications, undefined],
       returnValue: "State",
     },
     // CORS flow kicks in via onInvalidMethod event, asking for method as well

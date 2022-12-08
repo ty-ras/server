@@ -209,7 +209,11 @@ test("Validate checkStateForHandler works for invalid data input with protocol i
         eventName: "onInvalidState",
         args: {
           ...EVENT_ARGS_NO_STATE,
-          validationError: undefined,
+          validationError: {
+            error: "protocol-error",
+            statusCode: 123,
+            body: "Body",
+          },
         },
       },
     ];
