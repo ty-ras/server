@@ -58,7 +58,8 @@ export type StaticAppEndpointHandlerFunction<TContext> = (args: {
   query: unknown;
   body: unknown;
 }) => MaybePromise<
-  data.DataValidatorResult<dataBE.DataValidatorResponseOutputSuccess>
+  | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>
+  | dataBE.DataValidatorResponseOutputError
 >;
 
 export type MaybePromise<T> = T | Promise<T>;
