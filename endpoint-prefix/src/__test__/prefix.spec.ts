@@ -305,3 +305,42 @@ test("Validate atPrefix detects top-level prefix but doesn't throw if prefix str
     "When top-level-prefixed endpoint is just one of many when doing another top-level prefix, exception must be thrown.",
   );
 });
+
+const customRegExpGroupNameTest = (
+  c: ExecutionContext,
+  isTopLevel: boolean,
+) => {
+  c.plan(1);
+
+  const url = /\/url/;
+  const singleEP: ep.AppEndpoint<unknown, unknown> = {
+    getRegExpAndHandler: () => ({
+      url,
+      handler: () => {
+        throw new Error("This should never be called in this test.");
+      },
+    }),
+  };
+
+  c.deepEqual(
+    spec
+      .atPrefix("/urlPrefix", "groupPrefix", singleEP)
+      .getRegExpAndHandler(isTopLevel ? "" : "anotherPrefix").url,
+    isTopLevel
+      ? // When this is top-level, the given groupPrefix is not used
+        /\/urlPrefix((?<e_0>^\/url$))/
+      : // When this is not top-level, then the given groupPrefix is used
+        /\/urlPrefix((?<anotherPrefixgroupPrefix_0>\/url$))/,
+  );
+};
+
+test(
+  "Validate atPrefix takes the custom regexp group name into account, as top-level endpoint",
+  customRegExpGroupNameTest,
+  true,
+);
+test(
+  "Validate atPrefix takes the custom regexp group name into account, as inner endpoint",
+  customRegExpGroupNameTest,
+  false,
+);

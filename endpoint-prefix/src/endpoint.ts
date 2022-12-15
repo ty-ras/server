@@ -4,7 +4,8 @@ export class PrefixedEndpoint<TContext, TStateInfo>
   implements ep.AppEndpoint<TContext, TStateInfo>
 {
   public constructor(
-    public readonly prefix: string,
+    public readonly urlPrefix: string,
+    private readonly regExpGroupNamePrefix: string,
     private readonly allEndpoints: ReadonlyArray<
       ep.AppEndpoint<TContext, TStateInfo>
     >,
@@ -17,11 +18,11 @@ export class PrefixedEndpoint<TContext, TStateInfo>
         this.allEndpoints,
         groupNamePrefix.length > 0
           ? // TODO this 'replaceAll' might need some ability to be customized at some point
-            `${groupNamePrefix}${this.prefix.replaceAll("/", "")}_`
+            `${groupNamePrefix}${this.regExpGroupNamePrefix}_`
           : undefined,
       );
       return {
-        url: new RegExp(`${ep.escapeRegExp(this.prefix)}(${regExpSource})`),
+        url: new RegExp(`${ep.escapeRegExp(this.urlPrefix)}(${regExpSource})`),
         handler: createPrefixedHandlerImpl(builtEndpoints),
       };
     };
