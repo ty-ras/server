@@ -6,6 +6,7 @@
   "exclude": [
     "src/__test__/**/*.*",
     "**/*.d.ts",
+    "**/*.types.ts",
     "src/index.ts"
   ],
   "reporter": [
