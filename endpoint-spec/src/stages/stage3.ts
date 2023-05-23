@@ -3,10 +3,10 @@ import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
 import type * as state from "./state.types";
-import type * as common from "./common";
-import { AppEndpointBuilderInitial } from ".";
+import type * as common from "../common.types";
+import { AppEndpointBuilderStage1 } from ".";
 
-export class AppEndpointBuilder<
+export class AppEndpointBuilderStage3<
   TContext,
   TStateInfo,
   TArgsURL extends object,
@@ -21,7 +21,7 @@ export class AppEndpointBuilder<
     TOutputContents,
     TInputContents
   >,
-> extends AppEndpointBuilderInitial<
+> extends AppEndpointBuilderStage1<
   TContext,
   TStateInfo,
   TArgsURL,

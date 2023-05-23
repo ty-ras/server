@@ -1,16 +1,16 @@
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
-import * as common from "./common";
+import type * as common from "../common.types";
 import type * as state from "./state.types";
-import type * as batch from "./batch.types";
+import type * as batch from "../batch.types";
 import {
-  AppEndpointBuilderForMethods,
+  AppEndpointBuilderStage2,
   AppEndpointBuilderForMethodsAndBody,
-  AppEndpointBuilder,
-} from ".";
+  AppEndpointBuilderStage3,
+} from "./";
 
-export class AppEndpointBuilderInitial<
+export class AppEndpointBuilderStage1<
   TContext,
   TStateInfo,
   TArgsURL extends object,
@@ -41,7 +41,7 @@ export class AppEndpointBuilderInitial<
   public forMethod<TMethod extends TAllowedMethods, TState>(
     method: TMethod & data.HttpMethodWithoutBody,
     endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
-  ): AppEndpointBuilderForMethods<
+  ): AppEndpointBuilderStage2<
     TContext,
     TStateInfo,
     TState,
@@ -80,7 +80,7 @@ export class AppEndpointBuilderInitial<
     method: TMethod & data.HttpMethodWithoutBody,
     endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
-  ): AppEndpointBuilderForMethods<
+  ): AppEndpointBuilderStage2<
     TContext,
     TStateInfo,
     TState,
@@ -128,7 +128,7 @@ export class AppEndpointBuilderInitial<
     endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
     headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilderForMethods<
+  ): AppEndpointBuilderStage2<
     TContext,
     TStateInfo,
     TState,
@@ -183,7 +183,7 @@ export class AppEndpointBuilderInitial<
       | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
-    | AppEndpointBuilderForMethods<
+    | AppEndpointBuilderStage2<
         TContext,
         TStateInfo,
         TState,
@@ -231,7 +231,7 @@ export class AppEndpointBuilderInitial<
       | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
-    | AppEndpointBuilderForMethods<
+    | AppEndpointBuilderStage2<
         TContext,
         TStateInfo,
         TState,
@@ -272,7 +272,7 @@ export class AppEndpointBuilderInitial<
       throw new InvalidMethodError(method);
     }
 
-    const queryInfo: common.QueryInfo<
+    const queryInfo: state.QueryInfo<
       common.EndpointHandlerArgsWithQuery<TQuery>,
       TStringDecoder
     > = {
@@ -286,7 +286,7 @@ export class AppEndpointBuilderInitial<
       queryInfo.query = query;
     }
 
-    const headerInfo: common.HeaderDataInfo<
+    const headerInfo: state.HeaderDataInfo<
       common.EndpointHandlerArgsWithHeaders<THeaderData>,
       TStringDecoder
     > = {
@@ -300,7 +300,7 @@ export class AppEndpointBuilderInitial<
     }
 
     return data.isMethodWithoutRequestBody(method)
-      ? new AppEndpointBuilderForMethods(
+      ? new AppEndpointBuilderStage2(
           this._state,
           endpointState,
           new Set([method]),
@@ -334,7 +334,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -367,7 +367,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -400,7 +400,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -436,7 +436,7 @@ export class AppEndpointBuilderInitial<
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -471,7 +471,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -506,7 +506,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -541,7 +541,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -580,7 +580,7 @@ export class AppEndpointBuilderInitial<
       >]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder> &
       batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -615,7 +615,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -650,7 +650,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationQueryArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -685,7 +685,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -721,7 +721,7 @@ export class AppEndpointBuilderInitial<
       [P in keyof batch.EndpointSpecArgsJustBody<never, never>]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -758,7 +758,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -793,7 +793,7 @@ export class AppEndpointBuilderInitial<
     > & {
       [P in keyof batch.BatchSpecificationHeaderArgs<never, never>]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -828,7 +828,7 @@ export class AppEndpointBuilderInitial<
     > & {
       [P in keyof batch.BatchSpecificationQueryArgs<never, never>]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -866,7 +866,7 @@ export class AppEndpointBuilderInitial<
     > &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder> &
       batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -944,7 +944,7 @@ export class AppEndpointBuilderInitial<
       ({} | batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>) &
       // eslint-disable-next-line @typescript-eslint/ban-types
       ({} | batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>),
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -985,10 +985,7 @@ export class AppEndpointBuilderInitial<
       return "responseHeaders" in spec
         ? dummy1.withBody(
             spec.input,
-            common.handlerWithHeaders(
-              spec.endpointHandler,
-              spec.responseHeaders,
-            ),
+            handlerWithHeaders(spec.endpointHandler, spec.responseHeaders),
             spec.output,
             spec.mdArgs,
           )
@@ -1000,7 +997,7 @@ export class AppEndpointBuilderInitial<
           );
     } else {
       // Same thing here as above: need to do explicit type annotation, otherwise compiler gets confused.
-      const dummy2: AppEndpointBuilderForMethods<
+      const dummy2: AppEndpointBuilderStage2<
         TContext,
         TStateInfo,
         TState,
@@ -1018,10 +1015,7 @@ export class AppEndpointBuilderInitial<
       > = builder;
       return "responseHeaders" in spec
         ? dummy2.withoutBody(
-            common.handlerWithHeaders(
-              spec.endpointHandler,
-              spec.responseHeaders,
-            ),
+            handlerWithHeaders(spec.endpointHandler, spec.responseHeaders),
             spec.output,
             spec.mdArgs,
           )
@@ -1035,3 +1029,24 @@ export class InvalidMethodError extends Error {
     super(`Invalid method specified: "${method}"`);
   }
 }
+
+const handlerWithHeaders = <
+  TArgs,
+  THandlerResult,
+  THeaderData extends dataBE.RuntimeAnyHeaders,
+  TStringEncoder,
+>(
+  handler: common.EndpointHandler<
+    TArgs,
+    common.EndpointHandlerOutputWithHeaders<THandlerResult, THeaderData>
+  >,
+  headers: dataBE.ResponseHeaderDataValidatorSpec<THeaderData, TStringEncoder>,
+): common.EndpointHandlerSpec<
+  TArgs,
+  THandlerResult,
+  THeaderData,
+  TStringEncoder
+> => ({
+  handler,
+  headers,
+});

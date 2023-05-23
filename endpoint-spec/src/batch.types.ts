@@ -7,7 +7,7 @@
 import type * as data from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
-import type * as common from "./common";
+import type * as common from "./common.types";
 
 /**
  * This interface contains required information for specifying single HTTP BE endpoint which does not use HTTP request body.
@@ -202,13 +202,40 @@ export interface BatchSpecificationWithoutBodyWithoutHandler<
     >
   >,
 > extends BatchSpecificationWithMethodAndState<TStateInfo, TState, TMethod>,
-    EndpointSpecArgsWithoutBody<
-      TResponseHeaders,
-      TOutput,
+    EndpointSpecArgsJustResponseBody<TOutput, TOutputContentTypes> {
+  /**
+   * The object of {@link md.MetadataProviderForEndpoints} for each of the used metadata provider (e.g. OpenAPI, etc).
+   */
+  mdArgs: {
+    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
+      infer TArg,
+      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _1,
+      infer _2,
+      infer _3,
       TOutputContentTypes,
-      TEndpointArgs,
-      TMetadataProviders
-    > {}
+      infer _4
+    >
+      ? md.Kind<
+          TArg,
+          TEndpointArgs extends common.EndpointHandlerArgsWithURL<unknown>
+            ? { [P in keyof TEndpointArgs["url"]]: unknown }
+            : undefined,
+          TEndpointArgs extends common.EndpointHandlerArgsWithQuery<unknown>
+            ? { [P in keyof TEndpointArgs["query"]]: unknown }
+            : undefined,
+          TEndpointArgs extends common.EndpointHandlerArgsWithHeaders<unknown>
+            ? { [P in keyof TEndpointArgs["headers"]]: unknown }
+            : undefined,
+          undefined extends TResponseHeaders
+            ? undefined
+            : { [P in keyof TResponseHeaders]: unknown },
+          undefined,
+          { [P in keyof TOutputContentTypes]: TOutput }
+        >
+      : never;
+  };
+}
 
 /**
  * This is base interface for {@link BatchSpecificationWithBody} and {@link BatchSpecificationWithBodyWithHeaders}.
@@ -236,15 +263,41 @@ export interface BatchSpecificationWithBodyWithoutHandler<
     >
   >,
 > extends BatchSpecificationWithMethodAndState<TStateInfo, TState, TMethod>,
-    EndpointSpecArgsWithBody<
-      TResponseHeaders,
-      TOutput,
+    EndpointSpecArgsJustResponseBody<TOutput, TOutputContentTypes>,
+    EndpointSpecArgsJustBody<TInput, TInputContentTypes> {
+  /**
+   * The object of {@link md.MetadataProviderForEndpoints} for each of the used metadata provider (e.g. OpenAPI, etc).
+   */
+  mdArgs: {
+    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
+      infer TArg,
+      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _1,
+      infer _2,
+      infer _3,
       TOutputContentTypes,
-      TInput,
-      TInputContentTypes,
-      TEndpointArgs,
-      TMetadataProviders
-    > {}
+      TInputContentTypes
+    >
+      ? md.Kind<
+          TArg,
+          TEndpointArgs extends common.EndpointHandlerArgsWithURL<unknown>
+            ? { [P in keyof TEndpointArgs["url"]]: unknown }
+            : undefined,
+          TEndpointArgs extends common.EndpointHandlerArgsWithQuery<unknown>
+            ? { [P in keyof TEndpointArgs["query"]]: unknown }
+            : undefined,
+          TEndpointArgs extends common.EndpointHandlerArgsWithHeaders<unknown>
+            ? { [P in keyof TEndpointArgs["headers"]]: unknown }
+            : undefined,
+          undefined extends TResponseHeaders
+            ? undefined
+            : { [P in keyof TResponseHeaders]: unknown },
+          { [P in keyof TInputContentTypes]: TInput },
+          { [P in keyof TOutputContentTypes]: TOutput }
+        >
+      : never;
+  };
+}
 
 /**
  * This is base interface for {@link BatchSpecificationWithoutBodyWithoutHandler} and {@link BatchSpecificationWithBodyWithoutHandler}.
@@ -285,6 +338,9 @@ export interface BatchSpecificationHeaderArgs<
   THeaderData extends Record<string, unknown>,
   TStringDecoder,
 > {
+  /**
+   * The {@link data.RequestHeaderDataValidatorSpec} specifying the HTTP request header validation and metadata.
+   */
   headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>;
 }
 
@@ -295,127 +351,54 @@ export interface BatchSpecificationResponseHeaderArgs<
   THeaderData extends Record<string, unknown>,
   TStringDecoder,
 > {
+  /**
+   * The {@link data.ResponseHeaderDataValidatorSpec} specifying the HTTP response header validation and metadata.
+   */
   responseHeaders: data.ResponseHeaderDataValidatorSpec<
     THeaderData,
     TStringDecoder
   >;
 }
 
-export interface EndpointSpecArgsWithoutBody<
-  TResponseHeaders,
+/**
+ * This is base interface for {@link BatchSpecificationWithoutBodyWithoutHandler} and {@link BatchSpecificationWithBodyWithoutHandler}.
+ */
+export interface EndpointSpecArgsJustResponseBody<
   TOutput,
   TOutputContentTypes extends Record<string, unknown>,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataProviderForEndpoints<
-      md.HKTArg,
-      any,
-      any,
-      any,
-      any,
-      TOutputContentTypes,
-      any
-    >
-  >,
 > {
+  /**
+   * The {@link data.DataValidatorResponseOutputSpec} for HTTP response body, specifying validator and metadata.
+   */
   output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
-  mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
-      infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _1,
-      infer _2,
-      infer _3,
-      TOutputContentTypes,
-      infer _4
-    >
-      ? md.Kind<
-          TArg,
-          TEndpointArgs extends common.EndpointHandlerArgsWithURL<unknown>
-            ? { [P in keyof TEndpointArgs["url"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithQuery<unknown>
-            ? { [P in keyof TEndpointArgs["query"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithHeaders<unknown>
-            ? { [P in keyof TEndpointArgs["headers"]]: unknown }
-            : undefined,
-          undefined extends TResponseHeaders
-            ? undefined
-            : { [P in keyof TResponseHeaders]: unknown },
-          undefined,
-          { [P in keyof TOutputContentTypes]: TOutput }
-        >
-      : never;
-  };
 }
 
-export type EndpointSpecArgsWithBody<
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataProviderForEndpoints<
-      md.HKTArg,
-      any,
-      any,
-      any,
-      any,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-  >,
-> = EndpointSpecArgsJustBody<TInput, TInputContentTypes> & {
-  output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
-  mdArgs: {
-    [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
-      infer TArg,
-      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
-      infer _1,
-      infer _2,
-      infer _3,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-      ? md.Kind<
-          TArg,
-          TEndpointArgs extends common.EndpointHandlerArgsWithURL<unknown>
-            ? { [P in keyof TEndpointArgs["url"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithQuery<unknown>
-            ? { [P in keyof TEndpointArgs["query"]]: unknown }
-            : undefined,
-          TEndpointArgs extends common.EndpointHandlerArgsWithHeaders<unknown>
-            ? { [P in keyof TEndpointArgs["headers"]]: unknown }
-            : undefined,
-          undefined extends TResponseHeaders
-            ? undefined
-            : { [P in keyof TResponseHeaders]: unknown },
-          { [P in keyof TInputContentTypes]: TInput },
-          { [P in keyof TOutputContentTypes]: TOutput }
-        >
-      : never;
-  };
-};
-
+/**
+ * This is base interface for {@link BatchSpecificationWithBodyWithoutHandler}.
+ */
 export interface EndpointSpecArgsJustBody<
   TInput,
   TInputContentTypes extends Record<string, unknown>,
 > {
+  /**
+   * The {@link data.DataValidatorRequestInputSpec} for HTTP request body, specifying validator and metadata.
+   */
   input: data.DataValidatorRequestInputSpec<TInput, TInputContentTypes>;
 }
 
+/**
+ * This is base interface for {@link BatchSpecificationWithoutBody}, {@link BatchSpecificationWithBody}, {@link BatchSpecificationWithoutBodyWithHeaders}, and {@link BatchSpecificationWithBodyWithHeaders}.
+ */
 export interface EndpointSpecArgsWithHandler<
   TContext,
   TState,
   TEndpointArgs,
   TOutput,
 > {
+  /**
+   * The callback to handle the request with validated inputs.
+   * @see common.EndpointHandler
+   */
   endpointHandler: common.EndpointHandler<
     TEndpointArgs & common.EndpointHandlerArgs<TContext, TState>,
     TOutput

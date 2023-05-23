@@ -2,11 +2,11 @@ import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
-import * as common from "./common";
+import type * as common from "../common.types";
 import type * as state from "./state.types";
-import { AppEndpointBuilder } from ".";
+import { AppEndpointBuilderStage3 } from ".";
 
-export class AppEndpointBuilderForMethods<
+export class AppEndpointBuilderStage2<
   TContext,
   TStateInfo,
   TState,
@@ -40,8 +40,8 @@ export class AppEndpointBuilderForMethods<
       TState
     >,
     protected readonly _methods: Set<TAllowedMethods>,
-    protected readonly _queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
-    protected readonly _headerInfo: common.HeaderDataInfo<
+    protected readonly _queryInfo: state.QueryInfo<TArgsQuery, TStringDecoder>,
+    protected readonly _headerInfo: state.HeaderDataInfo<
       TArgsHeaders,
       TStringDecoder
     >,
@@ -67,7 +67,7 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       keyof THeaderData
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -95,7 +95,7 @@ export class AppEndpointBuilderForMethods<
       TMetadataProviders,
       TOutput
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -131,7 +131,7 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       keyof THeaderData
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -162,7 +162,7 @@ export class AppEndpointBuilderForMethods<
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mdArgs: mdArgs as any,
     };
-    return new AppEndpointBuilder({
+    return new AppEndpointBuilderStage3({
       ...this._state,
       methods: Object.assign(
         {},
@@ -193,7 +193,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     TOutputContents,
     TInputContents
   >,
-> extends AppEndpointBuilderForMethods<
+> extends AppEndpointBuilderStage2<
   TContext,
   TStateInfo,
   TState,
@@ -230,7 +230,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       keyof TInputContents,
       TBody
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -271,7 +271,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       keyof TInputContents,
       TBody
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -320,7 +320,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       keyof TInputContents,
       TBody
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -352,7 +352,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mdArgs: mdArgs as any,
     };
-    return new AppEndpointBuilder({
+    return new AppEndpointBuilderStage3({
       ...this._state,
       methods: Object.assign(
         {},
@@ -384,8 +384,8 @@ const createStaticEndpointSpec = <
 >(
   stateInformation: ep.EndpointStateInformation<TStateInfo, TState>,
   urlValidation: state.URLValidationInfo<TStringDecoder>,
-  queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
-  headerInfo: common.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
+  queryInfo: state.QueryInfo<TArgsQuery, TStringDecoder>,
+  headerInfo: state.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
   endpointHandlerSpec:
     | common.EndpointHandler<TEndpointArgs, THandlerResult>
     | common.EndpointHandlerSpec<

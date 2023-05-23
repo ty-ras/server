@@ -115,3 +115,16 @@ export type StaticAppEndpointBuilder<TContext, TStateInfo> = (
   groupNamePrefix: string,
   // groups: Record<string, string>,
 ) => ep.AppEndpointHandler<TContext, TStateInfo>;
+
+export interface QueryInfo<TArgs, TDecoder> {
+  query?: data.QueryValidatorSpec<data.RuntimeAnyQuery, TDecoder>;
+  getEndpointArgs: (query: unknown) => TArgs;
+}
+
+export interface HeaderDataInfo<TArgs, THeaderValidators> {
+  headers?: data.RequestHeaderDataValidatorSpec<
+    Record<string, unknown>,
+    THeaderValidators
+  >;
+  getEndpointArgs: (headers: data.RuntimeAnyHeaders) => TArgs;
+}

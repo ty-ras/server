@@ -5,13 +5,14 @@
 /* eslint-disable sonarjs/no-duplicate-string, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
 import test from "ava";
 import * as spec from "..";
-import * as common from "./common";
+import * as init from "../../init";
+import * as common from "../../__test__/common";
 
 test("Validate that can not re-specify existing method for same URL", (t) => {
   t.plan(1);
   t.throws(
     () =>
-      spec.startBuildingAPI().atURL`/path`
+      init.startBuildingAPI().atURL`/path`
         .batchSpec({
           state: common.state,
           method: "GET",
@@ -28,7 +29,7 @@ test("Validate that can not re-specify existing method for same URL", (t) => {
 
 test("Validate that response headers must be present in handler output if so specified in builder", async (t) => {
   t.plan(1);
-  const maybeHandler = spec.startBuildingAPI().atURL`/path`
+  const maybeHandler = init.startBuildingAPI().atURL`/path`
     .forMethod("GET", common.state)
     .withoutBody(
       {
@@ -59,7 +60,7 @@ test("Validate that response headers must be present in handler output if so spe
 
 test("Validate that erroneous endpoint handler response propagates to output", async (t) => {
   t.plan(1);
-  const maybeHandler = spec.startBuildingAPI().atURL`/path`
+  const maybeHandler = init.startBuildingAPI().atURL`/path`
     .batchSpec({
       state: common.state,
       method: "GET",
@@ -97,7 +98,7 @@ test("Validate that building endpoint requires at least one method", (t) => {
   t.plan(1);
   t.throws(
     () =>
-      new spec.AppEndpointBuilder({
+      new spec.AppEndpointBuilderStage3({
         methods: {},
         fragments: [],
         metadata: {},
@@ -112,7 +113,7 @@ test("Validate that building endpoint requires at least one method", (t) => {
 test("Validate that endpoint returns handlers only for methods that are specified in builder", (t) => {
   t.plan(1);
   t.deepEqual(
-    spec.startBuildingAPI().atURL`/path`
+    init.startBuildingAPI().atURL`/path`
       .batchSpec({
         state: common.state,
         method: "GET",
@@ -137,7 +138,7 @@ test("Validate that endpoint returns handlers only for methods that are specifie
 
 test("Validate that if response headers validation doesn't pass, the whole output is considered failed", async (t) => {
   t.plan(1);
-  const maybeHandler = spec.startBuildingAPI().atURL`/path`
+  const maybeHandler = init.startBuildingAPI().atURL`/path`
     .batchSpec({
       state: common.state,
       method: "GET",
