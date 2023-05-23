@@ -16,7 +16,7 @@ test("Validate typicalServerFlow works", async (t) => {
       handler: (method, groups) => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: (state) => ({
               error: "none",
@@ -102,7 +102,7 @@ test("Validate typicalServerFlow works with special values", async (t) => {
       handler: (method, groups) => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: (state) => ({
               error: "none",
@@ -165,7 +165,7 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
       handler: (method, groups) => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: (state) => ({
               error: "none",
@@ -255,7 +255,7 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
       handler: () => ({
         found: "invalid-method",
         allowedMethods: [
-          { method: "POST", stateValidator: flowUtil.createStateValidator() },
+          { method: "POST", stateInformation: flowUtil.createStateValidator() },
         ],
       }),
     },
@@ -301,7 +301,7 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "error",
@@ -356,7 +356,7 @@ test("Validate typicalServerFlow works with invalid state and custom error", asy
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "protocol-error",
@@ -411,7 +411,7 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "none",
@@ -468,7 +468,7 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "none",
@@ -524,7 +524,7 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "none",
@@ -585,7 +585,7 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "none",
@@ -650,7 +650,7 @@ test("Validate typicalServerFlow works with invalid output", async (t) => {
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "none",
@@ -817,7 +817,7 @@ test("Validate that setting skipSettingStatusCode and skipSendingBody works", as
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: {
+          stateInformation: {
             stateInfo: undefined,
             validator: () => ({
               error: "protocol-error",
@@ -883,7 +883,7 @@ const validateServerFlowForHEADMethod = async (
   const contentType = `contentType${
     contentTypeSuffix ? `; charset=${contentTypeSuffix}` : ""
   }`;
-  const stateValidator = flowUtil.createStateValidator();
+  const stateInformation = flowUtil.createStateValidator();
   await spec.createTypicalServerFlow(
     {
       url: /(?<group>path)/,
@@ -893,7 +893,7 @@ const validateServerFlowForHEADMethod = async (
           ? {
               found: "handler",
               handler: {
-                stateValidator,
+                stateInformation,
                 handler: () => ({
                   error: "none",
                   data: {
@@ -908,7 +908,7 @@ const validateServerFlowForHEADMethod = async (
             }
           : {
               found: "invalid-method",
-              allowedMethods: [{ method: "GET", stateValidator }],
+              allowedMethods: [{ method: "GET", stateInformation }],
             };
       },
     },
@@ -1067,7 +1067,10 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
         return {
           found: "invalid-method",
           allowedMethods: [
-            { method: "POST", stateValidator: flowUtil.createStateValidator() },
+            {
+              method: "POST",
+              stateInformation: flowUtil.createStateValidator(),
+            },
           ],
         };
       },
@@ -1122,7 +1125,7 @@ test("Validate typicalServerFlow sends 404 when none of potential endpoint state
           allowedMethods: [
             {
               method: "POST",
-              stateValidator: {
+              stateInformation: {
                 stateInfo: undefined,
                 validator: () => ({
                   error: "error",
@@ -1177,7 +1180,7 @@ test("Validate typicalServerFlow works with thrown HTTPError", async (c) => {
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: flowUtil.createStateValidator(),
+          stateInformation: flowUtil.createStateValidator(),
           handler: () => {
             throw error;
           },
@@ -1241,7 +1244,7 @@ test("Validate typicalServerFlow works with returned HTTPProtocolError", async (
       handler: () => ({
         found: "handler",
         handler: {
-          stateValidator: flowUtil.createStateValidator(),
+          stateInformation: flowUtil.createStateValidator(),
           handler: () => ({
             error: "protocol-error",
             statusCode: 401,

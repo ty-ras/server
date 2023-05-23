@@ -40,7 +40,7 @@ export class AppEndpointBuilderInitial<
 
   public forMethod<TMethod extends TAllowedMethods, TState>(
     method: TMethod & data.HttpMethodWithoutBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
   ): AppEndpointBuilderForMethods<
     TContext,
     TStateInfo,
@@ -57,7 +57,7 @@ export class AppEndpointBuilderInitial<
   >;
   public forMethod<TMethod extends TAllowedMethods, TState>(
     method: TMethod & data.HttpMethodWithBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
   ): AppEndpointBuilderForMethodsAndBody<
     TContext,
     TStateInfo,
@@ -78,7 +78,7 @@ export class AppEndpointBuilderInitial<
     TQuery extends dataBE.RuntimeAnyQuery,
   >(
     method: TMethod & data.HttpMethodWithoutBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
   ): AppEndpointBuilderForMethods<
     TContext,
@@ -101,7 +101,7 @@ export class AppEndpointBuilderInitial<
     TQuery extends dataBE.RuntimeAnyQuery,
   >(
     method: TMethod & data.HttpMethodWithBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
   ): AppEndpointBuilderForMethodsAndBody<
     TContext,
@@ -125,7 +125,7 @@ export class AppEndpointBuilderInitial<
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod & data.HttpMethodWithoutBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
     headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
   ): AppEndpointBuilderForMethods<
@@ -151,7 +151,7 @@ export class AppEndpointBuilderInitial<
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod & data.HttpMethodWithBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
     headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
   ): AppEndpointBuilderForMethodsAndBody<
@@ -177,7 +177,7 @@ export class AppEndpointBuilderInitial<
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query?: dataBE.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers?:
       | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
@@ -225,7 +225,7 @@ export class AppEndpointBuilderInitial<
     THeaderData extends Record<string, unknown>,
   >(
     method: TMethod,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers:
       | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
@@ -961,10 +961,29 @@ export class AppEndpointBuilderInitial<
       "query" in spec ? spec.query : undefined,
       "headers" in spec ? spec.headers : undefined,
     );
-    return builder instanceof AppEndpointBuilderForMethodsAndBody &&
+    if (
+      builder instanceof AppEndpointBuilderForMethodsAndBody &&
       "input" in spec
-      ? "responseHeaders" in spec
-        ? builder.withBody(
+    ) {
+      // We have to do this explicit type annotation, otherwise compiler thinks that "builder" is of this type | AppEndpointBuilderForMethodsAndBody<any, any, any, any, any, any, any, any, any, any, any, any>
+      const dummy1: AppEndpointBuilderForMethodsAndBody<
+        TContext,
+        TStateInfo,
+        TState,
+        TArgsURL,
+        TMethod,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithHeaders<THeaderData>,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithQuery<TQuery>,
+        TStringDecoder,
+        TStringEncoder,
+        TOutputContents,
+        TInputContents,
+        TMetadataProviders
+      > = builder;
+      return "responseHeaders" in spec
+        ? dummy1.withBody(
             spec.input,
             common.handlerWithHeaders(
               spec.endpointHandler,
@@ -973,19 +992,41 @@ export class AppEndpointBuilderInitial<
             spec.output,
             spec.mdArgs,
           )
-        : builder.withBody(
+        : dummy1.withBody(
             spec.input,
             spec.endpointHandler,
             spec.output,
             spec.mdArgs,
+          );
+    } else {
+      // Same thing here as above: need to do explicit type annotation, otherwise compiler gets confused.
+      const dummy2: AppEndpointBuilderForMethods<
+        TContext,
+        TStateInfo,
+        TState,
+        TArgsURL,
+        TMethod,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithHeaders<THeaderData>,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithQuery<TQuery>,
+        TStringDecoder,
+        TStringEncoder,
+        TOutputContents,
+        TInputContents,
+        TMetadataProviders
+      > = builder;
+      return "responseHeaders" in spec
+        ? dummy2.withoutBody(
+            common.handlerWithHeaders(
+              spec.endpointHandler,
+              spec.responseHeaders,
+            ),
+            spec.output,
+            spec.mdArgs,
           )
-      : "responseHeaders" in spec
-      ? builder.withoutBody(
-          common.handlerWithHeaders(spec.endpointHandler, spec.responseHeaders),
-          spec.output,
-          spec.mdArgs,
-        )
-      : builder.withoutBody(spec.endpointHandler, spec.output, spec.mdArgs);
+        : dummy2.withoutBody(spec.endpointHandler, spec.output, spec.mdArgs);
+    }
   }
 }
 

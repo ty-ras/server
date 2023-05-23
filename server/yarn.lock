@@ -389,24 +389,24 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.4.tgz#0b92dcc0cc1c81f6f306a381f28e31b1a56536e9"
   integrity sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==
 
-"@ty-ras/data-backend@0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-0.13.0.tgz#dc45ad57107474cd1b663711fce473c4202df120"
-  integrity sha512-kn0OZe9Ns01DIhFl4dJniXuKryZNPYZXI2IDL/LQc0vmHsYrwYqNrUuDcUsinR3nweh0sZxyzKhbpvUil49tmw==
+"@ty-ras/data-backend@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data-backend/-/data-backend-1.0.0.tgz#15e3f8ede89610bf8b118db65f0f40fc1c1389ac"
+  integrity sha512-35c1Ww7LFwPi76/VeHX7O3u2q32M3OGGvloV7nzL3Mo61PxSIHzhM+ULJzy8MBj7lqwrk3YfAX+aJwYx3OKm4A==
   dependencies:
-    "@ty-ras/data" "0.13.0"
+    "@ty-ras/data" "1.0.0"
 
-"@ty-ras/data@0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-0.13.0.tgz#45acb046958350de01916f2cb433ec9da165abef"
-  integrity sha512-AZYCdMiBPTO4+V0Apg+i9XUo17c4C5Up+0O8Jk8cBYVCm/4W5kbzGdcE40GKNFqkn71IVrfjv5GAaMpg5EbFXg==
+"@ty-ras/data@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ty-ras/data/-/data-1.0.0.tgz#d49c7ccba3e26463d05470ff10bb947f8f3293d7"
+  integrity sha512-WjiVqThVwVX6NpkU3sweiG1I2b6hiIt4VuvbSGWwniAXBJVZg6AFrndOtCgf6MQmmgS/LqOtmT1xbeF/Gk1Ayg==
 
-"@ty-ras/endpoint@0.13.1":
-  version "0.13.1"
-  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-0.13.1.tgz#a4d5be645444326be799d48d78f7e2f11b139685"
-  integrity sha512-cAZXA8bZCVth+1HGxrkgrgHieLVXJ+gYaydKKKFhHpfbKqxuwgI7ECxFGRe7m1shTlGBXDvwhD58pMvjy98kyg==
+"@ty-ras/endpoint@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ty-ras/endpoint/-/endpoint-1.0.0.tgz#d09e58807b34c8d7af08d18a9419b1bfbb6cdbc0"
+  integrity sha512-2N2V9zFSvOhwnSnwWaTQnXyNflbHJHbCYMzWVuff1nw7TRkWFS3SwJrk60zf8f2dzKSfk4CIfmM2jepLrpwLUA==
   dependencies:
-    "@ty-ras/data-backend" "0.13.0"
+    "@ty-ras/data-backend" "1.0.0"
 
 "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"

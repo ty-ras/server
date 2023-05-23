@@ -67,7 +67,7 @@ export const createTypicalServerFlow = <
         if (foundHandler.found === "handler") {
           const {
             handler: {
-              stateValidator,
+              stateInformation,
               urlValidator,
               headerValidator,
               queryValidator,
@@ -81,8 +81,8 @@ export const createTypicalServerFlow = <
           const stateValidation = server.checkStateForHandler(
             maybeEventArgs,
             events,
-            stateValidator.validator,
-            await cb.getState(ctx, stateValidator.stateInfo),
+            stateInformation.validator,
+            await cb.getState(ctx, stateInformation.stateInfo),
           );
           if (stateValidation.result === "state") {
             const eventArgs = {
@@ -334,7 +334,7 @@ const sendCodeAndBody = async <TContext>(
   error?: { error: unknown },
 ) => {
   const willCallSendContent = codeAndBody.body !== undefined;
-  const args: Parameters<typeof cb["setStatusCode"]> = [
+  const args: Parameters<(typeof cb)["setStatusCode"]> = [
     ctx,
     codeAndBody.statusCode,
     willCallSendContent,

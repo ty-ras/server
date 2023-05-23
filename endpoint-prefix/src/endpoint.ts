@@ -108,7 +108,7 @@ const createPrefixedHandlerImpl =
       TContext,
       TStateInfo
     >["builtEndpoints"],
-  ): ep.DynamicHandlerGetter<TContext, TStateInfo> =>
+  ): ep.AppEndpointHandlerGetter<TContext, TStateInfo> =>
   (method, groups) => {
     const matchingHandler = findFirstMatching(
       builtEndpoints,
@@ -130,7 +130,7 @@ const createPrefixedHandlerImpl =
 interface PrefixedAppEndpointsInfo<TContext, TStateInfo> {
   builtEndpoints: {
     regExpGroupName: string;
-    handler: ep.DynamicHandlerGetter<TContext, TStateInfo>;
+    handler: ep.AppEndpointHandlerGetter<TContext, TStateInfo>;
   }[];
   regExpSource: string;
 }

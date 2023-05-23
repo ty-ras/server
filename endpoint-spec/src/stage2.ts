@@ -35,7 +35,7 @@ export class AppEndpointBuilderForMethods<
       TInputContents,
       TMetadataProviders
     >,
-    protected readonly _endpointStateValidator: ep.EndpointStateValidator<
+    protected readonly _endpointStateValidator: ep.EndpointStateInformation<
       TStateInfo,
       TState
     >,
@@ -382,7 +382,7 @@ const createStaticEndpointSpec = <
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
 >(
-  stateValidator: ep.EndpointStateValidator<TStateInfo, TState>,
+  stateInformation: ep.EndpointStateInformation<TStateInfo, TState>,
   urlValidation: state.URLValidationInfo<TStringDecoder>,
   queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
   headerInfo: common.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
@@ -430,11 +430,11 @@ const createStaticEndpointSpec = <
     >,
     "mdArgs"
   > = {
-    stateValidator,
+    stateInformation,
     outputValidation: outputSpec,
     builder: (groupNamePrefix) =>
       stripUndefineds({
-        stateValidator,
+        stateInformation,
         urlValidator: urlValidation
           ? {
               groupNames: Object.fromEntries(
@@ -486,11 +486,11 @@ const createStaticAppEndpointHandlerFunction =
       | undefined,
     getAdditionalArgs: (
       args: Omit<
-        Parameters<ep.StaticAppEndpointHandlerFunction<TContext>>[0],
+        Parameters<ep.AppEndpointHandlerFunction<TContext>>[0],
         "context" | "state" | "url"
       >,
     ) => object,
-  ): ep.StaticAppEndpointHandlerFunction<TContext> =>
+  ): ep.AppEndpointHandlerFunction<TContext> =>
   async ({ context, state, url, ...args }) => {
     const handlerArgs = {
       ...getAdditionalArgs(args),

@@ -37,9 +37,9 @@ jobs:
       matrix:
         dir:
           - endpoint
-          # - endpoint-prefix
-          # - endpoint-spec
-          # - server
+          - endpoint-prefix
+          - endpoint-spec
+          - server
           # - server-test-support
     runs-on: ubuntu-latest
     name: Build and test ${{ matrix.dir }}

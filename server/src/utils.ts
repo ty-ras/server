@@ -37,7 +37,7 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   allowedMethodsInfo: Array<ep.EndpointMethodInformation<TStateInfo>>,
   validateStateInfo:
     | ((
-        stateInfo: ep.EndpointStateValidator<TStateInfo, unknown>,
+        stateInfo: ep.EndpointStateInformation<TStateInfo, unknown>,
       ) => Promise<boolean>)
     | undefined,
 ) => {
@@ -45,20 +45,23 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   if (validateStateInfo) {
     // Group methods by state infos
     const methodsGroupedByStateInfos: Array<{
-      stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
+      stateInformation: ep.EndpointStateInformation<TStateInfo, unknown>;
       methods: Array<data.HttpMethod>;
     }> = [];
-    allowedMethodsInfo.forEach(({ method, stateValidator }) => {
+    allowedMethodsInfo.forEach(({ method, stateInformation }) => {
       const idx = methodsGroupedByStateInfos.findIndex((s) =>
         util.isDeepStrictEqual(
-          s.stateValidator.stateInfo,
-          stateValidator.stateInfo,
+          s.stateInformation.stateInfo,
+          stateInformation.stateInfo,
         ),
       );
       if (idx >= 0) {
         methodsGroupedByStateInfos[idx].methods.push(method);
       } else {
-        methodsGroupedByStateInfos.push({ stateValidator, methods: [method] });
+        methodsGroupedByStateInfos.push({
+          stateInformation,
+          methods: [method],
+        });
       }
     });
 
@@ -66,7 +69,7 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
     allowedMethodsFiltered = (
       await Promise.all(
         methodsGroupedByStateInfos.map(async (info) =>
-          (await validateStateInfo(info.stateValidator)) ? info.methods : [],
+          (await validateStateInfo(info.stateInformation)) ? info.methods : [],
         ),
       )
     ).flat();
@@ -130,7 +133,7 @@ export const checkStateForHandler = <TContext, TState>(
 export const checkURLParametersForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  urlValidation: ep.StaticAppEndpointHandler<TContext, never>["urlValidator"],
+  urlValidation: ep.AppEndpointHandler<TContext, never>["urlValidator"],
   // This is not really that complex...
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
@@ -177,10 +180,7 @@ export const checkURLParametersForHandler = <TContext, TState>(
 export const checkQueryForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  queryValidation: ep.StaticAppEndpointHandler<
-    TContext,
-    never
-  >["queryValidator"],
+  queryValidation: ep.AppEndpointHandler<TContext, never>["queryValidator"],
   queryObject: Record<string, data.QueryValue>,
 ) => {
   let query: dataBE.RuntimeAnyQuery = {};
@@ -235,7 +235,7 @@ export const checkHeadersForHandler = <TContext, TState>(
 export const checkBodyForHandler = async <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  isBodyValid: ep.StaticAppEndpointHandler<TContext, never>["bodyValidator"],
+  isBodyValid: ep.AppEndpointHandler<TContext, never>["bodyValidator"],
   contentType: string,
   bodyStream: stream.Readable | undefined,
 ) => {
@@ -283,7 +283,7 @@ export const checkBodyForHandler = async <TContext, TState>(
 export const invokeHandler = async <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  handler: ep.StaticAppEndpointHandler<TContext, never>["handler"],
+  handler: ep.AppEndpointHandler<TContext, never>["handler"],
   ...handlerParameters: Parameters<typeof handler>
 ) => {
   events?.("onSuccessfulInvocationStart", { ...eventArgs });

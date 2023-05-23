@@ -164,7 +164,7 @@ export const deepCopy = <T>(value: T): T => {
   return value;
 };
 
-export const createStateValidator = (): ep.EndpointStateValidator<
+export const createStateValidator = (): ep.EndpointStateInformation<
   unknown,
   unknown
 > => ({

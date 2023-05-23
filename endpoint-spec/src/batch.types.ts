@@ -2,7 +2,7 @@
  * @file This file contains types related to specifying endpoints in batch style via single interface, as opposed to using builder pattern.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import type * as data from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
@@ -260,9 +260,9 @@ export interface BatchSpecificationWithMethodAndState<
   method: TMethod;
 
   /**
-   * The {@link ep.EndpointStateValidator} representing the state/context required for the handler.
+   * The {@link ep.EndpointStateInformation} representing the state/context required for the handler.
    */
-  state: ep.EndpointStateValidator<TStateInfo, TState>;
+  state: ep.EndpointStateInformation<TStateInfo, TState>;
 }
 
 /**

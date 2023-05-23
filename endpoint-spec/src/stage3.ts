@@ -92,7 +92,7 @@ export class AppEndpointBuilder<
           stateInfo: Object.fromEntries(
             Object.entries(this._state.methods).map(
               ([method, info]) =>
-                [method, info.stateValidator.stateInfo] as const,
+                [method, info.stateInformation.stateInfo] as const,
             ),
           ),
         }),
@@ -130,7 +130,7 @@ const checkMethodsForHandler = <
   },
   method: data.HttpMethod,
   groupNamePrefix: string,
-): ep.DynamicHandlerResponse<TContext, TStateInfo> =>
+): ep.AppEndpointHandlerGetterResult<TContext, TStateInfo> =>
   method in state
     ? {
         found: "handler" as const,
@@ -139,9 +139,9 @@ const checkMethodsForHandler = <
     : {
         found: "invalid-method" as const,
         allowedMethods: Object.entries(state).map(
-          ([method, { stateValidator }]) => ({
+          ([method, { stateInformation }]) => ({
             method: method as data.HttpMethod,
-            stateValidator,
+            stateInformation,
           }),
         ),
       };
@@ -244,7 +244,10 @@ const constructMDResults = <
       ).map((fragmentOrValidation) =>
         typeof fragmentOrValidation === "string"
           ? fragmentOrValidation
-          : data.omit(fragmentOrValidation, "validation"),
+          : {
+              name: fragmentOrValidation.name,
+              spec: data.omit(fragmentOrValidation, "name"),
+            },
       )
     : [...state.fragments];
 

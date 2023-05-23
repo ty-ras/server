@@ -62,7 +62,7 @@ test("Validate invokeInvalidMethodEvent works for always-true state validator", 
     const allowedMethodsSentToClient = await spec.invokeInvalidMethodEvent(
       EVENT_ARGS_NO_STATE,
       emitter,
-      [{ method: "GET", stateValidator: flowUtil.createStateValidator() }],
+      [{ method: "GET", stateInformation: flowUtil.createStateValidator() }],
       () => Promise.resolve(true),
     );
     t.deepEqual(allowedMethodsSentToClient, ["GET"]);
@@ -85,7 +85,7 @@ test("Validate invokeInvalidMethodEvent works for always-false state validator",
     const allowedMethodsSentToClient = await spec.invokeInvalidMethodEvent(
       EVENT_ARGS_NO_STATE,
       emitter,
-      [{ method: "GET", stateValidator: flowUtil.createStateValidator() }],
+      [{ method: "GET", stateInformation: flowUtil.createStateValidator() }],
       () => Promise.resolve(false),
     );
     t.deepEqual(allowedMethodsSentToClient, []);
@@ -110,8 +110,8 @@ test("Validate invokeInvalidMethodEvent works for always-false state validator w
       EVENT_ARGS_NO_STATE,
       emitter,
       [
-        { method: "GET", stateValidator: flowUtil.createStateValidator() },
-        { method: "POST", stateValidator: flowUtil.createStateValidator() },
+        { method: "GET", stateInformation: flowUtil.createStateValidator() },
+        { method: "POST", stateInformation: flowUtil.createStateValidator() },
       ],
       () => {
         ++stateInvocationCount;
@@ -319,7 +319,8 @@ test("Validate checkURLParametersForHandler works for invalid parameter input", 
       // We have to do this since .deepEquals compares functions by-reference, and we can't access original value
       (
         seenEvents[0].args as any
-      ).validationError.parameterName[0].getHumanReadableMessage = getHumanReadableMessage;
+      ).validationError.parameterName[0].getHumanReadableMessage =
+        getHumanReadableMessage;
     },
   );
   withoutAndWithEvents(
@@ -358,7 +359,8 @@ test("Validate checkURLParametersForHandler works for invalid parameter input", 
       // We have to do this since .deepEquals compares functions by-reference, and we can't access original value
       (
         seenEvents[0].args as any
-      ).validationError.parameterName[0].getHumanReadableMessage = getHumanReadableMessage;
+      ).validationError.parameterName[0].getHumanReadableMessage =
+        getHumanReadableMessage;
     },
   );
 });

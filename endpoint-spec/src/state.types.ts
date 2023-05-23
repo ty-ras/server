@@ -73,7 +73,7 @@ export interface StaticAppEndpointBuilderSpec<
   >,
 > {
   builder: StaticAppEndpointBuilder<TContext, TStateInfo>;
-  stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
+  stateInformation: ep.EndpointStateInformation<TStateInfo, unknown>;
   requestHeadersSpec?: dataBE.RequestHeaderDataValidatorSpecMetadata<
     string,
     TStringDecoder
@@ -114,4 +114,4 @@ export interface StaticAppEndpointBuilderSpec<
 export type StaticAppEndpointBuilder<TContext, TStateInfo> = (
   groupNamePrefix: string,
   // groups: Record<string, string>,
-) => ep.StaticAppEndpointHandler<TContext, TStateInfo>;
+) => ep.AppEndpointHandler<TContext, TStateInfo>;
