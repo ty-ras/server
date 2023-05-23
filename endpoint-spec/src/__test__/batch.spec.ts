@@ -1,5 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/ban-types */
+/**
+ * @file This file contains tests for all code in library, with emphasis on batch specification functions.
+ */
+
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/ban-types */
 import test from "ava";
 import * as spec from "..";
 import * as common from "./common";

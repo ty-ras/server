@@ -1,7 +1,8 @@
-/* eslint-disable sonarjs/no-duplicate-string */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @file This file contains tests for all code in library, with emphasis on error situations.
+ */
+
+/* eslint-disable sonarjs/no-duplicate-string, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
 import test from "ava";
 import * as spec from "..";
 import * as common from "./common";

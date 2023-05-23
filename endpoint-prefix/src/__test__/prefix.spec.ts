@@ -1,3 +1,7 @@
+/**
+ * @file This file contains tests for file `../prefix.ts`.
+ */
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import test, { ExecutionContext } from "ava";
 import type * as ep from "@ty-ras/endpoint";

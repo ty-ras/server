@@ -1,8 +1,22 @@
+/**
+ * @file This file contains internal code related to modeling {@link ep.AppEndpoint} with a prefix.
+ */
+
 import * as ep from "@ty-ras/endpoint";
 
+/**
+ * This class implements serving multiple {@link ep.AppEndpoint}s behind given URL prefix.
+ * Because of using class, it is also possible to distinguish 'normal' {@link ep.AppEndpoint}s and prefixed {@link ep.AppEndpoint}s.
+ */
 export class PrefixedEndpoint<TContext, TStateInfo>
   implements ep.AppEndpoint<TContext, TStateInfo>
 {
+  /**
+   * Creates new instance of this class with given parameters.
+   * @param urlPrefix The URL path prefix behind which the given {@link ep.AppEndpoint}s will be served.
+   * @param regExpGroupNamePrefix The prefix to use for group names when constructing RegExp matching the URL path parameters of the {@link ep.AppEndpoint}s being served.
+   * @param allEndpoints The {@link ep.AppEndpoint}s to serve behind the given URL path prefix.
+   */
   public constructor(
     public readonly urlPrefix: string,
     private readonly regExpGroupNamePrefix: string,
