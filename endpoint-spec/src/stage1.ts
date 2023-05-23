@@ -2,8 +2,8 @@ import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
 import * as common from "./common";
-import type * as state from "./state";
-import type * as batch from "./batch";
+import type * as state from "./state.types";
+import type * as batch from "./batch.types";
 import {
   AppEndpointBuilderForMethods,
   AppEndpointBuilderForMethodsAndBody,

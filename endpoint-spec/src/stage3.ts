@@ -2,7 +2,7 @@ import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
-import type * as state from "./state";
+import type * as state from "./state.types";
 import type * as common from "./common";
 import { AppEndpointBuilderInitial } from ".";
 

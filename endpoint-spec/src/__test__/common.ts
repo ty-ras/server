@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/**
+ * @file This file contains common code shared by other test files.
+ */
+
+/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment */
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";

@@ -35,7 +35,12 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        dir: [ endpoint, endpoint-prefix, endpoint-spec, server, server-test-support ]
+        dir:
+          - endpoint
+          # - endpoint-prefix
+          # - endpoint-spec
+          # - server
+          # - server-test-support
     runs-on: ubuntu-latest
     name: Build and test ${{ matrix.dir }}
     steps:

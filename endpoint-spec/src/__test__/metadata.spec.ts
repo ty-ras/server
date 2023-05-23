@@ -1,3 +1,7 @@
+/**
+ * @file This file contains tests for all code in library, with emphasis on metadata-related functionality.
+ */
+
 import test, { ExecutionContext } from "ava";
 import * as spec from "..";
 import * as common from "./common";
