@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@ty-ras/endpoint": "1.0.0"
+    "@ty-ras/endpoint": "^1.0.1"
   },
   "devDependencies": {
     "@ava/get-port": "2.0.0",
