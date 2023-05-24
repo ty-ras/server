@@ -37,11 +37,11 @@ const testWithSimpleEndpoint = async (
     .handler("GET", {});
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail
-    const { stateValidator, handler, ...rest } = maybeHandler.handler;
-    t.deepEqual(stateValidator.validator(common.STATE).error, "none");
-    t.deepEqual(stateValidator.stateInfo, common.STATE);
+    const { stateInformation, handler, ...rest } = maybeHandler.handler;
+    t.deepEqual(stateInformation.validator(common.STATE).error, "none");
+    t.deepEqual(stateInformation.stateInfo, common.STATE);
     t.deepEqual(rest, {});
-    const args: Parameters<ep.StaticAppEndpointHandlerFunction<unknown>>[0] = {
+    const args: Parameters<ep.AppEndpointHandlerFunction<unknown>>[0] = {
       context: undefined,
       state: initialState,
       url: undefined,
@@ -120,7 +120,7 @@ const testWithComplexEndpoint = async (
   if (maybeHandler.found === "handler") {
     // If it isn't, we will get different number of assertions than planned, and test will fail
     const {
-      stateValidator,
+      stateInformation,
       handler,
       urlValidator,
       queryValidator,
@@ -128,8 +128,8 @@ const testWithComplexEndpoint = async (
       bodyValidator,
       ...rest
     } = maybeHandler.handler;
-    t.deepEqual(stateValidator.validator(refinedState).error, "none");
-    t.deepEqual(stateValidator.stateInfo, refinedState);
+    t.deepEqual(stateInformation.validator(refinedState).error, "none");
+    t.deepEqual(stateInformation.stateInfo, refinedState);
     t.deepEqual(urlValidator?.groupNames, {
       urlParam: "urlParam",
     });
@@ -145,7 +145,7 @@ const testWithComplexEndpoint = async (
     });
     t.true(typeof bodyValidator === "function");
     t.deepEqual(rest, {});
-    const args: Parameters<ep.StaticAppEndpointHandlerFunction<unknown>>[0] = {
+    const args: Parameters<ep.AppEndpointHandlerFunction<unknown>>[0] = {
       context: undefined,
       state: refinedState,
       url: undefined,

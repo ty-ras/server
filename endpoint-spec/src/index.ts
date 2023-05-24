@@ -4,8 +4,6 @@
 
 // Don't export internal state.types.ts
 export type * from "./batch.types";
-export * from "./common";
-export * from "./stage0";
-export * from "./stage1";
-export * from "./stage2";
-export * from "./stage3";
+export type * from "./common.types";
+export type * from "./stages"; // Don't export actual classes of the builders, instead only types
+export * from "./init";

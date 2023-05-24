@@ -1,12 +1,26 @@
+/**
+ * @file This file contains code of the server flow, which goes through all the validation of all inputs and outputs of one endpoint handler for one incoming HTTP request.
+ */
+
 import type * as ep from "@ty-ras/endpoint";
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as server from "./utils";
-import * as evt from "./events";
+import type * as evt from "./events.types";
 
-import * as url from "url";
-import * as stream from "stream";
+import * as url from "node:url";
+import * as stream from "node:stream";
 
+/**
+ * Creates a callback which will asynchronously process each incoming HTTP request, to extract the endpoint based on URL path and method, validate all necessary inputs, invoke the endpoint, validate all necesary outputs, and write the result to HTTP response.
+ * This is the core functionality used by all other TyRAS server implementations.
+ * @param param0 The {@link ep.FinalizedAppEndpoint} to serve.
+ * @param param0.url Privately deconstructed variable.
+ * @param param0.handler Privately deconstructed variable.
+ * @param callbacks The {@see ServerFlowCallbacks} necessary to actually implement the returned callback.
+ * @param events The {@link evt.ServerEventHandler} to invoke on events.
+ * @returns The callback which can be used to asynchronously process incoming HTTP request, and write to outgoing HTTP response.
+ */
 export const createTypicalServerFlow = <
   TContext extends TContextBase,
   TStateInfo,
@@ -44,7 +58,7 @@ export const createTypicalServerFlow = <
       const parsedUrl =
         maybeURL instanceof url.URL
           ? maybeURL
-          : new url.URL(maybeURL ?? "", "http://example.com");
+          : new url.URL(maybeURL, "http://example.com");
       const maybeEventArgs = server.checkURLPathNameForHandler(
         ctx,
         events,
@@ -67,7 +81,7 @@ export const createTypicalServerFlow = <
         if (foundHandler.found === "handler") {
           const {
             handler: {
-              stateValidator,
+              stateInformation,
               urlValidator,
               headerValidator,
               queryValidator,
@@ -81,8 +95,8 @@ export const createTypicalServerFlow = <
           const stateValidation = server.checkStateForHandler(
             maybeEventArgs,
             events,
-            stateValidator.validator,
-            await cb.getState(ctx, stateValidator.stateInfo),
+            stateInformation.validator,
+            await cb.getState(ctx, stateInformation.stateInfo),
           );
           if (stateValidation.result === "state") {
             const eventArgs = {
@@ -118,9 +132,9 @@ export const createTypicalServerFlow = <
                       eventArgs,
                       events,
                       bodyValidator,
-                      Array.isArray(reqContentType)
-                        ? reqContentType[0]
-                        : reqContentType,
+                      typeof reqContentType === "string"
+                        ? reqContentType
+                        : reqContentType[0],
                       cb.getRequestBody(ctx),
                     );
                   if (proceedAfterBody) {
@@ -270,60 +284,105 @@ export const createTypicalServerFlow = <
   };
 };
 
+/**
+ * The base type constraint for any server context in {@link createTypicalServerFlow}.
+ */
 export type TContextBase = object;
 
+/**
+ * The interface which encapsulates all the 'native' server context functionality needed by {@link createTypicalServerFlow}, which doesn't require endpoint-specific state information.
+ */
 export interface ServerFlowCallbacksWithoutState<TContext> {
-  getURL: (ctx: TContext) => url.URL | string | undefined;
+  /**
+   * Callback to extract the HTTP request URL from server context.
+   * @param ctx The server context.
+   * @returns The URL of the HTTP request - either as {@link url.URL} or as `string`.
+   */
+  getURL: (ctx: TContext) => url.URL | string;
+
+  /**
+   * Callback to extract HTTP request method from server context.
+   * @param ctx The server context.
+   * @returns The HTTP request method.
+   */
   getMethod: (ctx: TContext) => string;
+
+  /**
+   * Callback to extract HTTP request header by its name from server context.
+   * @param ctx The server context.
+   * @param headerName The header name.
+   * @returns The header value, if present.
+   */
   getHeader: (ctx: TContext, headerName: string) => data.ReadonlyHeaderValue;
+
+  /**
+   * Callback to extract HTTP request body as {@link stream.Readable} from server context.
+   * @param ctx The server context.
+   * @returns The request body as {@link stream.Readable}, if present.
+   */
   getRequestBody: (ctx: TContext) => stream.Readable | undefined;
+
+  /**
+   * The callback to set the specified HTTP response header to specified value using server context.
+   * @param ctx The server context.
+   * @param headerName The header name.
+   * @param headerValue The header value.
+   * @returns Nothing.
+   */
   setHeader: (
     ctx: TContext,
     headerName: string,
     headerValue: Exclude<data.HeaderValue, undefined>,
   ) => void;
+
+  /**
+   * The callback to set the specified HTTP response status code to specified value using server context.
+   * @param ctx The server context.
+   * @param statusCode The status code as number.
+   * @param willCallSendContent Whether the {@link createTypicalServerFlow} will also call `sendContent` after this.
+   * @param error The error, if any occurred.
+   * @returns Nothing.
+   */
   setStatusCode: (
     ctx: TContext,
     statusCode: number,
     willCallSendContent: boolean,
     error?: unknown,
   ) => void;
+
+  /**
+   * Callback to send the HTTP response body using server context.
+   * @param ctx The server context.
+   * @param content The HTTP response body.
+   * @returns Possibly asynchronously nothing.
+   */
   sendContent: (
     ctx: TContext,
     content: dataBE.DataValidatorResponseOutputSuccess["output"],
-  ) => void | Promise<void>;
+  ) => ep.MaybePromise<void>;
 }
 
-export type ServerFlowCallbacks<TContext, TStateInfo> =
-  ServerFlowCallbacksWithoutState<TContext> & {
-    getState: (
-      ctx: TContext,
-      stateInfo: TStateInfo,
-    ) => ep.MaybePromise<unknown>;
-  };
+/**
+ * This interface extends {@link ServerFlowCallbacksWithoutState} to introduce one additional callback utilizing endpoint state specification.
+ */
+export interface ServerFlowCallbacks<TContext, TStateInfo>
+  extends ServerFlowCallbacksWithoutState<TContext> {
+  /**
+   * Callback to construct state object for the endpoint, using information about the state that endpoint requires (e.g. property names).
+   * @param ctx The server context.
+   * @param stateInfo The state specification of the endpoint.
+   * @returns Possibly asynchronously returns the state object, which will be validated by the caller.
+   */
+  getState: (ctx: TContext, stateInfo: TStateInfo) => ep.MaybePromise<unknown>;
+}
 
+/**
+ * Auxiliary type to allow event handlers to modify the context.
+ */
 export type GetContext<TContext> = TContext & {
   skipSettingStatusCode: boolean;
   skipSendingBody: boolean;
 };
-
-// This is to fix Array.isArray type-inference not working for ReadonlyArray
-// https://github.com/microsoft/TypeScript/issues/17002#issuecomment-1217386617
-type IfUnknownOrAny<T, Y, N> = unknown extends T ? Y : N;
-
-type ArrayType<T> = IfUnknownOrAny<
-  T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  T[] extends T ? T[] : any[] & T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Extract<T, readonly any[]>
->;
-
-declare global {
-  interface ArrayConstructor {
-    isArray<T>(arg: T): arg is ArrayType<T>;
-  }
-}
 
 const CHARSET_MARKER = "charset=";
 
@@ -334,7 +393,7 @@ const sendCodeAndBody = async <TContext>(
   error?: { error: unknown },
 ) => {
   const willCallSendContent = codeAndBody.body !== undefined;
-  const args: Parameters<typeof cb["setStatusCode"]> = [
+  const args: Parameters<(typeof cb)["setStatusCode"]> = [
     ctx,
     codeAndBody.statusCode,
     willCallSendContent,

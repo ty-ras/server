@@ -1,6 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type * as evt from "../events";
+/**
+ * @file This file contains shared utility code for unit tests, related to functionality in `../events.types.ts` file.
+ */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type * as evt from "../events.types";
+
+/* eslint-disable jsdoc/require-jsdoc */
 export const createTrackingEvents = () => {
   const seenEvents: AllEventsArray = [];
   const emitter: evt.ServerEventHandler<any, any> = (eventName, args) =>

@@ -12,4 +12,6 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   rules: Object.fromEntries(Object.entries(rules).filter(([ruleKey]) => ruleKey.startsWith("jsdoc/") || ruleKey.startsWith("prettier/"))),
+  // So we won't get errors on comments disable e.g. @typescript-eslint/xyz rules.
+  noInlineConfig: true,
 };

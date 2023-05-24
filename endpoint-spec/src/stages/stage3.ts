@@ -1,12 +1,26 @@
+/**
+ * @file This file contains code for "stage 3" builder. At this stage, it is possible to end endpoints specifications for single URL, or continue adding more for different HTTP methods via "stage 1" builder methods.
+ * It is possible to do so because "stage 3" builder extends "stage 1" builder.
+ */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
 import type * as state from "./state.types";
-import type * as common from "./common";
-import { AppEndpointBuilderInitial } from ".";
+import type * as common from "../common.types";
+import { AppEndpointBuilderStage1 } from ".";
 
-export class AppEndpointBuilder<
+/**
+ * This class contains the endpoint builder at stage 3, which allows to:
+ * - end endpoints specifciations for single URL and acquire {@link common.AppEndpointWithMetadata}, or
+ * - continue specifying more endpoints for different HTTP methods using "stage 1" builder methods, as this class extends the {@link AppEndpointBuilderStage1}.
+ *
+ * Instances of this class should not be created by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
+ */
+export class AppEndpointBuilderStage3<
   TContext,
   TStateInfo,
   TArgsURL extends object,
@@ -21,7 +35,7 @@ export class AppEndpointBuilder<
     TOutputContents,
     TInputContents
   >,
-> extends AppEndpointBuilderInitial<
+> extends AppEndpointBuilderStage1<
   TContext,
   TStateInfo,
   TArgsURL,
@@ -32,9 +46,15 @@ export class AppEndpointBuilder<
   TInputContents,
   TMetadataProviders
 > {
+  /**
+   * Ends specifying endpoints for single URL pattern.
+   * @param mdArgs The required data for metadata provides when ending endpoints specifications for single URL.
+   * @returns The {@link common.AppEndpointWithMetadata}
+   * @throws The {@link NoMethodsForEndpointError} if there were no methods specified (should never happen unless doing some weird things and privately instantiating this class).
+   */
   public createEndpoint(mdArgs: {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
-      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _0,
       infer TArg,
       infer _1,
       infer _2,
@@ -49,8 +69,8 @@ export class AppEndpointBuilder<
     TStateInfo,
     {
       [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
-        infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
-        infer _1, // eslint-disable-line @typescript-eslint/no-unused-vars
+        infer _0,
+        infer _1,
         infer TEndpointMD,
         infer _2,
         infer _3,
@@ -92,7 +112,7 @@ export class AppEndpointBuilder<
           stateInfo: Object.fromEntries(
             Object.entries(this._state.methods).map(
               ([method, info]) =>
-                [method, info.stateValidator.stateInfo] as const,
+                [method, info.stateInformation.stateInfo] as const,
             ),
           ),
         }),
@@ -130,7 +150,7 @@ const checkMethodsForHandler = <
   },
   method: data.HttpMethod,
   groupNamePrefix: string,
-): ep.DynamicHandlerResponse<TContext, TStateInfo> =>
+): ep.AppEndpointHandlerGetterResult<TContext, TStateInfo> =>
   method in state
     ? {
         found: "handler" as const,
@@ -139,9 +159,9 @@ const checkMethodsForHandler = <
     : {
         found: "invalid-method" as const,
         allowedMethods: Object.entries(state).map(
-          ([method, { stateValidator }]) => ({
+          ([method, { stateInformation }]) => ({
             method: method as data.HttpMethod,
-            stateValidator,
+            stateInformation,
           }),
         ),
       };
@@ -222,7 +242,7 @@ const constructMDResults = <
   >,
   mdArgs: {
     [P in keyof TMetadata]: TMetadata[P] extends md.MetadataProviderForEndpoints<
-      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _0,
       infer TArg,
       infer _1,
       infer _2,
@@ -244,7 +264,10 @@ const constructMDResults = <
       ).map((fragmentOrValidation) =>
         typeof fragmentOrValidation === "string"
           ? fragmentOrValidation
-          : data.omit(fragmentOrValidation, "validation"),
+          : {
+              name: fragmentOrValidation.name,
+              spec: data.omit(fragmentOrValidation, "name"),
+            },
       )
     : [...state.fragments];
 
@@ -271,7 +294,13 @@ const constructMDResults = <
   );
 };
 
+/**
+ * This error is thrown by `createEndpoint` method of the {@link AppEndpointBuilderStage3} when there are no methods specified previously.
+ */
 export class NoMethodsForEndpointError extends Error {
+  /**
+   * Creates new instance of this class.
+   */
   public constructor() {
     super("Please specify at least one method before building endpoint");
   }

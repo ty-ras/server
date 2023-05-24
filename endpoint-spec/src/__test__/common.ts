@@ -2,7 +2,7 @@
  * @file This file contains common code shared by other test files.
  */
 
-/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, jsdoc/require-jsdoc */
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
@@ -192,7 +192,7 @@ export const createComplexEndpointHandler = <TRefinedContext, TState>(
 
 export const createStateValidator = <TState>(
   value: TState,
-): ep.EndpointStateValidator<TState, TState> => ({
+): ep.EndpointStateInformation<TState, TState> => ({
   stateInfo: value,
   validator: validatorFromValue(value),
 });

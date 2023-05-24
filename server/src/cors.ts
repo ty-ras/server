@@ -1,7 +1,19 @@
+/**
+ * @file This file contains code related to handling HTTP server CORS functionality using {@link evt.EventHandler}.
+ */
 import type * as data from "@ty-ras/data";
-import type * as evt from "./events";
+import type * as evt from "./events.types";
 import type * as flow from "./flow";
 
+/**
+ * Creates new {@link evt.EventHandler} which behaves in relation to CORS as configured via parameters.
+ * This function should be used by other TyRAS libraries, and not by client code directly.
+ * @param param0 The {@link CORSFlowCallbacks}.
+ * @param param0.getMethod Privately deconstructed variable.
+ * @param options The {@link CORSOptions}.
+ * @param proceed The optional callback used to dynamically disable/enable the CORS handler.
+ * @returns The CORS handler as {@link evt.EventHandler}.
+ */
 export const createCORSHandlerGeneric = <TContext extends flow.TContextBase>(
   { getMethod, ...callbacks }: CORSFlowCallbacks<TContext>,
   options: CORSOptions,
@@ -62,37 +74,82 @@ export const createCORSHandlerGeneric = <TContext extends flow.TContextBase>(
   };
 };
 
+/**
+ * The CORS options, as accepted by {@link createCORSHandlerGeneric}.
+ */
 export interface CORSOptions {
-  // These two are used only for preflight-requests
+  /**
+   * This property is only used for preflight-requests.
+   * Allows to statically or dynamically specify the value for `Access-Control-Allow-Methods` header returned with response to preflight-request.
+   */
   allowMethods?:
     | true
     | ReadonlyMaybeArrayData<data.HttpMethod>
     | CallbackWithRequestHeader<MaybeArrayData>;
+
+  /**
+   * This property is only used for preflight-requests.
+   * Allows to statically or dynamically specify the the value for `Access-Control-Allow-Headers` header returned with response to preflight-request.
+   */
   allowHeaders?:
     | ReadonlyMaybeArrayData
     | CallbackWithRequestHeader<MaybeArrayData>;
-  // The remaining values are used for all requests.
+
+  /**
+   * This property is used for both preflight-, as well as normal requests.
+   * Allows to statically or dynamically specify the value for `Access-Control-Allow-Origin` header of the response.
+   */
   allowOrigin: string | CallbackWithRequestHeader<string>;
+
+  /**
+   * This property is used for both preflight-, as well as normal requests.
+   * Allows to statically specify the value for `Access-Control-Expose-Headers` header of the response.
+   */
   exposeHeaders?: ReadonlyMaybeArrayData;
+
+  /**
+   * This property is used for both preflight-, as well as normal requests.
+   * Allows to statically specify the value for `Access-Control-Max-Age` header of the response.
+   */
   maxAge?: number;
+
+  /**
+   * This property is used for both preflight-, as well as normal requests.
+   * Allows to statically specify the value for `Access-Control-Allow-Credentials` header of the response.
+   */
   allowCredentials?: boolean;
 }
 
+/**
+ * This type specifies the callbacks from {@link flow.ServerFlowCallbacks} which are required for operation of {@link createCORSHandlerGeneric}.
+ */
 export type CORSFlowCallbacks<TContext> = Pick<
   flow.ServerFlowCallbacks<TContext, never>,
   "getMethod" | "getHeader" | "setHeader" | "setStatusCode"
 >;
 
-export type SeenOrigin = string | undefined;
+/**
+ * The helper type to specify one or more strings.
+ */
 export type MaybeArrayData = data.OneOrMany<string>;
+/**
+ * The helper type to specify one or more strings as `readonly`.
+ */
 export type ReadonlyMaybeArrayData<TData = string> =
   | TData
   | ReadonlyArray<TData>;
 
+/**
+ * The callback type for dynamically calculatable values of {@link CORSOptions}.
+ */
 export type CallbackWithRequestHeader<T> = (
   requestHeaderValue: data.ReadonlyHeaderValue,
   getHeader: GetHeaderFromRequest,
 ) => T;
+
+/**
+ * The type of 2nd parameter of {@link CallbackWithRequestHeader}.
+ */
 export type GetHeaderFromRequest = (
   headerName: string,
 ) => data.ReadonlyHeaderValue;

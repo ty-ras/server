@@ -1,12 +1,27 @@
+/**
+ * @file This file contains code for "stage 2" builder. At this stage, it is possible to specify request body (if any), response body, and response header (if any) specifications.
+ * It is also necessary to provide required data for metadata providers (e.g. OpenAPI/etc).
+ *
+ * This will result in "stage 3" builder, which further allows continuing creating new endpoints at same URL, or to finalize creation process.
+ */
+
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unused-vars */
+
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
-import * as common from "./common";
+import type * as common from "../common.types";
 import type * as state from "./state.types";
-import { AppEndpointBuilder } from ".";
+import { AppEndpointBuilderStage3 } from ".";
 
-export class AppEndpointBuilderForMethods<
+/**
+ * This class contains the endpoint builder at stage 2, which allows to:
+ * - specify response body, and response header (if any) specifications, along with required data for metadata providers, to return {@link AppEndpointBuilderStage3}.
+ *
+ * Instances of this class should not be created by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
+ */
+export class AppEndpointBuilderStage2<
   TContext,
   TStateInfo,
   TState,
@@ -25,6 +40,16 @@ export class AppEndpointBuilderForMethods<
     TInputContents
   >,
 > {
+  /**
+   * Creates new instance of this class.
+   *
+   * This constructor should not be called by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
+   * @param _state The current state of endpoint builder.
+   * @param _endpointStateValidator The endpoint state information.
+   * @param _methods The allowed methods.
+   * @param _queryInfo Query parameter specification.
+   * @param _headerInfo Request header data specification.
+   */
   public constructor(
     protected readonly _state: state.AppEndpointBuilderState<
       TContext,
@@ -35,18 +60,25 @@ export class AppEndpointBuilderForMethods<
       TInputContents,
       TMetadataProviders
     >,
-    protected readonly _endpointStateValidator: ep.EndpointStateValidator<
+    protected readonly _endpointStateValidator: ep.EndpointStateInformation<
       TStateInfo,
       TState
     >,
     protected readonly _methods: Set<TAllowedMethods>,
-    protected readonly _queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
-    protected readonly _headerInfo: common.HeaderDataInfo<
+    protected readonly _queryInfo: state.QueryInfo<TArgsQuery, TStringDecoder>,
+    protected readonly _headerInfo: state.HeaderDataInfo<
       TArgsHeaders,
       TStringDecoder
     >,
   ) {}
 
+  /**
+   * Finalizes the current HTTP endpoint specification by providing callback to handle the request, along with response body and response headers specifications.
+   * @param endpointHandler The callback for implementation of handling request, along with response headers specification.
+   * @param outputSpec The response body specification.
+   * @param mdArgs The required data for metadata providers.
+   * @returns The {@link AppEndpointBuilderStage3}.
+   */
   public withoutBody<TOutput, THeaderData extends dataBE.RuntimeAnyHeaders>(
     endpointHandler: common.EndpointHandlerSpec<
       TArgsURL & TArgsQuery & common.EndpointHandlerArgs<TContext, TState>,
@@ -67,7 +99,7 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       keyof THeaderData
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -78,6 +110,14 @@ export class AppEndpointBuilderForMethods<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * Finalizes the current HTTP endpoint specification by providing callback to handle the request, along with response body specification.
+   * @param endpointHandler The callback for implementation of handling request.
+   * @param outputSpec The response body specification.
+   * @param mdArgs The required data for metadata providers.
+   * @returns The {@link AppEndpointBuilderStage3}.
+   */
   public withoutBody<TOutput>(
     endpointHandler: common.EndpointHandler<
       TArgsURL & TArgsQuery & common.EndpointHandlerArgs<TContext, TState>,
@@ -95,7 +135,7 @@ export class AppEndpointBuilderForMethods<
       TMetadataProviders,
       TOutput
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -106,6 +146,14 @@ export class AppEndpointBuilderForMethods<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * Finalizes the current HTTP endpoint specification by providing callback to handle the request, along with response body and possibly response headers specifications.
+   * @param endpointHandlerSpec The callback for implementation of handling request, along with possibly response headers specification.
+   * @param outputSpec The response body specification.
+   * @param mdArgs The required data for metadata providers.
+   * @returns The {@link AppEndpointBuilderStage3}.
+   */
   public withoutBody<TOutput, THeaderData extends dataBE.RuntimeAnyHeaders>(
     endpointHandlerSpec:
       | common.EndpointHandler<
@@ -131,7 +179,7 @@ export class AppEndpointBuilderForMethods<
       TOutput,
       keyof THeaderData
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -159,10 +207,9 @@ export class AppEndpointBuilderForMethods<
         endpointHandlerSpec,
         outputSpec,
       ),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mdArgs: mdArgs as any,
     };
-    return new AppEndpointBuilder({
+    return new AppEndpointBuilderStage3({
       ...this._state,
       methods: Object.assign(
         {},
@@ -175,7 +222,13 @@ export class AppEndpointBuilderForMethods<
   }
 }
 
-export class AppEndpointBuilderForMethodsAndBody<
+/**
+ * This class contains the endpoint builder at stage 2, which allows to:
+ * - specify request body, response body, and response header (if any) specifications, along with required data for metadata providers, to return {@link AppEndpointBuilderStage3}.
+ *
+ * Instances of this class should not be created by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
+ */
+export class AppEndpointBuilderStage2WithBody<
   TContext,
   TStateInfo,
   TState,
@@ -193,7 +246,7 @@ export class AppEndpointBuilderForMethodsAndBody<
     TOutputContents,
     TInputContents
   >,
-> extends AppEndpointBuilderForMethods<
+> extends AppEndpointBuilderStage2<
   TContext,
   TStateInfo,
   TState,
@@ -207,6 +260,14 @@ export class AppEndpointBuilderForMethodsAndBody<
   TInputContents,
   TMetadataProviders
 > {
+  /**
+   * Finalizes the current HTTP endpoint specification by providing request body specification and callback to handle the request.
+   * @param input The request body specification.
+   * @param endpointHandler The callback for handling request.
+   * @param outputSpec The response body specification.
+   * @param mdArgs The required data for metadata providers.
+   * @returns The {@link AppEndpointBuilderStage3}.
+   */
   public withBody<THandlerResult, TBody>(
     input: dataBE.DataValidatorRequestInputSpec<TBody, TInputContents>,
     endpointHandler: common.EndpointHandler<
@@ -230,7 +291,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       keyof TInputContents,
       TBody
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -241,6 +302,15 @@ export class AppEndpointBuilderForMethodsAndBody<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * Finalizes the current HTTP endpoint specification by providing request body specification, callback to handle the request, along with response body specifications.
+   * @param input The request body specification.
+   * @param endpointHandler The callback for implementation of handling request, along with response headers specification.
+   * @param outputSpec The response body specification.
+   * @param mdArgs The required data for metadata providers.
+   * @returns The {@link AppEndpointBuilderStage3}.
+   */
   public withBody<
     THandlerResult,
     TBody,
@@ -271,7 +341,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       keyof TInputContents,
       TBody
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -282,6 +352,15 @@ export class AppEndpointBuilderForMethodsAndBody<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * Finalizes the current HTTP endpoint specification by providing request body specification, callback to handle the request, along with possibly response body specifications.
+   * @param inputSpec The request body specification.
+   * @param endpointHandlerSpec The callback for implementation of handling request, along with possibly response headers specification.
+   * @param outputSpec The response body specification.
+   * @param mdArgs The required data for metadata providers.
+   * @returns The {@link AppEndpointBuilderStage3}.
+   */
   public withBody<
     THandlerResult,
     TBody,
@@ -320,7 +399,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       keyof TInputContents,
       TBody
     >,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -352,7 +431,7 @@ export class AppEndpointBuilderForMethodsAndBody<
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mdArgs: mdArgs as any,
     };
-    return new AppEndpointBuilder({
+    return new AppEndpointBuilderStage3({
       ...this._state,
       methods: Object.assign(
         {},
@@ -382,10 +461,10 @@ const createStaticEndpointSpec = <
   TOutputContents extends dataBE.TOutputContentsBase,
   TInputContents extends dataBE.TInputContentsBase,
 >(
-  stateValidator: ep.EndpointStateValidator<TStateInfo, TState>,
+  stateInformation: ep.EndpointStateInformation<TStateInfo, TState>,
   urlValidation: state.URLValidationInfo<TStringDecoder>,
-  queryInfo: common.QueryInfo<TArgsQuery, TStringDecoder>,
-  headerInfo: common.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
+  queryInfo: state.QueryInfo<TArgsQuery, TStringDecoder>,
+  headerInfo: state.HeaderDataInfo<TArgsHeaders, TStringDecoder>,
   endpointHandlerSpec:
     | common.EndpointHandler<TEndpointArgs, THandlerResult>
     | common.EndpointHandlerSpec<
@@ -430,11 +509,11 @@ const createStaticEndpointSpec = <
     >,
     "mdArgs"
   > = {
-    stateValidator,
+    stateInformation,
     outputValidation: outputSpec,
     builder: (groupNamePrefix) =>
       stripUndefineds({
-        stateValidator,
+        stateInformation,
         urlValidator: urlValidation
           ? {
               groupNames: Object.fromEntries(
@@ -486,11 +565,11 @@ const createStaticAppEndpointHandlerFunction =
       | undefined,
     getAdditionalArgs: (
       args: Omit<
-        Parameters<ep.StaticAppEndpointHandlerFunction<TContext>>[0],
+        Parameters<ep.AppEndpointHandlerFunction<TContext>>[0],
         "context" | "state" | "url"
       >,
     ) => object,
-  ): ep.StaticAppEndpointHandlerFunction<TContext> =>
+  ): ep.AppEndpointHandlerFunction<TContext> =>
   async ({ context, state, url, ...args }) => {
     const handlerArgs = {
       ...getAdditionalArgs(args),
@@ -547,13 +626,9 @@ const createStaticAppEndpointHandlerFunction =
     return outputResult;
   };
 
-// There used to be just one MetadataArguments.
-// However, the TS compiler couldn't get far enough to fully resolve all types, causing compilation errors when using various versions of withBody/withoutBody above.
-// Therefore, it was split into 4 versions:
-// - Without request body, without response headers: MetadataArguments
-// - Without request body, with response headers MetadataArgumentsWithHeaders
-// - With request body, without response headers: MetadataArgumentsWithBody
-// - With request body, with response headers: MetadataArgumentsWithBodyAndHeaders
+/**
+ * The required data for metadata providers, when there is no request body nor response header specifications.
+ */
 export type MetadataArguments<
   TArgsURL extends object,
   TArgsHeaders extends object,
@@ -564,7 +639,7 @@ export type MetadataArguments<
 > = {
   [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
-    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _,
     infer _0,
     infer _1,
     infer _2,
@@ -589,6 +664,9 @@ export type MetadataArguments<
     : never;
 };
 
+/**
+ * The required data for metadata providers, when there is response headers specification, but no request body specification.
+ */
 export type MetadataArgumentsWithHeaders<
   TArgsURL extends object,
   TArgsHeaders extends object,
@@ -600,7 +678,7 @@ export type MetadataArgumentsWithHeaders<
 > = {
   [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
-    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _,
     infer _0,
     infer _1,
     infer _2,
@@ -625,6 +703,9 @@ export type MetadataArgumentsWithHeaders<
     : never;
 };
 
+/**
+ * The required data for metadata providers, when there is request body specification, but no response headers specification.
+ */
 export type MetadataArgumentsWithBody<
   TArgsURL extends object,
   TArgsHeaders extends object,
@@ -637,7 +718,7 @@ export type MetadataArgumentsWithBody<
 > = {
   [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
-    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _,
     infer _0,
     infer _1,
     infer _2,
@@ -662,6 +743,9 @@ export type MetadataArgumentsWithBody<
     : never;
 };
 
+/**
+ * The required data for metadata providers, when there are both request body and response headers specifications.
+ */
 export type MetadataArgumentsWithBodyAndHeaders<
   TArgsURL extends object,
   TArgsHeaders extends object,
@@ -675,7 +759,7 @@ export type MetadataArgumentsWithBodyAndHeaders<
 > = {
   [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
     infer TArg,
-    infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+    infer _,
     infer _0,
     infer _1,
     infer _2,

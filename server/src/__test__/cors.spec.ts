@@ -1,3 +1,7 @@
+/**
+ * @file This file contains unit tests for functionality in file `../cors.ts`.
+ */
+
 /* eslint-disable sonarjs/no-duplicate-string */
 import test from "ava";
 import * as spec from "../cors";
@@ -14,7 +18,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
     allowOrigin: "*",
     allowMethods: true,
   });
-  const stateValidator = flowUtil.createStateValidator();
+  const stateInformation = flowUtil.createStateValidator();
   await flow.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
@@ -22,12 +26,12 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
         return method === "OPTIONS"
           ? {
               found: "invalid-method",
-              allowedMethods: [{ method: "GET", stateValidator }],
+              allowedMethods: [{ method: "GET", stateInformation }],
             }
           : {
               found: "handler" as const,
               handler: {
-                stateValidator,
+                stateInformation,
                 handler: () => ({
                   error: "none",
                   data: {
@@ -98,7 +102,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
   const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
   });
-  const stateValidator = flowUtil.createStateValidator();
+  const stateInformation = flowUtil.createStateValidator();
   await flow.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
@@ -107,7 +111,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
           ? {
               found: "handler" as const,
               handler: {
-                stateValidator,
+                stateInformation,
                 handler: () => ({
                   error: "none",
                   data: {
@@ -119,7 +123,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
             }
           : {
               found: "invalid-method",
-              allowedMethods: [{ method, stateValidator }],
+              allowedMethods: [{ method, stateInformation }],
             };
       },
     },
@@ -189,7 +193,7 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
       handler: () => ({
         found: "invalid-method",
         allowedMethods: [
-          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+          { method: "GET", stateInformation: flowUtil.createStateValidator() },
         ],
       }),
     },
@@ -268,7 +272,7 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
       handler: () => ({
         found: "invalid-method",
         allowedMethods: [
-          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+          { method: "GET", stateInformation: flowUtil.createStateValidator() },
         ],
       }),
     },
@@ -343,7 +347,7 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
       handler: () => ({
         found: "invalid-method",
         allowedMethods: [
-          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+          { method: "GET", stateInformation: flowUtil.createStateValidator() },
         ],
       }),
     },
@@ -395,7 +399,7 @@ test("Validate that CORS callbacks don't mistake normal method mismatch for pref
       handler: () => ({
         found: "invalid-method",
         allowedMethods: [
-          { method: "GET", stateValidator: flowUtil.createStateValidator() },
+          { method: "GET", stateInformation: flowUtil.createStateValidator() },
         ],
       }),
     },
@@ -469,7 +473,7 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
         allowedMethods: [
           ...allowMethods.map((method) => ({
             method,
-            stateValidator: flowUtil.createStateValidator(),
+            stateInformation: flowUtil.createStateValidator(),
           })),
         ],
       }),

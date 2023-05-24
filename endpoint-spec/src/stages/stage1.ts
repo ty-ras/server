@@ -1,16 +1,27 @@
+/**
+ * @file This file contains code for "stage 1" builder. At this stage, it is possible to specify endpoint state specification, HTTP method, query, and request header data validation, in order to acquire "stage 2" builder.
+ * It is also possible to specify all that information and request body validation in batch specification, to return "stage 3" builder.
+ */
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
-import * as common from "./common";
+import type * as common from "../common.types";
 import type * as state from "./state.types";
-import type * as batch from "./batch.types";
+import type * as batch from "../batch.types";
 import {
-  AppEndpointBuilderForMethods,
-  AppEndpointBuilderForMethodsAndBody,
-  AppEndpointBuilder,
+  AppEndpointBuilderStage2,
+  AppEndpointBuilderStage2WithBody,
+  AppEndpointBuilderStage3,
 } from ".";
 
-export class AppEndpointBuilderInitial<
+/**
+ * This class contains the endpoint builder at stage 1, which allows to:
+ * - Specify HTTP method, query parameters, and request data validation, to return {@link AppEndpointBuilderStage2} and {@link AppEndpointBuilderStage2WithBody}.
+ * - Specify all of the above along with request body validation via batch specification, to return {@link AppEndpointBuilderStage3}
+ *
+ * Instances of this class should not be created by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
+ */
+export class AppEndpointBuilderStage1<
   TContext,
   TStateInfo,
   TArgsURL extends object,
@@ -26,6 +37,12 @@ export class AppEndpointBuilderInitial<
     TInputContents
   >,
 > {
+  /**
+   * Creates new instance of this class.
+   *
+   * This constructor should not be called by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
+   * @param _state The current state of endpoint builder.
+   */
   public constructor(
     protected readonly _state: state.AppEndpointBuilderState<
       TContext,
@@ -38,10 +55,17 @@ export class AppEndpointBuilderInitial<
     >,
   ) {}
 
+  /**
+   * This overload will create {@link AppEndpointBuilderStage2} without ability to specify request body, to continue building HTTP endpoint, with specified {@link data.HttpMethodWithoutBody} and endpoint state specification.
+   * @param method The HTTP method used by HTTP endpoint being built.
+   * @param endpointState The state specification used by HTTP endpoint being built.
+   * @returns The {@link AppEndpointBuilderStage2}
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   public forMethod<TMethod extends TAllowedMethods, TState>(
     method: TMethod & data.HttpMethodWithoutBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-  ): AppEndpointBuilderForMethods<
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
+  ): AppEndpointBuilderStage2<
     TContext,
     TStateInfo,
     TState,
@@ -55,10 +79,18 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage2WithBody} with ability to specify request body, to continue building HTTP endpoint, with specified {@link data.HttpMethodWithBody} and endpoint state specification.
+   * @param method The HTTP method used by HTTP endpoint being built.
+   * @param endpointState The state specification used by HTTP endpoint being built.
+   * @returns The {@link AppEndpointBuilderStage2WithBody}
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   public forMethod<TMethod extends TAllowedMethods, TState>(
     method: TMethod & data.HttpMethodWithBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
-  ): AppEndpointBuilderForMethodsAndBody<
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
+  ): AppEndpointBuilderStage2WithBody<
     TContext,
     TStateInfo,
     TState,
@@ -72,15 +104,24 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage2} without ability to specify request body, to continue building HTTP endpoint, with specified {@link data.HttpMethodWithoutBody}, endpoint state specification, and query parameter specification.
+   * @param method The HTTP method used by HTTP endpoint being built.
+   * @param endpointState The state specification used by HTTP endpoint being built.
+   * @param query The query parameter specification.
+   * @returns The {@link AppEndpointBuilderStage2}
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
     TQuery extends dataBE.RuntimeAnyQuery,
   >(
     method: TMethod & data.HttpMethodWithoutBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
-  ): AppEndpointBuilderForMethods<
+  ): AppEndpointBuilderStage2<
     TContext,
     TStateInfo,
     TState,
@@ -95,15 +136,24 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage2WithBody} with ability to specify request body, to continue building HTTP endpoint, with specified {@link data.HttpMethodWithBody}, endpoint state specification, and query specification.
+   * @param method The HTTP method used by HTTP endpoint being built.
+   * @param endpointState The state specification used by HTTP endpoint being built.
+   * @param query The query parameter specification.
+   * @returns The {@link AppEndpointBuilderStage2WithBody}
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
     TQuery extends dataBE.RuntimeAnyQuery,
   >(
     method: TMethod & data.HttpMethodWithBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
-  ): AppEndpointBuilderForMethodsAndBody<
+  ): AppEndpointBuilderStage2WithBody<
     TContext,
     TStateInfo,
     TState,
@@ -118,6 +168,16 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage2} without ability to specify request body, to continue building HTTP endpoint, with specified {@link data.HttpMethodWithoutBody}, endpoint state specification, query parameter specification, and request header data specification.
+   * @param method The HTTP method used by HTTP endpoint being built.
+   * @param endpointState The state specification used by HTTP endpoint being built.
+   * @param query The query parameter specification.
+   * @param headers The request headers specification.
+   * @returns The {@link AppEndpointBuilderStage2}
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
@@ -125,10 +185,10 @@ export class AppEndpointBuilderInitial<
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod & data.HttpMethodWithoutBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
     headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilderForMethods<
+  ): AppEndpointBuilderStage2<
     TContext,
     TStateInfo,
     TState,
@@ -144,6 +204,16 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage2WithBody} with ability to specify request body, to continue building HTTP endpoint, with specified {@link data.HttpMethodWithBody}, endpoint state specification, query specification, and request header specification.
+   * @param method The HTTP method used by HTTP endpoint being built.
+   * @param endpointState The state specification used by HTTP endpoint being built.
+   * @param query The query parameter specification.
+   * @param headers The request headers specification.
+   * @returns The {@link AppEndpointBuilderStage2WithBody}
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   public forMethod<
     TMethod extends TAllowedMethods,
     TState,
@@ -151,10 +221,10 @@ export class AppEndpointBuilderInitial<
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod & data.HttpMethodWithBody,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder>,
     headers: dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilderForMethodsAndBody<
+  ): AppEndpointBuilderStage2WithBody<
     TContext,
     TStateInfo,
     TState,
@@ -170,6 +240,16 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This is the implementation for all overloads of this method, creating {@link AppEndpointBuilderStage2} or {@link AppEndpointBuilderStage2WithBody} to continue building HTTP endpoint, with specified HTTP method, endpoint state specifciation, query specification, and request header specification.
+   * @param method The {@link data.HttpMethod}.
+   * @param endpointState The endpoint specification.
+   * @param query The query parameter specification, if any.
+   * @param headers The request header data specification, if any.
+   * @returns The {@link AppEndpointBuilderStage2} or {@link AppEndpointBuilderStage2WithBody}, depending on the value of `method`.
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   forMethod<
     TMethod extends TAllowedMethods,
     TState,
@@ -177,13 +257,13 @@ export class AppEndpointBuilderInitial<
     THeaderData extends dataBE.RuntimeAnyHeaders,
   >(
     method: TMethod,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query?: dataBE.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers?:
       | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
-    | AppEndpointBuilderForMethods<
+    | AppEndpointBuilderStage2<
         TContext,
         TStateInfo,
         TState,
@@ -199,7 +279,7 @@ export class AppEndpointBuilderInitial<
         TInputContents,
         TMetadataProviders
       >
-    | AppEndpointBuilderForMethodsAndBody<
+    | AppEndpointBuilderStage2WithBody<
         TContext,
         TStateInfo,
         TState,
@@ -218,6 +298,16 @@ export class AppEndpointBuilderInitial<
     return this._forMethod(method, endpointState, query, headers);
   }
 
+  /**
+   * This is generic version of all variations of `forMethod` method, so that it could be invoked in generic way by `batchSpec` method.
+   * It will create {@link AppEndpointBuilderStage2} or {@link AppEndpointBuilderStage2WithBody} to continue building HTTP endpoint, with specified HTTP method, endpoint state specifciation, query specification, and request header specification.
+   * @param method The {@link data.HttpMethod}.
+   * @param endpointState The endpoint specification.
+   * @param query The query parameter specification, if any.
+   * @param headers The request header data specification, if any.
+   * @returns The {@link AppEndpointBuilderStage2} or {@link AppEndpointBuilderStage2WithBody}, depending on the value of `method`.
+   * @throws The {@link InvalidMethodError} if the given `method` has been already specified for this URL.
+   */
   private _forMethod<
     TMethod extends TAllowedMethods,
     TState,
@@ -225,13 +315,13 @@ export class AppEndpointBuilderInitial<
     THeaderData extends Record<string, unknown>,
   >(
     method: TMethod,
-    endpointState: ep.EndpointStateValidator<TStateInfo, TState>,
+    endpointState: ep.EndpointStateInformation<TStateInfo, TState>,
     query: dataBE.QueryValidatorSpec<TQuery, TStringDecoder> | undefined,
     headers:
       | dataBE.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>
       | undefined,
   ):
-    | AppEndpointBuilderForMethods<
+    | AppEndpointBuilderStage2<
         TContext,
         TStateInfo,
         TState,
@@ -247,7 +337,7 @@ export class AppEndpointBuilderInitial<
         TInputContents,
         TMetadataProviders
       >
-    | AppEndpointBuilderForMethodsAndBody<
+    | AppEndpointBuilderStage2WithBody<
         TContext,
         TStateInfo,
         TState,
@@ -272,7 +362,7 @@ export class AppEndpointBuilderInitial<
       throw new InvalidMethodError(method);
     }
 
-    const queryInfo: common.QueryInfo<
+    const queryInfo: state.QueryInfo<
       common.EndpointHandlerArgsWithQuery<TQuery>,
       TStringDecoder
     > = {
@@ -286,7 +376,7 @@ export class AppEndpointBuilderInitial<
       queryInfo.query = query;
     }
 
-    const headerInfo: common.HeaderDataInfo<
+    const headerInfo: state.HeaderDataInfo<
       common.EndpointHandlerArgsWithHeaders<THeaderData>,
       TStringDecoder
     > = {
@@ -300,14 +390,14 @@ export class AppEndpointBuilderInitial<
     }
 
     return data.isMethodWithoutRequestBody(method)
-      ? new AppEndpointBuilderForMethods(
+      ? new AppEndpointBuilderStage2(
           this._state,
           endpointState,
           new Set([method]),
           queryInfo,
           headerInfo,
         )
-      : new AppEndpointBuilderForMethodsAndBody(
+      : new AppEndpointBuilderStage2WithBody(
           this._state,
           endpointState,
           new Set([method]),
@@ -316,6 +406,10 @@ export class AppEndpointBuilderInitial<
         );
   }
 
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method and endpoint state specification.
+   * @param spec The {@link batch.BatchSpecificationWithoutBody}, without values for request body, query parameters, request headers, nor response headers specifications.
+   */
   public batchSpec<TMethod extends TAllowedMethods, TState, TOutput>(
     spec: batch.BatchSpecificationWithoutBody<
       TContext,
@@ -334,7 +428,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -345,6 +439,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithoutBody}, without values for request body, query parameters, nor response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -367,7 +466,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -378,6 +477,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and query parameters specifications.
+   * @param spec The {@link batch.BatchSpecificationWithoutBody}, without values for request body, request headers, nor response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -400,7 +504,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -411,6 +515,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, query parameters, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithoutBody}, without values for request body or response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -436,7 +545,7 @@ export class AppEndpointBuilderInitial<
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -447,6 +556,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and request body specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBody}, without values for query parameters, request headers, nor response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -471,7 +585,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -482,6 +596,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, request body, and query parameters specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBody}, without values for request headers, nor response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -506,7 +625,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -517,6 +636,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, request body, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBody}, without values for query parameters or response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -541,7 +665,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationResponseHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -552,6 +676,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, request body, query parameters, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBody}, without values for response headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -580,7 +709,7 @@ export class AppEndpointBuilderInitial<
       >]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder> &
       batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -591,6 +720,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method and endpoint state.
+   * @param spec The {@link batch.BatchSpecificationWithoutBodyWithHeaders}, without values for request body, query parameters, nor request headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -615,7 +749,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -626,6 +760,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithoutBodyWithHeaders}, without values for request body or query parameters.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -650,7 +789,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationQueryArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -661,6 +800,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and query parameters specifications.
+   * @param spec The {@link batch.BatchSpecificationWithoutBodyWithHeaders}, without values for request body or request headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -685,7 +829,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -696,6 +840,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, query parameters, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithoutBodyWithHeaders}, without values for request body or query parameters specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -721,7 +870,7 @@ export class AppEndpointBuilderInitial<
       [P in keyof batch.EndpointSpecArgsJustBody<never, never>]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder> &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -732,6 +881,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and request body specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBodyWithHeaders}, without values for query parameters or request headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -758,7 +912,7 @@ export class AppEndpointBuilderInitial<
         | batch.BatchSpecificationHeaderArgs<never, never>
       )]?: never;
     },
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -769,6 +923,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, and request body specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBodyWithHeaders}, without values for query parameters or request headers specifications.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -793,7 +952,7 @@ export class AppEndpointBuilderInitial<
     > & {
       [P in keyof batch.BatchSpecificationHeaderArgs<never, never>]?: never;
     } & batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -804,6 +963,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, request body, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBodyWithHeaders}, without values for query parameters.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -828,7 +992,7 @@ export class AppEndpointBuilderInitial<
     > & {
       [P in keyof batch.BatchSpecificationQueryArgs<never, never>]?: never;
     } & batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -839,6 +1003,11 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This overload will create {@link AppEndpointBuilderStage3} for endpoint with specified HTTP method, endpoint state, request body, and request headers specifications.
+   * @param spec The {@link batch.BatchSpecificationWithBodyWithHeaders}, without values for query parameters.
+   */
   public batchSpec<
     TMethod extends TAllowedMethods & data.HttpMethodWithBody,
     TState,
@@ -866,7 +1035,7 @@ export class AppEndpointBuilderInitial<
     > &
       batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder> &
       batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>,
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -877,6 +1046,12 @@ export class AppEndpointBuilderInitial<
     TInputContents,
     TMetadataProviders
   >;
+
+  /**
+   * This is implementation for all overloads to create {@link AppEndpointBuilderStage3} for given batch specification parameters.
+   * @param spec The {@link batch.BatchSpecificationWithoutBody} or {@link BatchSpecificationWithBody} or {@link BatchSpecificationWithoutBodyWithHeaders} or {@link BatchSpecificationWithBodyWithHeaders}.
+   * @returns The {@link AppEndpointBuilderStage3} to continue building HTTP endpoint(s).
+   */
   public batchSpec<
     TMethod extends TAllowedMethods,
     TState,
@@ -944,7 +1119,7 @@ export class AppEndpointBuilderInitial<
       ({} | batch.BatchSpecificationQueryArgs<TQuery, TStringDecoder>) &
       // eslint-disable-next-line @typescript-eslint/ban-types
       ({} | batch.BatchSpecificationHeaderArgs<THeaderData, TStringDecoder>),
-  ): AppEndpointBuilder<
+  ): AppEndpointBuilderStage3<
     TContext,
     TStateInfo,
     TArgsURL,
@@ -961,36 +1136,99 @@ export class AppEndpointBuilderInitial<
       "query" in spec ? spec.query : undefined,
       "headers" in spec ? spec.headers : undefined,
     );
-    return builder instanceof AppEndpointBuilderForMethodsAndBody &&
+    if (
+      builder instanceof AppEndpointBuilderStage2WithBody &&
       "input" in spec
-      ? "responseHeaders" in spec
-        ? builder.withBody(
+    ) {
+      // We have to do this explicit type annotation, otherwise compiler thinks that "builder" is of this type | AppEndpointBuilderForMethodsAndBody<any, any, any, any, any, any, any, any, any, any, any, any>
+      const dummy1: AppEndpointBuilderStage2WithBody<
+        TContext,
+        TStateInfo,
+        TState,
+        TArgsURL,
+        TMethod,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithHeaders<THeaderData>,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithQuery<TQuery>,
+        TStringDecoder,
+        TStringEncoder,
+        TOutputContents,
+        TInputContents,
+        TMetadataProviders
+      > = builder;
+      return "responseHeaders" in spec
+        ? dummy1.withBody(
             spec.input,
-            common.handlerWithHeaders(
-              spec.endpointHandler,
-              spec.responseHeaders,
-            ),
+            handlerWithHeaders(spec.endpointHandler, spec.responseHeaders),
             spec.output,
             spec.mdArgs,
           )
-        : builder.withBody(
+        : dummy1.withBody(
             spec.input,
             spec.endpointHandler,
             spec.output,
             spec.mdArgs,
+          );
+    } else {
+      // Same thing here as above: need to do explicit type annotation, otherwise compiler gets confused.
+      const dummy2: AppEndpointBuilderStage2<
+        TContext,
+        TStateInfo,
+        TState,
+        TArgsURL,
+        TMethod,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithHeaders<THeaderData>,
+        | common.EndpointHandlerArgs<TContext, TState>
+        | common.EndpointHandlerArgsWithQuery<TQuery>,
+        TStringDecoder,
+        TStringEncoder,
+        TOutputContents,
+        TInputContents,
+        TMetadataProviders
+      > = builder;
+      return "responseHeaders" in spec
+        ? dummy2.withoutBody(
+            handlerWithHeaders(spec.endpointHandler, spec.responseHeaders),
+            spec.output,
+            spec.mdArgs,
           )
-      : "responseHeaders" in spec
-      ? builder.withoutBody(
-          common.handlerWithHeaders(spec.endpointHandler, spec.responseHeaders),
-          spec.output,
-          spec.mdArgs,
-        )
-      : builder.withoutBody(spec.endpointHandler, spec.output, spec.mdArgs);
+        : dummy2.withoutBody(spec.endpointHandler, spec.output, spec.mdArgs);
+    }
   }
 }
 
+/**
+ * This error is thrown by `forMethod` method by {@link AppEndpointBuilderStage1} when the given method has already been previously specified.
+ */
 export class InvalidMethodError extends Error {
+  /**
+   * Creates new instance of this class with given HTTP method.
+   * @param method The HTTP method which was already specified.
+   */
   public constructor(method: string) {
     super(`Invalid method specified: "${method}"`);
   }
 }
+
+const handlerWithHeaders = <
+  TArgs,
+  THandlerResult,
+  THeaderData extends dataBE.RuntimeAnyHeaders,
+  TStringEncoder,
+>(
+  handler: common.EndpointHandler<
+    TArgs,
+    common.EndpointHandlerOutputWithHeaders<THandlerResult, THeaderData>
+  >,
+  headers: dataBE.ResponseHeaderDataValidatorSpec<THeaderData, TStringEncoder>,
+): common.EndpointHandlerSpec<
+  TArgs,
+  THandlerResult,
+  THeaderData,
+  TStringEncoder
+> => ({
+  handler,
+  headers,
+});

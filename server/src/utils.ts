@@ -1,13 +1,25 @@
+/**
+ * @file This file contains utility code internal to this library.
+ */
+
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
 
-import type * as evt from "./events";
+import type * as evt from "./events.types";
 
-import * as stream from "stream";
-import * as u from "url";
-import * as util from "util";
+import * as stream from "node:stream";
+import * as u from "node:url";
+import * as util from "node:util";
 
+/**
+ * Helper function to check whether URL path matches RegExp, and invoke event, if it doesn't.
+ * @param ctx The server context.
+ * @param events The events callback.
+ * @param url The URL.
+ * @param regExp The RegExp to check URL path against.
+ * @returns The matched RegExp groups, or nothing if no match.
+ */
 export const checkURLPathNameForHandler = <TContext>(
   ctx: TContext,
   events: evt.ServerEventHandler<TContext, never> | undefined,
@@ -31,13 +43,21 @@ export const checkURLPathNameForHandler = <TContext>(
     : undefined;
 };
 
+/**
+ * Handles bureaucracy involved in invoking event about invalid HTTP method.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param allowedMethodsInfo The information about allowed methods.
+ * @param validateStateInfo The state validation information, if required.
+ * @returns The information about allowed HTTP methods to be sent back to client.
+ */
 export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events: evt.ServerEventHandler<TContext, never> | undefined,
   allowedMethodsInfo: Array<ep.EndpointMethodInformation<TStateInfo>>,
   validateStateInfo:
     | ((
-        stateInfo: ep.EndpointStateValidator<TStateInfo, unknown>,
+        stateInfo: ep.EndpointStateInformation<TStateInfo, unknown>,
       ) => Promise<boolean>)
     | undefined,
 ) => {
@@ -45,20 +65,23 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   if (validateStateInfo) {
     // Group methods by state infos
     const methodsGroupedByStateInfos: Array<{
-      stateValidator: ep.EndpointStateValidator<TStateInfo, unknown>;
+      stateInformation: ep.EndpointStateInformation<TStateInfo, unknown>;
       methods: Array<data.HttpMethod>;
     }> = [];
-    allowedMethodsInfo.forEach(({ method, stateValidator }) => {
+    allowedMethodsInfo.forEach(({ method, stateInformation }) => {
       const idx = methodsGroupedByStateInfos.findIndex((s) =>
         util.isDeepStrictEqual(
-          s.stateValidator.stateInfo,
-          stateValidator.stateInfo,
+          s.stateInformation.stateInfo,
+          stateInformation.stateInfo,
         ),
       );
       if (idx >= 0) {
         methodsGroupedByStateInfos[idx].methods.push(method);
       } else {
-        methodsGroupedByStateInfos.push({ stateValidator, methods: [method] });
+        methodsGroupedByStateInfos.push({
+          stateInformation,
+          methods: [method],
+        });
       }
     });
 
@@ -66,7 +89,7 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
     allowedMethodsFiltered = (
       await Promise.all(
         methodsGroupedByStateInfos.map(async (info) =>
-          (await validateStateInfo(info.stateValidator)) ? info.methods : [],
+          (await validateStateInfo(info.stateInformation)) ? info.methods : [],
         ),
       )
     ).flat();
@@ -87,6 +110,14 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
   return allowedMethodsSentToClient;
 };
 
+/**
+ * Handles bureaucracy involved in validating the state and invoking the events as needed.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param validator The state validator.
+ * @param state The state.
+ * @returns Information about either success or failure.
+ */
 export const checkStateForHandler = <TContext, TState>(
   eventArgs: evt.EventArgumentsWithoutState<TContext>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
@@ -127,10 +158,17 @@ export const checkStateForHandler = <TContext, TState>(
   return validatedContextOrError;
 };
 
+/**
+ * Handles bureaucracy involved with checking URL path parameters and invoking event as necessary.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param urlValidation The URL path parameter validator.
+ * @returns Whether to proceed to check further inputs, and possible URL paths.
+ */
 export const checkURLParametersForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  urlValidation: ep.StaticAppEndpointHandler<TContext, never>["urlValidator"],
+  urlValidation: ep.AppEndpointHandler<TContext, never>["urlValidator"],
   // This is not really that complex...
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
@@ -174,13 +212,18 @@ export const checkURLParametersForHandler = <TContext, TState>(
   return [proceedToInvokeHandler, url] as const;
 };
 
+/**
+ * Handles bureaucracy involved with checking URL query parameters and invoking event as necessary.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param queryValidation The URL query parameter validator.
+ * @param queryObject The parsed query object from URL.
+ * @returns Whether to proceed to check further inputs, and possible URL query.
+ */
 export const checkQueryForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  queryValidation: ep.StaticAppEndpointHandler<
-    TContext,
-    never
-  >["queryValidator"],
+  queryValidation: ep.AppEndpointHandler<TContext, never>["queryValidator"],
   queryObject: Record<string, data.QueryValue>,
 ) => {
   let query: dataBE.RuntimeAnyQuery = {};
@@ -202,6 +245,14 @@ export const checkQueryForHandler = <TContext, TState>(
   return [proceedToInvokeHandler, query] as const;
 };
 
+/**
+ * Handles bureaucracy involved with checking HTTP request headers and invoking event as necessary.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param headersValidation The HTTP request headers validator.
+ * @param getHeaderValue The callback to extract header value given header name.
+ * @returns Whether to proceed to check further inputs, and possible HTTP headers.
+ */
 export const checkHeadersForHandler = <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
@@ -232,10 +283,19 @@ export const checkHeadersForHandler = <TContext, TState>(
   return [proceedToInvokeHandler, headers] as const;
 };
 
+/**
+ * Handles bureaucracy involved with checking HTTP request body and invoking event as necessary.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param isBodyValid The HTTP request body validator.
+ * @param contentType The content type of the request body.
+ * @param bodyStream The {@link stream.Readable} to read body from.
+ * @returns Whether to proceed to check further inputs, and possible HTTP headers.
+ */
 export const checkBodyForHandler = async <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  isBodyValid: ep.StaticAppEndpointHandler<TContext, never>["bodyValidator"],
+  isBodyValid: ep.AppEndpointHandler<TContext, never>["bodyValidator"],
   contentType: string,
   bodyStream: stream.Readable | undefined,
 ) => {
@@ -245,15 +305,6 @@ export const checkBodyForHandler = async <TContext, TState>(
     const bodyValidationResult = await isBodyValid({
       contentType: contentType,
       input: bodyStream ?? stream.Readable.from([]),
-      // new stream.Readable({
-      //   read() {
-      //     setImmediate(() => {
-      //       this.push(null);
-      //       this.push(Buffer.alloc(0));
-      //       this.push(null);
-      //     });
-      //   },
-      // }),
     });
     if (bodyValidationResult.error === "none") {
       body = bodyValidationResult.data;
@@ -280,10 +331,18 @@ export const checkBodyForHandler = async <TContext, TState>(
   return [proceedToInvokeHandler, body] as const;
 };
 
+/**
+ * Handles the bureaucracy involved in invoking actual endpoint handler, and invoking events if needed.
+ * @param eventArgs The event arguments.
+ * @param events The event callback.
+ * @param handler The endpoint handler.
+ * @param handlerParameters The endpoint handler parameters
+ * @returns The return value of endpoint handler.
+ */
 export const invokeHandler = async <TContext, TState>(
   eventArgs: evt.EventArguments<TContext, TState>,
   events: evt.ServerEventHandler<TContext, TState> | undefined,
-  handler: ep.StaticAppEndpointHandler<TContext, never>["handler"],
+  handler: ep.AppEndpointHandler<TContext, never>["handler"],
   ...handlerParameters: Parameters<typeof handler>
 ) => {
   events?.("onSuccessfulInvocationStart", { ...eventArgs });

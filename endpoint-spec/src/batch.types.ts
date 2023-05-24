@@ -2,12 +2,12 @@
  * @file This file contains types related to specifying endpoints in batch style via single interface, as opposed to using builder pattern.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import type * as data from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
 import type * as md from "@ty-ras/metadata";
-import type * as common from "./common";
+import type * as common from "./common.types";
 
 /**
  * This interface contains required information for specifying single HTTP BE endpoint which does not use HTTP request body.
@@ -202,128 +202,14 @@ export interface BatchSpecificationWithoutBodyWithoutHandler<
     >
   >,
 > extends BatchSpecificationWithMethodAndState<TStateInfo, TState, TMethod>,
-    EndpointSpecArgsWithoutBody<
-      TResponseHeaders,
-      TOutput,
-      TOutputContentTypes,
-      TEndpointArgs,
-      TMetadataProviders
-    > {}
-
-/**
- * This is base interface for {@link BatchSpecificationWithBody} and {@link BatchSpecificationWithBodyWithHeaders}.
- */
-export interface BatchSpecificationWithBodyWithoutHandler<
-  TStateInfo,
-  TState,
-  TMethod,
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TInput,
-  TInputContentTypes extends Record<string, unknown>,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataProviderForEndpoints<
-      md.HKTArg,
-      any,
-      unknown,
-      any,
-      any,
-      TOutputContentTypes,
-      TInputContentTypes
-    >
-  >,
-> extends BatchSpecificationWithMethodAndState<TStateInfo, TState, TMethod>,
-    EndpointSpecArgsWithBody<
-      TResponseHeaders,
-      TOutput,
-      TOutputContentTypes,
-      TInput,
-      TInputContentTypes,
-      TEndpointArgs,
-      TMetadataProviders
-    > {}
-
-/**
- * This is base interface for {@link BatchSpecificationWithoutBodyWithoutHandler} and {@link BatchSpecificationWithBodyWithoutHandler}.
- */
-export interface BatchSpecificationWithMethodAndState<
-  TStateInfo,
-  TState,
-  TMethod,
-> {
+    EndpointSpecArgsJustResponseBody<TOutput, TOutputContentTypes> {
   /**
-   * The HTTP method required for the endpoint to trigger.
+   * The object of {@link md.MetadataProviderForEndpoints} for each of the used metadata provider (e.g. OpenAPI, etc).
    */
-  method: TMethod;
-
-  /**
-   * The {@link ep.EndpointStateValidator} representing the state/context required for the handler.
-   */
-  state: ep.EndpointStateValidator<TStateInfo, TState>;
-}
-
-/**
- * This interface contains necessary data for when BE endpoint needs to specify URL query parameters.
- */
-export interface BatchSpecificationQueryArgs<
-  TQueryData extends data.RuntimeAnyQuery,
-  TStringDecoder,
-> {
-  /**
-   * The {@link data.QueryValidatorSpec} specifying URL query parameter validation and metadata.
-   */
-  query: data.QueryValidatorSpec<TQueryData, TStringDecoder>;
-}
-
-/**
- * This interface contains necessary data for when BE endpoint needs to specify HTTP request header data.
- */
-export interface BatchSpecificationHeaderArgs<
-  THeaderData extends Record<string, unknown>,
-  TStringDecoder,
-> {
-  headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>;
-}
-
-/**
- * This interface contains necessary data for when BE endpoint needs to specify HTTP response header data.
- */
-export interface BatchSpecificationResponseHeaderArgs<
-  THeaderData extends Record<string, unknown>,
-  TStringDecoder,
-> {
-  responseHeaders: data.ResponseHeaderDataValidatorSpec<
-    THeaderData,
-    TStringDecoder
-  >;
-}
-
-export interface EndpointSpecArgsWithoutBody<
-  TResponseHeaders,
-  TOutput,
-  TOutputContentTypes extends Record<string, unknown>,
-  TEndpointArgs,
-  TMetadataProviders extends Record<
-    string,
-    md.MetadataProviderForEndpoints<
-      md.HKTArg,
-      any,
-      any,
-      any,
-      any,
-      TOutputContentTypes,
-      any
-    >
-  >,
-> {
-  output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
   mdArgs: {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
-      infer _, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _,
       infer _1,
       infer _2,
       infer _3,
@@ -351,7 +237,13 @@ export interface EndpointSpecArgsWithoutBody<
   };
 }
 
-export type EndpointSpecArgsWithBody<
+/**
+ * This is base interface for {@link BatchSpecificationWithBody} and {@link BatchSpecificationWithBodyWithHeaders}.
+ */
+export interface BatchSpecificationWithBodyWithoutHandler<
+  TStateInfo,
+  TState,
+  TMethod,
   TResponseHeaders,
   TOutput,
   TOutputContentTypes extends Record<string, unknown>,
@@ -363,19 +255,23 @@ export type EndpointSpecArgsWithBody<
     md.MetadataProviderForEndpoints<
       md.HKTArg,
       any,
-      any,
+      unknown,
       any,
       any,
       TOutputContentTypes,
       TInputContentTypes
     >
   >,
-> = EndpointSpecArgsJustBody<TInput, TInputContentTypes> & {
-  output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
+> extends BatchSpecificationWithMethodAndState<TStateInfo, TState, TMethod>,
+    EndpointSpecArgsJustResponseBody<TOutput, TOutputContentTypes>,
+    EndpointSpecArgsJustBody<TInput, TInputContentTypes> {
+  /**
+   * The object of {@link md.MetadataProviderForEndpoints} for each of the used metadata provider (e.g. OpenAPI, etc).
+   */
   mdArgs: {
     [P in keyof TMetadataProviders]: TMetadataProviders[P] extends md.MetadataProviderForEndpoints<
       infer TArg,
-      infer _0, // eslint-disable-line @typescript-eslint/no-unused-vars
+      infer _0,
       infer _1,
       infer _2,
       infer _3,
@@ -401,21 +297,108 @@ export type EndpointSpecArgsWithBody<
         >
       : never;
   };
-};
+}
 
+/**
+ * This is base interface for {@link BatchSpecificationWithoutBodyWithoutHandler} and {@link BatchSpecificationWithBodyWithoutHandler}.
+ */
+export interface BatchSpecificationWithMethodAndState<
+  TStateInfo,
+  TState,
+  TMethod,
+> {
+  /**
+   * The HTTP method required for the endpoint to trigger.
+   */
+  method: TMethod;
+
+  /**
+   * The {@link ep.EndpointStateInformation} representing the state/context required for the handler.
+   */
+  state: ep.EndpointStateInformation<TStateInfo, TState>;
+}
+
+/**
+ * This interface contains necessary data for when BE endpoint needs to specify URL query parameters.
+ */
+export interface BatchSpecificationQueryArgs<
+  TQueryData extends data.RuntimeAnyQuery,
+  TStringDecoder,
+> {
+  /**
+   * The {@link data.QueryValidatorSpec} specifying URL query parameter validation and metadata.
+   */
+  query: data.QueryValidatorSpec<TQueryData, TStringDecoder>;
+}
+
+/**
+ * This interface contains necessary data for when BE endpoint needs to specify HTTP request header data.
+ */
+export interface BatchSpecificationHeaderArgs<
+  THeaderData extends Record<string, unknown>,
+  TStringDecoder,
+> {
+  /**
+   * The {@link data.RequestHeaderDataValidatorSpec} specifying the HTTP request header validation and metadata.
+   */
+  headers: data.RequestHeaderDataValidatorSpec<THeaderData, TStringDecoder>;
+}
+
+/**
+ * This interface contains necessary data for when BE endpoint needs to specify HTTP response header data.
+ */
+export interface BatchSpecificationResponseHeaderArgs<
+  THeaderData extends Record<string, unknown>,
+  TStringDecoder,
+> {
+  /**
+   * The {@link data.ResponseHeaderDataValidatorSpec} specifying the HTTP response header validation and metadata.
+   */
+  responseHeaders: data.ResponseHeaderDataValidatorSpec<
+    THeaderData,
+    TStringDecoder
+  >;
+}
+
+/**
+ * This is base interface for {@link BatchSpecificationWithoutBodyWithoutHandler} and {@link BatchSpecificationWithBodyWithoutHandler}.
+ */
+export interface EndpointSpecArgsJustResponseBody<
+  TOutput,
+  TOutputContentTypes extends Record<string, unknown>,
+> {
+  /**
+   * The {@link data.DataValidatorResponseOutputSpec} for HTTP response body, specifying validator and metadata.
+   */
+  output: data.DataValidatorResponseOutputSpec<TOutput, TOutputContentTypes>;
+}
+
+/**
+ * This is base interface for {@link BatchSpecificationWithBodyWithoutHandler}.
+ */
 export interface EndpointSpecArgsJustBody<
   TInput,
   TInputContentTypes extends Record<string, unknown>,
 > {
+  /**
+   * The {@link data.DataValidatorRequestInputSpec} for HTTP request body, specifying validator and metadata.
+   */
   input: data.DataValidatorRequestInputSpec<TInput, TInputContentTypes>;
 }
 
+/**
+ * This is base interface for {@link BatchSpecificationWithoutBody}, {@link BatchSpecificationWithBody}, {@link BatchSpecificationWithoutBodyWithHeaders}, and {@link BatchSpecificationWithBodyWithHeaders}.
+ */
 export interface EndpointSpecArgsWithHandler<
   TContext,
   TState,
   TEndpointArgs,
   TOutput,
 > {
+  /**
+   * The callback to handle the request with validated inputs.
+   * @see common.EndpointHandler
+   */
   endpointHandler: common.EndpointHandler<
     TEndpointArgs & common.EndpointHandlerArgs<TContext, TState>,
     TOutput

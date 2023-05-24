@@ -1,7 +1,11 @@
+/**
+ * @file This file contains unit tests for functionality in file `../server.ts`.
+ */
+
 import test from "ava";
 import * as spec from "../server";
 import getPort from "@ava/get-port";
-import * as net from "net";
+import * as net from "node:net";
 
 test("Validate that listenAsync works for host and port combination", async (c) => {
   c.plan(1);
