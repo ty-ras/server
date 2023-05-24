@@ -1,8 +1,18 @@
+/**
+ * @file This file contains code used to register a collection of tests to AVA runner.
+ */
+
 import type * as ava from "ava";
 import type * as ep from "@ty-ras/endpoint";
 
 import * as server from "./server";
 
+/**
+ * Registers a bunch of tests to run against given TyRAS HTTP server implementation using AVA runtime.
+ * @param test The AVA test runtime.
+ * @param createServer The callback to create HTTP server.
+ * @param opts The {@link RegisterTestsOptions}.
+ */
 export const registerTests = (
   test: ava.TestFn,
   createServer: CreateServer,
@@ -32,16 +42,37 @@ export const registerTests = (
   }
 };
 
+/**
+ * The options for {@link registerTests}.
+ */
 export type RegisterTestsOptions = Partial<
   Omit<TestsInput, "createServer"> & {
     run500Test: boolean; // Only makes sense when there are extra code other than invoking typicalServerFlow.
   }
 >;
 
+/**
+ * This interface contains necessary data to register tests via {@link registerTests}.
+ */
 export interface TestsInput {
+  /**
+   * The callback to create the TyRAS HTTP server.
+   */
   createServer: CreateServer;
+
+  /**
+   * The suffix for content types.
+   */
   contentTypeHeaderSuffix?: string | undefined;
+
+  /**
+   * The HTTP protocol version.
+   */
   httpVersion: number;
+
+  /**
+   * Whether the server is secure.
+   */
   secure: boolean;
 }
 
@@ -72,6 +103,9 @@ const test500: ParametrizedTest = async (...args) => {
   await testServer(...args, 500);
 };
 
+/**
+ * Callback to create TyRAS HTTP server.
+ */
 export type CreateServer = (
   endpoints: ReadonlyArray<ep.AppEndpoint<unknown, unknown>>,
   info: server.ServerTestAdditionalInfo[0],
@@ -91,9 +125,15 @@ const testServer = (
     contentTypeHeaderSuffix,
   );
 
+/**
+ * The callback type for parametrized type.
+ */
 export type ParametrizedTest = (
   t: ava.ExecutionContext,
   input: TestsInput,
 ) => Promise<void>;
 
+/**
+ * The base constraint type for HTTP version.
+ */
 export type HTTPVersionBase = 1 | 2;

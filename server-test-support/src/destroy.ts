@@ -1,7 +1,15 @@
-import * as net from "net";
-import * as crypto from "crypto";
-import type * as stream from "stream";
+/**
+ * @file This file contains code for creating callback to destroy a {@link net.Server}.
+ */
+import * as net from "node:net";
+import * as crypto from "node:crypto";
+import type * as stream from "node:stream";
 
+/**
+ * Creates a callback to destroy the given {@link net.Server}.
+ * @param server The {@link net.Server} to destroy when calling the returned callback.
+ * @returns A callback to destroy the given server.
+ */
 export const createDestroyCallback = (server: net.Server) => {
   const connections: Record<string, net.Socket | stream.Duplex> = {};
 

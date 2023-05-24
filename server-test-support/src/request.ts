@@ -1,8 +1,19 @@
-import * as http from "http";
-import * as https from "https";
-import * as http2 from "http2";
-import type * as stream from "stream";
+/**
+ * @file This file contains code to sending a HTTP request asynchronously.
+ */
 
+import * as http from "node:http";
+import * as https from "node:https";
+import * as http2 from "node:http2";
+import type * as stream from "node:stream";
+
+/**
+ * Asynchronously sends HTTP1 request, returning response headers and data.
+ * @param opts The HTTP1 request options.
+ * @param write The optional callback to write to request body.
+ * @returns The returned HTTP1 response headers and data.
+ * @throws The {@link RequestError} if returned response doesn't have status code or it is `>= 400`.
+ */
 export const requestAsync = (
   opts: http.RequestOptions,
   write?: (writeable: stream.Writable) => Promise<void>,
@@ -55,6 +66,13 @@ export const requestAsync = (
     }
   });
 
+/**
+ * Asynchronously sends HTTP2 request, returning response headers and data.
+ * @param opts The HTTP2 request options.
+ * @param write The optional callback to write to request body.
+ * @returns The returned HTTP2 response headers and data.
+ * @throws The {@link RequestError} if returned response doesn't have status code or it is `>= 400`.
+ */
 export const requestAsync2 = (
   opts: http.RequestOptions,
   write?: (writeable: stream.Writable) => Promise<void>,
@@ -136,7 +154,15 @@ const awaitAndThen = async (
   }
 };
 
+/**
+ * This error is thrown when returned HTTP response has no status code, or it is `>= 400`.
+ */
 export class RequestError extends Error {
+  /**
+   * Creates new instance of this error with given data.
+   * @param statusCode The status code of the HTTP response.
+   * @param message The mesage.
+   */
   public constructor(
     public readonly statusCode: number | undefined,
     message: string,
@@ -145,5 +171,10 @@ export class RequestError extends Error {
   }
 }
 
+/**
+ * Creates textual message about status code.
+ * @param statusCode The status code returned.
+ * @returns The textual message about status code.
+ */
 export const getErrorMessage = (statusCode: number | undefined) =>
   `Status code: ${statusCode}`;

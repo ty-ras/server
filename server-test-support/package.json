@@ -1,6 +1,6 @@
 {
   "name": "@ty-ras/server-test-support",
-  "version": "0.13.0",
+  "version": "1.0.0",
   "author": {
     "name": "Stanislav Muhametsin",
     "email": "346799+stazz@users.noreply.github.com",
@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@ty-ras/server": "0.13.0",
+    "@ty-ras/server": "^1.0.0",
     "@ava/get-port": "2.0.0",
     "raw-body": "2.5.1"
   },
@@ -68,9 +68,9 @@
     "generate-stub-package-json-for-cjs": "../scripts/generate-stub-package-json.cjs",
     "lint": "eslint ./src --ext .ts,.tsx",
     "remove-empty-js-files": "../scripts/remove-empty-js-files.cjs",
-    "tsc": "tsc --project tsconfig.build.json",
-    "tsc:plain": "tsc",
-    "test:coverage": "c8 --temp-directory /tmp ava",
-    "test:run": "c8 --temp-directory /tmp --reporter text ava"
+    "tsc": "yarn run tsc:plain --project tsconfig.build.json",
+    "tsc:plain": "tsc --skipLibCheck",
+    "test:coverage": "echo 'No tests yet'",
+    "test:run": "echo 'No tests yet'"
   }
 }
