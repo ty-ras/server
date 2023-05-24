@@ -1,3 +1,7 @@
+/**
+ * @file This file contains code related to running tests on specific TyRAS HTTP server implementation.
+ */
+
 import type * as ava from "ava";
 import getPort from "@ava/get-port";
 
@@ -7,12 +11,18 @@ import * as request from "./request";
 import type * as ep from "@ty-ras/endpoint";
 import * as serverUtils from "@ty-ras/server";
 
-import * as http from "http";
-import * as http2 from "http2";
-import * as https from "https";
-import * as stream from "stream";
+import * as http from "node:http";
+import * as http2 from "node:http2";
+import * as https from "node:https";
+import * as stream from "node:stream";
 import * as rawBody from "raw-body";
 
+/**
+ * Tests the TyRAS server implementation against ready-made test suite.
+ * @param t The {@link ava.ExecutionContext} to use.
+ * @param createServer The callback to create HTTP server.
+ * @param infos Some information about tests.
+ */
 export const testServer = async (
   t: ava.ExecutionContext,
   createServer: (
@@ -98,8 +108,8 @@ const getAppEndpoint = (
   getRegExpAndHandler: () => ({
     url: regExp,
     handler: () => {
-      const retVal: ep.StaticAppEndpointHandler<unknown, unknown> = {
-        stateValidator: {
+      const retVal: ep.AppEndpointHandler<unknown, unknown> = {
+        stateInformation: {
           stateInfo: undefined,
           validator: (ctx) =>
             protocolError === undefined
@@ -223,6 +233,9 @@ const writeInput = (writable: stream.Writable) => {
   return Promise.resolve();
 };
 
+/**
+ * This type represents any HTTP server (1 or 2).
+ */
 export type AnyHttpServer =
   | http.Server
   | https.Server
@@ -236,6 +249,10 @@ export type AnyHttpServer =
       customListen?: (host: string, port: number) => Promise<void>;
     };
 
+/**
+ * Additional information about test suite.
+ * Need to remember specifics later, this is cryptic at this point already. :)
+ */
 export type ServerTestAdditionalInfo = [
   (
     | undefined
