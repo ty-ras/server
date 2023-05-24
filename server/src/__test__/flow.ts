@@ -1,22 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/**
+ * @file This file contains shared utility code for unit tests, related to functionality in `../flow.ts` file.
+ */
+
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment */
 import type * as flow from "../flow";
-import * as stream from "stream";
-import * as url from "url";
+import * as stream from "node:stream";
+import * as url from "node:url";
 import * as data from "@ty-ras/data";
 import type * as ep from "@ty-ras/endpoint";
 
+/* eslint-disable jsdoc/require-jsdoc */
 export const createTrackingCallback = (
   headerMode: "arg" | "array" | "undefined" = "arg",
 ) =>
   customizeTrackingCallback({
     getURL: () => {
-      return headerMode === "arg"
-        ? dummyURL
-        : headerMode === "undefined"
-        ? undefined
-        : dummyURLObject;
+      return headerMode === "arg" ? dummyURL : dummyURLObject;
     },
     getHeader: (...args) => {
       let returnValue;

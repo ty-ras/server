@@ -1,15 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @file This file contains unit tests for functionality in file `../utils.ts`.
+ */
+
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 import test, { ExecutionContext } from "ava";
 import * as spec from "../utils";
-import type * as evt from "../events";
+import type * as evt from "../events.types";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
 import type * as dataBE from "@ty-ras/data-backend";
 import type * as data from "@ty-ras/data";
 
-import * as stream from "stream";
+import * as stream from "node:stream";
 
 test("Validate checkURLPathNameForHandler works for valid input", (t) => {
   t.plan(5);

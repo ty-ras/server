@@ -1,11 +1,15 @@
-/* eslint-disable sonarjs/no-duplicate-string */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @file This file contains unit tests for functionality in file `../flow.ts`.
+ */
+
+/* eslint-disable sonarjs/no-duplicate-string, @typescript-eslint/no-explicit-any */
+
 import test, { ExecutionContext } from "ava";
 import * as spec from "../flow";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
 import * as dataBE from "@ty-ras/data-backend";
-import * as stream from "stream";
+import * as stream from "node:stream";
 
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
@@ -98,7 +102,7 @@ test("Validate typicalServerFlow works with special values", async (t) => {
     flowUtil.createTrackingCallback("undefined");
   await spec.createTypicalServerFlow(
     {
-      url: /^(?<group>\/)$/,
+      url: flowUtil.dummyURLRegexp,
       handler: (method, groups) => ({
         found: "handler",
         handler: {
@@ -126,7 +130,7 @@ test("Validate typicalServerFlow works with special values", async (t) => {
     {
       callbackName: "getURL",
       args: [flowUtil.seenContext],
-      returnValue: undefined,
+      returnValue: flowUtil.dummyURLObject,
     },
     {
       callbackName: "getMethod",

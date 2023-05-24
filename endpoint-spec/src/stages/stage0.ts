@@ -7,7 +7,7 @@ import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import type * as md from "@ty-ras/metadata";
 import type * as common from "../common.types";
-import { AppEndpointBuilderStage1 } from "./";
+import { AppEndpointBuilderStage1 } from ".";
 
 /**
  * This class contains the endpoint builder at stage 0, which allows to:

@@ -12,7 +12,7 @@ import {
   AppEndpointBuilderStage2,
   AppEndpointBuilderStage2WithBody,
   AppEndpointBuilderStage3,
-} from "./";
+} from ".";
 
 /**
  * This class contains the endpoint builder at stage 1, which allows to:
