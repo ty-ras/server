@@ -129,7 +129,7 @@ test("Validate that endpoint returns handlers only for methods that are specifie
       allowedMethods: [
         {
           method: "GET",
-          stateValidator: common.state,
+          stateInformation: common.state,
         },
       ],
     },
