@@ -15,7 +15,7 @@ import { AppEndpointBuilderStage1 } from "./";
  * - Create final metadata object from endpoints passed to this class.
  * - Specify URL parameters to return {@link AppEndpointBuilderStage1}.
  *
- * Instances of this class should be created via {@link startBuildingAPI}.
+ * Instances of this class should not be created by client code, instead utilizing `startBuildingAPI` function.
  */
 export class AppEndpointBuilderStage0<
   TContext,
@@ -33,7 +33,8 @@ export class AppEndpointBuilderStage0<
 > {
   /**
    * Creates new instance of this class.
-   * Please use {@link startBuildingAPI} instead of directly invoking this constructor.
+   *
+   * This constructor should not be called by client code, instead utilizing `startBuildingAPI` function to acquire "stage 0" builder and proceed from there.
    * @param _mdProviders The metadata providers.
    * @param _mdStateExtractors The callbacks to extract state information from metadata.
    */

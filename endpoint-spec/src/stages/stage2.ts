@@ -1,3 +1,9 @@
+/**
+ * @file This file contains code for "stage 2" builder. At this stage, it is possible to specify request body (if any), response body, and response header (if any) specifications.
+ * It is also necessary to provide required data for metadata providers (e.g. OpenAPI/etc).
+ *
+ * This will result in "stage 3" builder, which further allows continuing creating new endpoints at same URL, or to finalize creation process.
+ */
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as ep from "@ty-ras/endpoint";
@@ -175,7 +181,7 @@ export class AppEndpointBuilderStage2<
   }
 }
 
-export class AppEndpointBuilderForMethodsAndBody<
+export class AppEndpointBuilderStage2WithBody<
   TContext,
   TStateInfo,
   TState,

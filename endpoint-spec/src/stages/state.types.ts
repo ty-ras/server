@@ -117,14 +117,14 @@ export type StaticAppEndpointBuilder<TContext, TStateInfo> = (
 ) => ep.AppEndpointHandler<TContext, TStateInfo>;
 
 export interface QueryInfo<TArgs, TDecoder> {
-  query?: data.QueryValidatorSpec<data.RuntimeAnyQuery, TDecoder>;
+  query?: dataBE.QueryValidatorSpec<dataBE.RuntimeAnyQuery, TDecoder>;
   getEndpointArgs: (query: unknown) => TArgs;
 }
 
 export interface HeaderDataInfo<TArgs, THeaderValidators> {
-  headers?: data.RequestHeaderDataValidatorSpec<
+  headers?: dataBE.RequestHeaderDataValidatorSpec<
     Record<string, unknown>,
     THeaderValidators
   >;
-  getEndpointArgs: (headers: data.RuntimeAnyHeaders) => TArgs;
+  getEndpointArgs: (headers: dataBE.RuntimeAnyHeaders) => TArgs;
 }
