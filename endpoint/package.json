@@ -1,6 +1,6 @@
 {
   "name": "@ty-ras/endpoint",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "author": {
     "name": "Stanislav Muhametsin",
     "email": "346799+stazz@users.noreply.github.com",
@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@ty-ras/data-backend": "^1.0.1"
+    "@ty-ras/data-backend": "^2.0.0"
   },
   "devDependencies": {
     "@babel/core": "7.21.5",
@@ -49,6 +49,7 @@
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-sonarjs": "0.19.0",
+    "madge": "6.1.0",
     "prettier": "2.8.8",
     "ts-node": "10.9.1",
     "typescript": "5.0.4"
@@ -62,11 +63,16 @@
     "format-output-files-ts": "eslint --no-eslintrc --config '.eslintrc.out-ts.cjs' --fix --fix-type layout './dist-ts/**/*.ts'",
     "format-output-files-js": "eslint --no-eslintrc --config '.eslintrc.out.cjs' --fix 'dist-cjs/**/*js' 'dist-esm/**/*js'",
     "generate-stub-package-json-for-cjs": "../scripts/generate-stub-package-json.cjs",
-    "lint": "eslint ./src --ext .ts,.tsx",
+    "lint": "yarn run lint:eslint && yarn run lint:circular",
+    "lint:circular": "madge --circular --no-color --no-spinner --extensions ts --warning ./src",
+    "lint:eslint": "eslint ./src --ext .ts,.tsx",
     "remove-empty-js-files": "../scripts/remove-empty-js-files.cjs",
     "tsc": "tsc --project tsconfig.build.json",
     "tsc:plain": "tsc",
     "test:coverage": "c8 --temp-directory /tmp ava",
     "test:run": "c8 --temp-directory /tmp --reporter text ava"
+  },
+  "resolutions": {
+    "dependency-tree": "10.0.9"
   }
 }
