@@ -4,10 +4,11 @@
 
 import type * as data from "@ty-ras/data";
 import type * as dataBE from "@ty-ras/data-backend";
+import type * as protocol from "@ty-ras/protocol";
 
 /**
  * This interface defines how BE HTTP endpoint is expressed.
- * It is typically one or more actual endpoints behind a single URL path string pattern, but under one or more HTTP methods.
+ * It binds to one URL path RegExp, but allows one more more actual endpoint implementations, depending on HTTP method.
  * @see FinalizedAppEndpoint
  */
 export interface AppEndpoint<TContext, TStateInfo> {
@@ -41,7 +42,7 @@ export interface FinalizedAppEndpoint<TContext, TStateInfo> {
  * This is signature for callback which should get the {@link AppEndpointHandlerGetterResult} for given {@link data.HttpMethod}, and named URL path parameters captured by {@link RegExp} of {@link FinalizedAppEndpoint}.
  */
 export type AppEndpointHandlerGetter<TContext, TStateInfo> = (
-  method: data.HttpMethod,
+  method: protocol.HttpMethod,
   groups: Record<string, string | undefined>,
 ) => AppEndpointHandlerGetterResult<TContext, TStateInfo>;
 
@@ -89,7 +90,7 @@ export interface EndpointMethodInformation<TStateInfo> {
   /**
    * The {@link data.HttpMethod} that is allowed.
    */
-  method: data.HttpMethod;
+  method: protocol.HttpMethod;
 
   /**
    * The {@link EndpointStateInformation} about the endpoint for this method.
@@ -115,14 +116,14 @@ export type AppEndpointHandler<TContext, TStateInfo> = {
    * The information about HTTP request headers, if this endpoint uses them.
    */
   headerValidator?:
-    | dataBE.RequestHeaderDataValidators<dataBE.RuntimeAnyHeaders>
+    | dataBE.RequestHeaderDataValidators<protocol.TRequestHeadersDataBase>
     | undefined;
 
   /**
    * The information about URL query parameters, if this endpoint uses them.
    */
   queryValidator?:
-    | dataBE.QueryDataValidators<dataBE.RuntimeAnyQuery>
+    | dataBE.QueryDataValidators<protocol.TQueryDataBase>
     | undefined;
 
   /**
@@ -149,7 +150,7 @@ export interface AppEndpointURLPathParameterInformation {
   /**
    * The {@link dataBE.URLParameterValidators}, key being URL path parameter name, and value {@link data.DataValidator}.
    */
-  validators: dataBE.URLParameterValidators<dataBE.RuntimeAnyURLData>;
+  validators: dataBE.URLParameterValidators<protocol.TURLDataBase>;
 }
 
 /**
@@ -157,10 +158,14 @@ export interface AppEndpointURLPathParameterInformation {
  */
 export type AppEndpointHandlerFunction<TContext> = (
   args: AppEndpointHandlerFunctionArgs<TContext>,
-) => MaybePromise<
+) => MaybePromise<AppEndpointHandlerFunctionReturn>;
+
+/**
+ * This is the return type of {@link AppEndpointHandlerFunction}.
+ */
+export type AppEndpointHandlerFunctionReturn =
   | data.DataValidatorResultSuccess<dataBE.DataValidatorResponseOutputSuccess>
-  | dataBE.DataValidatorResponseOutputError
->;
+  | dataBE.DataValidatorResponseOutputError;
 
 /**
  * This interface contains all information used when invoking {@link AppEndpointHandlerFunction}.
@@ -179,17 +184,17 @@ export interface AppEndpointHandlerFunctionArgs<TContext> {
   /**
    * The URL path parameters, as validated via {@link AppEndpointURLPathParameterInformation} returned by {@link AppEndpointHandlerGetter} via {@link AppEndpointHandler}.
    */
-  url: unknown;
+  url: protocol.TURLDataBase;
 
   /**
    * The request header data, as validated via {@link dataBE.RequestHeaderDataValidators} returned by {@link AppEndpointHandlerGetter} via {@link AppEndpointHandler}.
    */
-  headers: dataBE.RuntimeAnyHeaders;
+  headers: protocol.TRequestHeadersDataBase;
 
   /**
    * The URL query parameters, as validated via {@link dataBE.QueryDataValidators} returned by {@link AppEndpointHandlerGetter} via {@link AppEndpointHandler}.
    */
-  query: unknown;
+  query: protocol.TQueryDataBase;
 
   /**
    * The parsed HTTP request body, as validated via {@link dataBE.DataValidatorRequestInput} returned by {@link AppEndpointHandlerGetter} via {@link AppEndpointHandler}.
