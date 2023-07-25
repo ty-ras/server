@@ -23,10 +23,54 @@ import buildEP, {
  * @param createRequestBodySpec The callback to use to create {@link dataBE.DataValidatorRequestInputSpec}s.
  * @param fromStateSpec The callback to use to create {@link ep.EndpointStateInformation}s.
  * @param mdProviders The metadata providers that this builder will use.
- * @param processMethod The callback to process each of the constructed method used by {@link ep.AppEndpoint}s produced by returned builder. Useful for e.g. permission checks.
  * @returns An object implementing {@link api.ApplicationBuilder} with given generic type arguments.
  */
-export function newBuilderGeneric<
+export const newBuilderGeneric = <
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends api.TMetadataProvidersBase,
+  TServerContext,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+>(
+  defaultRequestBodyContentType: TDefaultRequestBodyContentType,
+  createRequestBodySpec: <T, TContentType extends string>(
+    validation: data.MaterializeDecoder<TValidatorHKT, T>,
+    opts?: { contentType: TContentType },
+  ) => dataBE.DataValidatorRequestInputSpec<T, TValidatorHKT, TContentType>,
+  fromStateSpec: EndpointStateInformationFromStateSpec<TStateHKT>,
+  mdProviders: {
+    [P in keyof TMetadataProviders]: md.MetadataProvider<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders[P]
+    >;
+  },
+): api.ApplicationBuilder<
+  TProtoEncodedHKT,
+  TValidatorHKT,
+  TStateHKT,
+  TMetadataProviders,
+  TServerContext,
+  TAllRequestBodyContentTypes,
+  TAllResponseBodyContentTypes,
+  TDefaultRequestBodyContentType,
+  TDefaultResponseBodyContentType,
+  NoAdditionalSpecDataHKT
+> =>
+  newBuilderGenericImpl(
+    defaultRequestBodyContentType,
+    createRequestBodySpec,
+    fromStateSpec,
+    mdProviders,
+    ({ boundMethod }) => boundMethod,
+  );
+
+const newBuilderGenericImpl = <
   TProtoEncodedHKT extends protocol.EncodedHKTBase,
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
@@ -72,7 +116,7 @@ export function newBuilderGeneric<
   TDefaultRequestBodyContentType,
   TDefaultResponseBodyContentType,
   TEndpointSpecAdditionalDataHKT
-> {
+> => {
   const urlStates: Array<
     InternalStateForURL<
       TProtoEncodedHKT,
@@ -95,7 +139,7 @@ export function newBuilderGeneric<
     TDefaultResponseBodyContentType,
     TEndpointSpecAdditionalDataHKT
   >["resetMetadataProviders"] = (mdProviders?: {}) => {
-    return newBuilderGeneric<
+    return newBuilderGenericImpl<
       TProtoEncodedHKT,
       TValidatorHKT,
       TStateHKT,
@@ -127,7 +171,7 @@ export function newBuilderGeneric<
     >,
     resetMetadataProviders,
     changeEndpointSpecAdditionalData: (newMethodProcessor) =>
-      newBuilderGeneric(
+      newBuilderGenericImpl(
         defaultRequestBodyContentType,
         createRequestBodySpec,
         fromStateSpec,
@@ -249,6 +293,19 @@ export function newBuilderGeneric<
       };
     },
   };
+};
+
+/**
+ * This interface "implements" the generic [HKT](https://www.matechs.com/blog/encoding-hkts-in-typescript-once-again), {@link api.EndpointSpecAdditionalDataHKTBase}.
+ * The implementation is in such way that no additional data is needed when using decorator on class method acting as BE endpoint.
+ */
+export interface NoAdditionalSpecDataHKT
+  extends api.EndpointSpecAdditionalDataHKTBase {
+  /**
+   * This property "implements" the {@link api.EndpointSpecAdditionalDataHKTBase._getAdditionalEndpointSpecData} property in order to provide functionality for {@link api.MaterializeEndpointSpecAdditionalData} type.
+   * The additional type specified by this property is simply empty object to signify that no extra data is needed.
+   */
+  readonly _getAdditionalEndpointSpecData: {};
 }
 
 /**
