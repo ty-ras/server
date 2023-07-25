@@ -21,6 +21,7 @@ import type * as url from "./url.types";
  * Furthermore, it is possible to alter the internal settings of this builder:
  * - change metadata providers via {@link resetMetadataProviders} function, and
  * - change additional endpoint specification data via {@link changeEndpointSpecAdditionalData} function.
+ * @see url.ApplicationEndpointsForURLFactory
  */
 export interface ApplicationBuilder<
   TProtoEncodedHKT extends protocol.EncodedHKTBase,
@@ -418,7 +419,7 @@ export type EndpointMethodProcessor<
       TStateSpec
     >;
     boundMethod: url.MethodForEndpoint<
-      url.DefineMethodArgsGeneric<
+      url.GetMethodArgsGeneric<
         TStateHKT,
         TServerContext,
         TProtocolSpec,
@@ -429,7 +430,7 @@ export type EndpointMethodProcessor<
     >;
   },
 ) => url.MethodForEndpoint<
-  url.DefineMethodArgsGeneric<
+  url.GetMethodArgsGeneric<
     TStateHKT,
     TServerContext,
     TProtocolSpec,
