@@ -38,7 +38,7 @@ export const newBuilderGeneric = <
 >(
   defaultRequestBodyContentType: TDefaultRequestBodyContentType,
   createRequestBodySpec: <T, TContentType extends string>(
-    validation: data.MaterializeDecoder<TValidatorHKT, T>,
+    decoder: data.MaterializeDecoder<TValidatorHKT, T>,
     opts?: { contentType: TContentType },
   ) => dataBE.DataValidatorRequestInputSpec<T, TValidatorHKT, TContentType>,
   fromStateSpec: EndpointStateInformationFromStateSpec<TStateHKT>,

@@ -1,27 +1,18 @@
-import * as start from "../start";
-import * as dataIO from "../../data-backend-io-ts";
-import type * as epSpec from "..";
+/**
+ * @file This file contains the class with TyRAS-decorated methods for tests in "static.spec.ts" file.
+ */
+
+import type * as spec from "..";
+import * as mp from "./missing-parts";
 import * as protocol from "./protocol";
-import * as mdValidation from "./md-validation";
 
-const app = start.newBuilder({});
-type StateSpecBase = epSpec.StateSpecBaseOfAppBuilder<typeof app>;
+const app = mp.newBuilder({});
+type StateSpecBase = spec.StateSpecBaseOfAppBuilder<typeof app>;
 
-const withURL = app.url`/something/${dataIO.urlParameter(
+const withURL = app.url`/something/${mp.urlParameter(
   "urlParam",
   protocol.urlParam,
-)}`({
-  openapi: {
-    pathItem: {
-      description: "Do something",
-    },
-    url: {
-      urlParam: {
-        description: "The URL param",
-      },
-    },
-  },
-});
+)}`({});
 const stateSpec = {
   userId: false,
 } as const satisfies StateSpecBase;
@@ -71,7 +62,7 @@ class MyClass {
     state: stateSpec,
   })
   static endpointWithUrl(
-    args: epSpec.GetMethodArgs<
+    args: spec.GetMethodArgs<
       protocol.SomeEndpoint,
       typeof withURL,
       typeof stateSpec
@@ -86,7 +77,4 @@ class MyClass {
   }
 }
 
-export default app.createEndpoints(
-  { openapi: mdValidation.infoObject },
-  { "/api": MyClass },
-);
+export default app.createEndpoints({}, { "/api": MyClass });
