@@ -170,7 +170,7 @@ export type GetProtocolBaseForURLData<TURLData> = protocol.ProtocolSpecCore<
 > &
   (TURLData extends Record<string, unknown>
     ? protocol.ProtocolSpecURL<TURLData>
-    : { [P in keyof protocol.ProtocolSpecURL<never>]: never });
+    : { [P in keyof protocol.ProtocolSpecURL<never>]?: never });
 
 /**
  * This is auxiliary type used by {@link ClassMethodDecoratorFactory} to define function signature type for method implementing BE endpoint specified by protocol interface.

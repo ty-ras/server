@@ -64,13 +64,13 @@ export const validateEndpoint = async (
     const result = await handler(args);
     if (result.error === "none") {
       c.deepEqual(result.data, {
-        contentType: "application/json",
+        contentType: "text/plain",
         headers: {
           responseHeader: "resHeader",
         },
-        output: "responseBody",
+        output: JSON.stringify("responseBody"),
       });
-      c.deepEqual(getInstanceData(), []);
+      c.deepEqual(getInstanceData(), [data.omit(args, "headers")]);
     } else {
       c.fail("Handler did not return validated response body.");
       c.log(result);

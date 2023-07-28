@@ -7,7 +7,7 @@ import * as epValidation from "./endpoint-validation";
 import staticClassEndpoints, { Endpoints } from "./static";
 
 test("Test that decorator-based builder works on class with static methods", async (c) => {
-  c.plan(5);
+  c.plan(6);
   const { endpoints } = staticClassEndpoints;
   c.deepEqual(
     endpoints.length,

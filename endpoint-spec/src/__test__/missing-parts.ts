@@ -291,4 +291,5 @@ export type StatePropertySpec = boolean;
 export type ProtocolTypeOf<TValidation> = TValidation;
 
 export type Decoder<TRuntime> = TRuntime;
-export type Encoder<TRuntime, TSerialized> = TSerialized;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type Encoder<_TRuntime, TSerialized> = TSerialized;

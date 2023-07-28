@@ -1,32 +1,35 @@
+/**
+ * @file This file contains tests for situations where class structure is incorrect.
+ */
+
 import test from "ava";
-import * as start from "../start";
 import * as protocol from "./protocol";
-import * as dataIO from "../../data-backend-io-ts";
+import * as mp from "./missing-parts";
 import type * as epSpec from "..";
 
 /* eslint-disable sonarjs/no-duplicate-string */
 
 test("Validate that multiple methods work on a single class", (c) => {
   c.plan(4);
-  const app = start.newBuilder({}).resetMetadataProviders();
+  const app = mp.newBuilder({});
   const url = app.url`/api/endpoint`({});
   class Class {
     @url<protocol.SimpleEndpoint>({})({
       method: "GET",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
 
     @url<protocol.SimpleEndpoint2>({})({
       method: "POST",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint2() {
-      return "";
+      return "simpleResponseBody" as const;
     }
   }
 
@@ -40,16 +43,16 @@ test("Validate that multiple methods work on a single class", (c) => {
 
 test("Validate that multiple classes work", (c) => {
   c.plan(5);
-  const app = start.newBuilder({}).resetMetadataProviders();
+  const app = mp.newBuilder({});
   const url = app.url`/api/endpoint`({});
   class Class {
     @url<protocol.SimpleEndpoint>({})({
       method: "GET",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
   }
 
@@ -57,11 +60,11 @@ test("Validate that multiple classes work", (c) => {
   class Class2 {
     @url2<protocol.SimpleEndpoint2>({})({
       method: "POST",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
   }
 
@@ -77,28 +80,28 @@ test("Validate that multiple classes work", (c) => {
 
 test("Verify that using decorators fom same URL on multiple different classes works", (c) => {
   c.plan(1);
-  const app = start.newBuilder({}).resetMetadataProviders();
+  const app = mp.newBuilder({});
   const url = app.url`/api/endpoint`({});
 
   class Class {
     @url<protocol.SimpleEndpoint>({})({
       method: "GET",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
   }
 
   class Class2 {
     @url<protocol.SimpleEndpoint2>({})({
       method: "POST",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
   }
 
@@ -108,26 +111,26 @@ test("Verify that using decorators fom same URL on multiple different classes wo
 
 test("Verify that mixing static and instance methods works as expected", (c) => {
   c.plan(9);
-  const app = start.newBuilder({}).resetMetadataProviders();
+  const app = mp.newBuilder({});
   const url = app.url`/api/endpoint`({});
 
   class Class {
     @url<protocol.SimpleEndpoint>({})({
       method: "GET",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     endpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
 
     @url<protocol.SimpleEndpoint2>({})({
       method: "POST",
-      responseBody: dataIO.responseBody(protocol.simpleResponseBody),
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
       state: {},
     })
     static staticEndpoint() {
-      return "";
+      return "simpleResponseBody" as const;
     }
   }
   const createAndVerifyEndpoints = (
