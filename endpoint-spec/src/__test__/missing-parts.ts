@@ -80,6 +80,67 @@ export const urlParameter = <TName extends string, T>(
     validatorForValue,
   );
 
+export const query = <TQueryData extends protocol.TQueryDataBase>(
+  validation: dataBE.QueryDataValidatorSpecMetadata<TQueryData, ValidatorHKT>,
+) =>
+  dataBE.stringDataValidatorDecoderGeneric<TQueryData, ValidatorHKT>(
+    validation,
+    validatorForValue,
+    "Query parameter",
+  );
+
+export function responseBody<TOutput, TSerialized>(
+  validation: Encoder<TOutput, TSerialized>,
+): dataBE.DataValidatorResponseOutputSpec<
+  TOutput,
+  TSerialized,
+  ValidatorHKT,
+  typeof CONTENT_TYPE
+>;
+export function responseBody<TOutput, TSerialized, TContentType extends string>(
+  validation: Encoder<TOutput, TSerialized>,
+  contentType: TContentType,
+): dataBE.DataValidatorResponseOutputSpec<
+  TOutput,
+  TSerialized,
+  ValidatorHKT,
+  TContentType
+>;
+export function responseBody<TOutput, TSerialized, TContentType extends string>(
+  validation: Encoder<TOutput, TSerialized>,
+  contentType?: TContentType,
+): dataBE.DataValidatorResponseOutputSpec<
+  TOutput,
+  TSerialized,
+  ValidatorHKT,
+  TContentType
+> {
+  return dataBE.responseBodyGeneric<
+    TOutput,
+    TSerialized,
+    TContentType,
+    ValidatorHKT
+  >(
+    validation,
+    contentType ?? (CONTENT_TYPE as any),
+    validatorForValue(validation),
+  );
+}
+
+export const responseHeaders = <
+  THeaderData extends protocol.TRequestHeadersDataBase,
+>(
+  validation: dataBE.ResponseHeaderDataValidatorSpecMetadata<
+    THeaderData,
+    ValidatorHKT
+  >,
+) =>
+  dataBE.stringDataValidatorEncoderGeneric<THeaderData, ValidatorHKT>(
+    validation,
+    validatorForValue,
+    "Response header",
+  );
+
 export const CONTENT_TYPE = "text/plain";
 
 export const DEFAULT_AUTHENTICATED_STATE = Object.freeze({
@@ -118,6 +179,23 @@ export interface ServerContext {
 
 export type StateHKT<TFullStateValidationInfo extends TStateValidationBase> =
   StateHKTGeneric<ValidatorHKT, TFullStateValidationInfo>;
+
+export type DefaultStateInfo = dataBE.MaterializeStateInfo<
+  StateHKT<
+    StatePropertyValidations<
+      typeof DEFAULT_AUTHENTICATED_STATE,
+      typeof DEFAULT_NOT_AUTHENTICATED_STATE
+    >
+  >,
+  dataBE.MaterializeStateSpecBase<
+    StateHKT<
+      StatePropertyValidations<
+        typeof DEFAULT_AUTHENTICATED_STATE,
+        typeof DEFAULT_NOT_AUTHENTICATED_STATE
+      >
+    >
+  >
+>;
 
 export interface EncodedHKT extends protocol.EncodedHKTBase {
   /**
@@ -209,3 +287,8 @@ export type StateSpec<
 }>;
 
 export type StatePropertySpec = boolean;
+
+export type ProtocolTypeOf<TValidation> = TValidation;
+
+export type Decoder<TRuntime> = TRuntime;
+export type Encoder<TRuntime, TSerialized> = TSerialized;

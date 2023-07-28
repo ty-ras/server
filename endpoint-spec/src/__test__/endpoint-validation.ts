@@ -1,12 +1,17 @@
+/**
+ * @file This file contains helper method to validate constructed {@link ep.AppEndpoint} by other .spec.ts files.
+ */
+
 import type { ExecutionContext } from "ava";
-import type * as ep from "../../endpoint";
-import * as data from "../../data";
-import type * as start from "../start";
+import type * as ep from "@ty-ras/endpoint";
+import * as data from "@ty-ras/data";
+import type * as mp from "./missing-parts";
+/* eslint-disable jsdoc/require-jsdoc */
 
 export const validateEndpoint = async (
   c: ExecutionContext,
-  endpoint: ep.AppEndpoint<start.ServerContext, start.DefaultStateInfo>,
-  instanceData: string | undefined,
+  endpoint: ep.AppEndpoint<mp.ServerContext, mp.DefaultStateInfo>,
+  getInstanceData: () => ReadonlyArray<unknown>,
 ) => {
   c.truthy(endpoint, "Given endpoint must be of given type");
   const { handler, url } = endpoint.getRegExpAndHandler("");
@@ -39,7 +44,7 @@ export const validateEndpoint = async (
       ["urlValidator.validators.urlParam", functionPlaceHolder],
     ]);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const args: ep.AppEndpointHandlerFunctionArgs<start.ServerContext> = {
+    const args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> = {
       context: { req: "req", res: "res" },
       state: {
         userId: "userId",
@@ -61,17 +66,11 @@ export const validateEndpoint = async (
       c.deepEqual(result.data, {
         contentType: "application/json",
         headers: {
-          responseHeader: "42", // Notice stringified value
+          responseHeader: "resHeader",
         },
-        output: JSON.stringify(
-          JSON.stringify(
-            data.stripUndefineds({
-              args: data.omit(args, "headers"),
-              instanceData,
-            }),
-          ),
-        ),
+        output: "responseBody",
       });
+      c.deepEqual(getInstanceData(), []);
     } else {
       c.fail("Handler did not return validated response body.");
       c.log(result);

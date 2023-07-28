@@ -1,10 +1,12 @@
 /**
- * @file This file contains the class with TyRAS-decorated methods for tests in "static.spec.ts" file.
+ * @file This file contains the class with TyRAS-decorated static methods.
  */
 
 import type * as spec from "..";
 import * as mp from "./missing-parts";
 import * as protocol from "./protocol";
+
+/* eslint-disable jsdoc/require-jsdoc */
 
 const app = mp.newBuilder({});
 type StateSpecBase = spec.StateSpecBaseOfAppBuilder<typeof app>;
@@ -17,42 +19,21 @@ const stateSpec = {
   userId: false,
 } as const satisfies StateSpecBase;
 
-// @withURL.endpoints
-class MyClass {
-  // Handler for ProtocolWithURL
-  @withURL<protocol.SomeEndpoint>({
-    openapi: {
-      operation: { description: "Perform the thing" },
-      responseBody: {
-        description: "The response",
-        mediaTypes: {
-          "application/json": {
-            example: "The example response",
-          },
-        },
-      },
-      query: {
-        queryParam: { description: "The query param" },
-      },
-      responseHeaders: {
-        responseHeader: { description: "The response header" },
-      },
-      requestBody: {
-        "application/json": {
-          example: new Date(0).toISOString(),
-        },
-      },
-    },
-  })({
+export class Endpoints {
+  static seenArgs: Array<
+    spec.GetMethodArgs<protocol.SomeEndpoint, typeof withURL, typeof stateSpec>
+  > = [];
+
+  @withURL<protocol.SomeEndpoint>({})({
     method: "GET",
-    responseBody: dataIO.responseBody(protocol.responseBody),
-    query: dataIO.query({
+    responseBody: mp.responseBody(protocol.responseBody),
+    query: mp.query({
       queryParam: {
         decoder: protocol.queryParam,
         required: false,
       },
     }),
-    responseHeaders: dataIO.responseHeaders({
+    responseHeaders: mp.responseHeaders({
       responseHeader: {
         encoder: protocol.resHeader,
         required: true,
@@ -68,13 +49,14 @@ class MyClass {
       typeof stateSpec
     >,
   ) {
+    this.seenArgs.push(args);
     return {
-      body: JSON.stringify({ args }),
+      body: "responseBody",
       headers: {
-        responseHeader: 42,
+        responseHeader: "resHeader",
       },
-    };
+    } as const;
   }
 }
 
-export default app.createEndpoints({}, { "/api": MyClass });
+export default app.createEndpoints({}, { "/api": Endpoints });

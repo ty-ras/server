@@ -1,69 +1,39 @@
-import * as start from "../start";
-import * as dataIO from "../../data-backend-io-ts";
-import type * as epSpec from "..";
+/**
+ * @file This file contains the class with TyRAS-decorated instance methods.
+ */
+
+import type * as spec from "..";
+import * as mp from "./missing-parts";
 import * as protocol from "./protocol";
-import * as mdValidation from "./md-validation";
 
-const app = start.newBuilder({});
-type StateSpecBase = epSpec.StateSpecBaseOfAppBuilder<typeof app>;
+const app = mp.newBuilder({});
+type StateSpecBase = spec.StateSpecBaseOfAppBuilder<typeof app>;
 
-const withURL = app.url`/something/${dataIO.urlParameter(
+const withURL = app.url`/something/${mp.urlParameter(
   "urlParam",
   protocol.urlParam,
-)}`({
-  openapi: {
-    pathItem: {
-      description: "Do something",
-    },
-    url: {
-      urlParam: {
-        description: "The URL param",
-      },
-    },
-  },
-});
+)}`({});
 const stateSpec = {
   userId: false,
 } as const satisfies StateSpecBase;
 
-// @withURL.endpoints
 class Endpoints {
-  public constructor(private readonly data: string) {}
+  public constructor() {}
 
-  // Handler for ProtocolWithURL
-  @withURL<protocol.SomeEndpoint>({
-    openapi: {
-      operation: { description: "Perform the thing" },
-      responseBody: {
-        description: "The response",
-        mediaTypes: {
-          "application/json": {
-            example: "The example response",
-          },
-        },
-      },
-      query: {
-        queryParam: { description: "The query param" },
-      },
-      responseHeaders: {
-        responseHeader: { description: "The response header" },
-      },
-      requestBody: {
-        "application/json": {
-          example: new Date(0).toISOString(),
-        },
-      },
-    },
-  })({
+  public readonly seenArgs: Array<
+    spec.GetMethodArgs<protocol.SomeEndpoint, typeof withURL, typeof stateSpec>
+  > = [];
+
+  @withURL<protocol.SomeEndpoint>({})({
     method: "GET",
-    responseBody: dataIO.responseBody(protocol.responseBody),
-    query: dataIO.query({
+    responseBody: mp.responseBody(protocol.responseBody),
+    query: mp.query({
       queryParam: {
         decoder: protocol.queryParam,
         required: false,
       },
     }),
-    responseHeaders: dataIO.responseHeaders({
+    responseHeaders: mp.responseHeaders({
       responseHeader: {
         encoder: protocol.resHeader,
         required: true,
@@ -73,29 +43,27 @@ class Endpoints {
     state: stateSpec,
   })
   endpointWithUrl(
-    args: epSpec.GetMethodArgs<
+    args: spec.GetMethodArgs<
       protocol.SomeEndpoint,
       typeof withURL,
       typeof stateSpec
     >,
   ) {
+    this.seenArgs.push(args);
     return {
-      body: JSON.stringify({
-        args,
-        instanceData: this.data,
-      }),
+      body: "responseBody",
       headers: {
-        responseHeader: 42,
+        responseHeader: "resHeader",
       },
-    };
+    } as const;
   }
 }
 
-export const INSTANCE_DATA = "data";
+export const INSTANCE = new Endpoints();
 
 export default app.createEndpoints(
-  { openapi: mdValidation.infoObject },
+  {},
   {
-    "/api": new Endpoints(INSTANCE_DATA),
+    "/api": INSTANCE,
   },
 );
