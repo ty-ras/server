@@ -26,12 +26,7 @@ export function newBuilder(
 ): spec.ApplicationBuilder<
   EncodedHKT,
   ValidatorHKT,
-  StateHKT<
-    StatePropertyValidations<
-      typeof DEFAULT_AUTHENTICATED_STATE,
-      typeof DEFAULT_NOT_AUTHENTICATED_STATE
-    >
-  >,
+  DefaultStateHKT,
   {},
   ServerContext,
   typeof CONTENT_TYPE,
@@ -177,24 +172,19 @@ export interface ServerContext {
   res: string;
 }
 
+export type DefaultStateHKT = StateHKT<
+  StatePropertyValidations<
+    typeof DEFAULT_AUTHENTICATED_STATE,
+    typeof DEFAULT_NOT_AUTHENTICATED_STATE
+  >
+>;
+
 export type StateHKT<TFullStateValidationInfo extends TStateValidationBase> =
   StateHKTGeneric<ValidatorHKT, TFullStateValidationInfo>;
 
 export type DefaultStateInfo = dataBE.MaterializeStateInfo<
-  StateHKT<
-    StatePropertyValidations<
-      typeof DEFAULT_AUTHENTICATED_STATE,
-      typeof DEFAULT_NOT_AUTHENTICATED_STATE
-    >
-  >,
-  dataBE.MaterializeStateSpecBase<
-    StateHKT<
-      StatePropertyValidations<
-        typeof DEFAULT_AUTHENTICATED_STATE,
-        typeof DEFAULT_NOT_AUTHENTICATED_STATE
-      >
-    >
-  >
+  DefaultStateHKT,
+  dataBE.MaterializeStateSpecBase<DefaultStateHKT>
 >;
 
 export interface EncodedHKT extends protocol.EncodedHKTBase {

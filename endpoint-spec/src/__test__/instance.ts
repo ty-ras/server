@@ -6,7 +6,9 @@ import type * as spec from "..";
 import * as mp from "./missing-parts";
 import * as protocol from "./protocol";
 
-const app = mp.newBuilder({});
+/* eslint-disable jsdoc/require-jsdoc */
+
+export const app = mp.newBuilder({});
 type StateSpecBase = spec.StateSpecBaseOfAppBuilder<typeof app>;
 
 const withURL = app.url`/something/${mp.urlParameter(
@@ -17,7 +19,7 @@ const stateSpec = {
   userId: false,
 } as const satisfies StateSpecBase;
 
-class Endpoints {
+export class Endpoints {
   public constructor() {}
 
   public readonly seenArgs: Array<

@@ -117,6 +117,7 @@ const newBuilderGenericImpl = <
   TDefaultResponseBodyContentType,
   TEndpointSpecAdditionalDataHKT
 > => {
+  // TODO we could use record instead of Array right here, to detect duplicate URL specs earlier.
   const urlStates: Array<
     InternalStateForURL<
       TProtoEncodedHKT,
@@ -222,7 +223,7 @@ const newBuilderGenericImpl = <
           >;
           if (spec.method in urlState.specsAndMetadatas) {
             throw new Error(
-              `Can not define different endpoints fot same method "${spec.method}".`,
+              `Can not define different endpoints for same method "${spec.method}".`,
             );
           }
 
@@ -444,6 +445,7 @@ const createEndpoints = <
     curPrefix: string,
     args: ReadonlyArray<api.EndpointCreationArg>,
   ): void {
+    console.log("DEBUG", curPrefix, urlStates, epURLStates, args);
     args.forEach((arg) => {
       if (Array.isArray(arg)) {
         // This is multiple of arguments
@@ -479,11 +481,11 @@ const createEndpoints = <
       );
     }
     const [urlState] = matchingEPInfos[0];
-    const urlKey = `${curPrefix}${urlState.patternSpec
+    const urlKey = `[${curPrefix}]${urlState.patternSpec
       .map((fragmentOrParameter) =>
         typeof fragmentOrParameter === "string"
           ? `[${fragmentOrParameter}]`
-          : `{${fragmentOrParameter.name}}`,
+          : `{}`,
       )
       .join("")}`;
     let epURLState = epURLStates[urlKey];
@@ -635,7 +637,7 @@ function* getMatchingEndpoints<
           urlStateIndex = idx;
         } else if (urlStateIndex != idx) {
           throw new Error(
-            `Internal error: Found multiple URL patterns for same instance: ${urlStateIndex} and ${idx}.`,
+            `Only one URL decorator should be used for one class (${urlStateIndex} and ${idx}).`,
           );
         }
         yield [

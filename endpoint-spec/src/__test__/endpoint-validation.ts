@@ -3,7 +3,7 @@
  */
 
 import type { ExecutionContext } from "ava";
-import type * as ep from "@ty-ras/endpoint";
+import * as ep from "@ty-ras/endpoint";
 import * as data from "@ty-ras/data";
 import type * as mp from "./missing-parts";
 /* eslint-disable jsdoc/require-jsdoc */
@@ -12,10 +12,15 @@ export const validateEndpoint = async (
   c: ExecutionContext,
   endpoint: ep.AppEndpoint<mp.ServerContext, mp.DefaultStateInfo>,
   getInstanceData: () => ReadonlyArray<unknown>,
+  prefix = "/api/something",
 ) => {
   c.truthy(endpoint, "Given endpoint must be of given type");
+
   const { handler, url } = endpoint.getRegExpAndHandler("");
-  c.deepEqual(url.source, "\\/api\\/something\\/(?<urlParam>[^/]+)");
+  c.deepEqual(
+    url.source,
+    `${ep.escapeRegExp(prefix).replaceAll("/", "\\/")}\\/(?<urlParam>[^/]+)`,
+  );
   const methodOK = handler(
     "GET",
     // 2nd argument is not used by these endpoints, only by the ones produced by endpoint-prefix library

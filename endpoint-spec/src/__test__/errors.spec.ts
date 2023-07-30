@@ -6,6 +6,8 @@ import test from "ava";
 import * as protocol from "./protocol";
 import * as mp from "./missing-parts";
 
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
+
 test("Verify that using same protocol interface twice in a single class produces meaningful error", (c) => {
   c.plan(1);
   const app = mp.newBuilder({});
@@ -36,7 +38,7 @@ test("Verify that using same protocol interface twice in a single class produces
     },
     {
       instanceOf: Error,
-      message: 'Can not define different endpoints fot same method "GET".',
+      message: 'Can not define different endpoints for same method "GET".',
     },
   );
 });
@@ -64,6 +66,88 @@ test("Verify that using decorators on instance methods but passing class to endp
       instanceOf: Error,
       message:
         "The given class or instance was not augmented at all, or was instance of class with static methods, or was augmented with decorators from another application.",
+    },
+  );
+});
+
+test("Verify that passing wrong parameters to createEndpoints throws an error", (c) => {
+  c.plan(1);
+  const app = mp.newBuilder({});
+  c.throws(() => app.createEndpoints({}, "i am wrong argument" as any), {
+    instanceOf: Error,
+    message: "Unsupported endpoint creation parameter: i am wrong argument.",
+  });
+});
+
+test("Verify that using same protocol interface twice in same class a different url builders produces meaningful error", (c) => {
+  c.plan(1);
+  const app = mp.newBuilder({});
+  const url = app.url`/api/endpoint`({});
+  const url2 = app.url`/api/endpoint`({});
+  class Class {
+    @url<protocol.SimpleEndpoint>({})({
+      method: "GET",
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
+      state: {},
+    })
+    endpoint() {
+      return "simpleResponseBody" as const;
+    }
+
+    @url2<protocol.SimpleEndpoint>({})({
+      method: "GET",
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
+      state: {},
+    })
+    endpoint2() {
+      return "simpleResponseBody" as const;
+    }
+  }
+  c.throws(
+    () => {
+      app.createEndpoints({}, new Class());
+    },
+    {
+      instanceOf: Error,
+      message: "Only one URL decorator should be used for one class (0 and 1).",
+    },
+  );
+});
+
+test("Verify that using same protocol interface twice in different class a different url builders produces meaningful error", (c) => {
+  c.plan(1);
+  const app = mp.newBuilder({});
+  const url = app.url`/api/endpoint`({});
+  class Class1 {
+    @url<protocol.SimpleEndpoint>({})({
+      method: "GET",
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
+      state: {},
+    })
+    endpoint() {
+      return "simpleResponseBody" as const;
+    }
+  }
+
+  const url2 = app.url`/api/endpoint`({});
+  class Class2 {
+    @url2<protocol.SimpleEndpoint>({})({
+      method: "GET",
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
+      state: {},
+    })
+    endpoint() {
+      return "simpleResponseBody" as const;
+    }
+  }
+  c.throws(
+    () => {
+      app.createEndpoints({}, new Class1(), new Class2());
+    },
+    {
+      instanceOf: Error,
+      message:
+        'Endpoint was specified for duplicate method "GET" within URL pattern [/api/endpoint].',
     },
   );
 });
