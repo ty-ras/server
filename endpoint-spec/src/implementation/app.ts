@@ -346,7 +346,7 @@ interface InternalStateForURL<
     >;
   };
   urlValidatorsAndMD: URLParameterValidatorsAndMD<TValidatorHKT>;
-  patternSpec: MutableURLPathPatternInfo;
+  patternSpec: md.URLPathPatternInfo;
 }
 
 interface InternalStateForEndpointMethod<
@@ -445,7 +445,6 @@ const createEndpoints = <
     curPrefix: string,
     args: ReadonlyArray<api.EndpointCreationArg>,
   ): void {
-    console.log("DEBUG", curPrefix, urlStates, epURLStates, args);
     args.forEach((arg) => {
       if (Array.isArray(arg)) {
         // This is multiple of arguments
@@ -480,8 +479,12 @@ const createEndpoints = <
         "The given class or instance was not augmented at all, or was instance of class with static methods, or was augmented with decorators from another application.",
       );
     }
-    const [urlState] = matchingEPInfos[0];
-    const urlKey = `[${curPrefix}]${urlState.patternSpec
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [{ patternSpec, specsAndMetadatas: _, ...urlState }] =
+      matchingEPInfos[0];
+    const urlKey = `${
+      curPrefix.length > 0 ? `[${curPrefix}]` : curPrefix
+    }${patternSpec
       .map((fragmentOrParameter) =>
         typeof fragmentOrParameter === "string"
           ? `[${fragmentOrParameter}]`
@@ -494,7 +497,8 @@ const createEndpoints = <
         ...urlState,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         specsAndMetadatas: {} as any,
-        patternSpec: getActualPatternSpec(curPrefix, urlState.patternSpec),
+        // Don't modify original pattern spec info to enable re-using createEndpoints method.
+        patternSpec: getActualPatternSpec(curPrefix, [...patternSpec]),
       };
       epURLStates[urlKey] = epURLState;
     }
@@ -657,9 +661,9 @@ const getActualPatternSpec = (
 ): MutableURLPathPatternInfo => {
   // Do anything only if prefix is something else than empty string
   if (prefix.length > 0) {
-    // Is the first (if any) element string literal?
+    // Is the first (if any) element non-empty string literal?
     const first = patternSpec[0];
-    if (typeof first === "string") {
+    if (typeof first === "string" && first.length > 0) {
       // Modify the first element
       patternSpec[0] = `${prefix}${first}`;
     } else {

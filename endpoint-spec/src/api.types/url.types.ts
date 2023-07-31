@@ -292,7 +292,7 @@ export type GetMethodArgsGeneric<
  */
 export type GetMethodArgs<
   TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, any>,
-  TApp extends ApplicationEndpointsForURL<
+  TEndpointsForURL extends ApplicationEndpointsForURL<
     any,
     any,
     any,
@@ -308,7 +308,7 @@ export type GetMethodArgs<
       : undefined
   >,
   TStateSpec,
-> = TApp extends ApplicationEndpointsForURL<
+> = TEndpointsForURL extends ApplicationEndpointsForURL<
   any,
   any,
   infer TStateHKT,

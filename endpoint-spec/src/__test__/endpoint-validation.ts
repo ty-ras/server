@@ -13,6 +13,19 @@ export const validateEndpoint = async (
   endpoint: ep.AppEndpoint<mp.ServerContext, mp.DefaultStateInfo>,
   getInstanceData: () => ReadonlyArray<unknown>,
   prefix = "/api/something",
+  processFlattenedHandlerInfo: (info: Array<unknown>) => Array<unknown> = (
+    info,
+  ) => info,
+  expectedOutput: unknown = {
+    contentType: "text/plain",
+    headers: {
+      responseHeader: "resHeader",
+    },
+    output: JSON.stringify("responseBody"),
+  },
+  processHandlerArgs: (
+    args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext>,
+  ) => ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> = (args) => args,
 ) => {
   c.truthy(endpoint, "Given endpoint must be of given type");
 
@@ -40,41 +53,39 @@ export const validateEndpoint = async (
     flattenedHandlerInfo.sort(([propNameX], [propNameY]) =>
       propNameX.localeCompare(propNameY),
     );
-    c.deepEqual(flattenedHandlerInfo, [
-      ["bodyValidator", functionPlaceHolder],
-      ["queryValidator.queryParam", functionPlaceHolder],
-      ["stateInformation.stateInfo.0", "userId"],
-      ["stateInformation.validator", functionPlaceHolder],
-      ["urlValidator.groupNames.urlParam", "urlParam"],
-      ["urlValidator.validators.urlParam", functionPlaceHolder],
-    ]);
+    c.deepEqual(
+      flattenedHandlerInfo,
+      processFlattenedHandlerInfo([
+        ["bodyValidator", functionPlaceHolder],
+        ["queryValidator.queryParam", functionPlaceHolder],
+        ["stateInformation.stateInfo.0", "userId"],
+        ["stateInformation.validator", functionPlaceHolder],
+        ["urlValidator.groupNames.urlParam", "urlParam"],
+        ["urlValidator.validators.urlParam", functionPlaceHolder],
+      ]),
+    );
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> = {
-      context: { req: "req", res: "res" },
-      state: {
-        userId: "userId",
-      },
-      url: {
-        urlParam: "urlParam",
-      },
-      query: {
-        queryParam: "queryParam",
-      },
-      body: "requestBody",
-      headers: {
-        thisShould: "notBeInResult",
-      },
-    };
+    const args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> =
+      processHandlerArgs({
+        context: { req: "req", res: "res" },
+        state: {
+          userId: "userId",
+        },
+        url: {
+          urlParam: "urlParam",
+        },
+        query: {
+          queryParam: "queryParam",
+        },
+        body: "requestBody",
+        headers: {
+          thisShould: "notBeInResult",
+        },
+      });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const result = await handler(args);
     if (result.error === "none") {
-      c.deepEqual(result.data, {
-        contentType: "text/plain",
-        headers: {
-          responseHeader: "resHeader",
-        },
-        output: JSON.stringify("responseBody"),
-      });
+      c.deepEqual(result.data, expectedOutput);
       c.deepEqual(getInstanceData(), [data.omit(args, "headers")]);
     } else {
       c.fail("Handler did not return validated response body.");
