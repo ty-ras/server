@@ -2,6 +2,7 @@
  * @file This types-only file contains type definitions related to various events that can occur when the server processes incoming HTTP request.
  */
 
+import type * as protocol from "@ty-ras/protocol";
 import type * as data from "@ty-ras/data";
 import type * as dataBE from "@ty-ras/data-backend";
 
@@ -50,8 +51,8 @@ export interface VirtualRequestProcessingEvents<TContext, TState> {
    * This event occurs when incoming HTTP request contains URL which matches some endpoint handler, but that endpoint handler does not support the HTTP method of the request.
    */
   onInvalidMethod: EventArgumentsWithoutState<TContext> & {
-    allowedMethods: ReadonlyArray<data.HttpMethod>;
-    allowedMethodsSentToClient: ReadonlyArray<data.HttpMethod>;
+    allowedMethods: ReadonlyArray<protocol.HttpMethod>;
+    allowedMethodsSentToClient: ReadonlyArray<protocol.HttpMethod>;
   };
   /**
    * This event occurs when the state constructed by the callback given to server fails the validation of the state required by endpoint.

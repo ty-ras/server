@@ -3,20 +3,20 @@
  */
 
 import type * as ep from "@ty-ras/endpoint";
+import type * as protocol from "@ty-ras/protocol";
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as server from "./utils";
 import type * as evt from "./events.types";
+import squashEndpoints from "./endpoint-squash";
 
 import * as url from "node:url";
 import * as stream from "node:stream";
 
 /**
  * Creates a callback which will asynchronously process each incoming HTTP request, to extract the endpoint based on URL path and method, validate all necessary inputs, invoke the endpoint, validate all necesary outputs, and write the result to HTTP response.
- * This is the core functionality used by all other TyRAS server implementations.
- * @param param0 The {@link ep.FinalizedAppEndpoint} to serve.
- * @param param0.url Privately deconstructed variable.
- * @param param0.handler Privately deconstructed variable.
+ * This function is used by other TyRAS plugins and usually not directly by client code.
+ * @param endpoints All the {@link ep.AppEndpoint}s to use in returned callback.
  * @param callbacks The {@see ServerFlowCallbacks} necessary to actually implement the returned callback.
  * @param events The {@link evt.ServerEventHandler} to invoke on events.
  * @returns The callback which can be used to asynchronously process incoming HTTP request, and write to outgoing HTTP response.
@@ -28,10 +28,11 @@ export const createTypicalServerFlow = <
 >(
   // Notice - endpoints don't have GetContext<TContext> as their context!
   // The extra fields of GetContext<TContext> are meant to be used only by event handler!
-  { url: regExp, handler }: ep.FinalizedAppEndpoint<TContext, TStateInfo>,
+  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo>>,
   callbacks: ServerFlowCallbacks<TContext, TStateInfo>,
   events: evt.ServerEventHandler<GetContext<TContext>, TState> | undefined,
 ): ((context: TContext) => Promise<void>) => {
+  const { handler, url: regExp } = squashEndpoints(endpoints);
   const cb: ServerFlowCallbacks<GetContext<TContext>, TStateInfo> = {
     ...callbacks,
     setStatusCode: (...params) => {
@@ -67,7 +68,7 @@ export const createTypicalServerFlow = <
       );
       if (maybeEventArgs) {
         // We have a match -> get the handler that will handle our match
-        const method = cb.getMethod(ctx) as data.HttpMethod;
+        const method = cb.getMethod(ctx) as protocol.HttpMethod;
         let foundHandler = handler(method, maybeEventArgs.groups);
         const sendBody = method !== "HEAD";
         if (

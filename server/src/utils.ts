@@ -2,6 +2,7 @@
  * @file This file contains utility code internal to this library.
  */
 
+import type * as protocol from "@ty-ras/protocol";
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import type * as ep from "@ty-ras/endpoint";
@@ -61,12 +62,12 @@ export const invokeInvalidMethodEvent = async <TContext, TStateInfo>(
       ) => Promise<boolean>)
     | undefined,
 ) => {
-  let allowedMethodsFiltered: Array<data.HttpMethod> | undefined;
+  let allowedMethodsFiltered: Array<protocol.HttpMethod> | undefined;
   if (validateStateInfo) {
     // Group methods by state infos
     const methodsGroupedByStateInfos: Array<{
       stateInformation: ep.EndpointStateInformation<TStateInfo, unknown>;
-      methods: Array<data.HttpMethod>;
+      methods: Array<protocol.HttpMethod>;
     }> = [];
     allowedMethodsInfo.forEach(({ method, stateInformation }) => {
       const idx = methodsGroupedByStateInfos.findIndex((s) =>
@@ -172,10 +173,9 @@ export const checkURLParametersForHandler = <TContext, TState>(
   // This is not really that complex...
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-  let url: Record<string, unknown> | undefined;
+  const url: protocol.TURLDataBase = {};
   let proceedToInvokeHandler = true;
   if (urlValidation) {
-    url = {};
     const errors: Record<string, Array<data.DataValidatorResultError>> = {};
     for (const [parameterName, validator] of Object.entries(
       urlValidation.validators,
@@ -226,7 +226,7 @@ export const checkQueryForHandler = <TContext, TState>(
   queryValidation: ep.AppEndpointHandler<TContext, never>["queryValidator"],
   queryObject: Record<string, data.QueryValue>,
 ) => {
-  let query: dataBE.RuntimeAnyQuery = {};
+  let query: protocol.TQueryDataBase = {};
   let proceedToInvokeHandler = true;
   if (queryValidation) {
     let errors: Record<string, data.DataValidatorResultError>;
@@ -263,7 +263,7 @@ export const checkHeadersForHandler = <TContext, TState>(
     headerName: string,
   ) => string | ReadonlyArray<string> | undefined,
 ) => {
-  let headers: dataBE.RuntimeAnyHeaders = {};
+  let headers: protocol.TRequestHeadersDataBase = {};
   let proceedToInvokeHandler = true;
   if (headersValidation) {
     let errors: Record<string, data.DataValidatorResultError>;
