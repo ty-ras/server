@@ -5,6 +5,7 @@
 import type { ExecutionContext } from "ava";
 import * as ep from "@ty-ras/endpoint";
 import * as data from "@ty-ras/data";
+import type * as protocol from "@ty-ras/protocol";
 import type * as mp from "./missing-parts";
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -26,6 +27,7 @@ export const validateEndpoint = async (
   processHandlerArgs: (
     args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext>,
   ) => ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> = (args) => args,
+  method: protocol.HttpMethod = "GET",
 ) => {
   c.truthy(endpoint, "Given endpoint must be of given type");
 
@@ -35,7 +37,7 @@ export const validateEndpoint = async (
     `${ep.escapeRegExp(prefix).replaceAll("/", "\\/")}\\/(?<urlParam>[^/]+)`,
   );
   const methodOK = handler(
-    "GET",
+    method,
     // 2nd argument is not used by these endpoints, only by the ones produced by endpoint-prefix library
     {},
   );

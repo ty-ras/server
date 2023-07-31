@@ -263,13 +263,14 @@ const newBuilderGenericImpl = <
           };
           urlState.specsAndMetadatas[spec.method] = currentEndpointState;
           context.addInitializer(function () {
+            const boundMethod = method.bind(this);
             currentEndpointState.runtime.instances.push({
               instance: this,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-              boundMethod: processMethod({
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
+              boundMethod: (processMethod({
                 spec,
-                boundMethod: method.bind(this),
-              } as any),
+                boundMethod,
+              } as any) ?? boundMethod) as any,
             });
           });
         };

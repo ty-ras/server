@@ -138,11 +138,11 @@ export const responseHeaders = <
 
 export const CONTENT_TYPE = "text/plain";
 
-export const DEFAULT_AUTHENTICATED_STATE = Object.freeze({
+const DEFAULT_AUTHENTICATED_STATE = Object.freeze({
   userId: "userId",
 } as const);
 
-export const DEFAULT_NOT_AUTHENTICATED_STATE = Object.freeze({} as const);
+const DEFAULT_NOT_AUTHENTICATED_STATE = Object.freeze({} as const);
 
 /**
  * This is validator to be used only for tests.
@@ -178,6 +178,10 @@ export type DefaultStateHKT = StateHKT<
     typeof DEFAULT_NOT_AUTHENTICATED_STATE
   >
 >;
+
+export type AuthenticatedStateSpec = {
+  [P in keyof typeof DEFAULT_AUTHENTICATED_STATE]: true;
+};
 
 export type StateHKT<TFullStateValidationInfo extends TStateValidationBase> =
   StateHKTGeneric<ValidatorHKT, TFullStateValidationInfo>;

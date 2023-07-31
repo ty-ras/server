@@ -6,7 +6,11 @@ import test from "ava";
 import * as protocol from "./protocol";
 import * as mp from "./missing-parts";
 
-/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
+/* eslint-disable
+  @typescript-eslint/no-unsafe-argument,
+  @typescript-eslint/no-explicit-any,
+  @typescript-eslint/no-unsafe-return
+*/
 
 test("Verify that using same protocol interface twice in a single class produces meaningful error", (c) => {
   c.plan(1);
@@ -150,4 +154,31 @@ test("Verify that using same protocol interface twice in different class a diffe
         'Endpoint was specified for duplicate method "GET" within URL pattern [/api/endpoint].',
     },
   );
+});
+
+test("Verify that returning non-conforming response body in endpoint method is returned", (c) => {
+  c.plan(1);
+  const app = mp.newBuilder({});
+  const url = app.url`/api/endpoint`({});
+  class Class {
+    @url<protocol.SimpleEndpoint>({})({
+      method: "GET",
+      responseBody: mp.responseBody(protocol.simpleResponseBody),
+      state: {},
+    })
+    endpoint() {
+      return "invalidResponseBody" as any;
+    }
+  }
+
+  const handler = app
+    .createEndpoints({}, new Class())
+    .endpoints[0].getRegExpAndHandler("")
+    .handler("GET", {});
+  if (handler.found === "handler") {
+    c.like(handler.handler.handler({} as any), {
+      error: "error",
+      errorInfo: "invalidResponseBody",
+    });
+  }
 });

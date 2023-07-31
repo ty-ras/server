@@ -260,6 +260,7 @@ const getOutputFromMethodReturnValue = (
   if (validatorResult.error === "none") {
     if (responseInfo.headers) {
       if (!headers) {
+        /* c8 ignore next 3 */
         outputResult = data.exceptionAsValidationError(
           "Internal error: response headers returned when no headers expected.",
         );

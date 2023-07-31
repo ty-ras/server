@@ -429,7 +429,7 @@ export type EndpointMethodProcessor<
       url.GetMethodReturnType<TProtocolSpec>
     >;
   },
-) => url.MethodForEndpoint<
+) => void | url.MethodForEndpoint<
   url.GetMethodArgsGeneric<
     TStateHKT,
     TServerContext,
