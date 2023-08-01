@@ -9,7 +9,6 @@ This all is done in such way that it does not make development tedious or boring
 
 This particular repository contains generic HTTP server related libraries, and is designed to be consumed by other TyRAS libraries:
 - [endpoint](./endpoint) library exposes `AppEndpoint` interface to represent an endpoint in HTTP REST API to be handled by HTTP server,
-- [endpoint-prefix](./endpoint-prefix) library adds ability to group several `AppEndpoint`s behind a single URL prefix,
-- [endpoint-spec](./endpoint-spec) library adds typesafe and easy-to-use builder functionality to holistically construct REST API by definint `AppEndpoint`s,
+- [endpoint-spec](./endpoint-spec) library adds typesafe and easy-to-use builder functionality to holistically construct REST API by defining `AppEndpoint`s using [TS5/ES decorators](https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#decorators),
 - [server](./server) library adds some common concepts to be used by various TyRAS libaries implementing serving `AppEndpoint`s utilizing some specific HTTP server, and
 - [server-test-support](./server-test-support) library adds common test suite to be run by TyRAS libraries adding `AppEndpoint` support to various HTTP server frameworks.
