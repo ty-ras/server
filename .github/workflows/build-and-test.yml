@@ -37,7 +37,6 @@ jobs:
       matrix:
         dir:
           - endpoint
-          - endpoint-prefix
           - endpoint-spec
           - server
           - server-test-support
