@@ -73,6 +73,7 @@
     "test:run": "c8 --temp-directory /tmp --reporter text ava"
   },
   "resolutions": {
-    "dependency-tree": "10.0.9"
+    "dependency-tree": "10.0.9",
+    "precinct": "11.0.5"
   }
 }
