@@ -1,6 +1,8 @@
 /**
  * @file This file contains code related to handling HTTP server CORS functionality using {@link evt.EventHandler}.
  */
+
+import type * as protocol from "@ty-ras/protocol";
 import type * as data from "@ty-ras/data";
 import type * as evt from "./events.types";
 import type * as flow from "./flow";
@@ -84,7 +86,7 @@ export interface CORSOptions {
    */
   allowMethods?:
     | true
-    | ReadonlyMaybeArrayData<data.HttpMethod>
+    | ReadonlyMaybeArrayData<protocol.HttpMethod>
     | CallbackWithRequestHeader<MaybeArrayData>;
 
   /**

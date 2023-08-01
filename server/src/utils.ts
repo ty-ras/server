@@ -29,6 +29,7 @@ export const checkURLPathNameForHandler = <TContext>(
 ): evt.EventArgumentsWithoutState<TContext> | undefined => {
   const pathName = (url instanceof u.URL ? url : new u.URL(url)).pathname;
   const groups = regExp.exec(pathName)?.groups;
+  // console.log("LEL", regExp, pathName, groups);
   if (!groups) {
     events?.("onInvalidUrl", {
       ctx,
@@ -173,9 +174,10 @@ export const checkURLParametersForHandler = <TContext, TState>(
   // This is not really that complex...
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-  const url: protocol.TURLDataBase = {};
+  let url: protocol.TURLDataBase | undefined;
   let proceedToInvokeHandler = true;
   if (urlValidation) {
+    url = {};
     const errors: Record<string, Array<data.DataValidatorResultError>> = {};
     for (const [parameterName, validator] of Object.entries(
       urlValidation.validators,

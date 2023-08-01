@@ -48,7 +48,7 @@ export const createTypicalServerFlow = <
   };
   // eslint-disable-next-line sonarjs/cognitive-complexity
   return async (_ctx) => {
-    // TODO refactor this to use functional constructs once the issue in ty-ras/data repository is done.
+    // TODO Idea: refactor this to use functional constructs? I rather not add fp-ts as dependency though...
     const ctx: GetContext<TContext> = {
       ..._ctx,
       skipSendingBody: false,
@@ -146,7 +146,9 @@ export const createTypicalServerFlow = <
                       {
                         context: eventArgs.ctx,
                         state: eventArgs.state,
-                        url,
+                        url: url as ep.AppEndpointHandlerFunctionArgs<
+                          GetContext<TContext>
+                        >["url"],
                         headers,
                         body,
                         query,

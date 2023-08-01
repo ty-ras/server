@@ -3,7 +3,8 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment */
-import type * as flow from "../flow";
+import * as flow from "../flow";
+import type * as evt from "../events.types";
 import * as stream from "node:stream";
 import * as url from "node:url";
 import * as data from "@ty-ras/data";
@@ -173,3 +174,22 @@ export const createStateValidator = (): ep.EndpointStateInformation<
     data: undefined,
   }),
 });
+
+export const createTypicalServerFlow = <
+  TContext extends flow.TContextBase,
+  TStateInfo,
+  TState,
+>(
+  finalized: ep.FinalizedAppEndpoint<TContext, TStateInfo>,
+  callbacks: flow.ServerFlowCallbacks<TContext, TStateInfo>,
+  events: evt.ServerEventHandler<flow.GetContext<TContext>, TState> | undefined,
+) =>
+  flow.createTypicalServerFlow(
+    [
+      {
+        getRegExpAndHandler: () => finalized,
+      },
+    ],
+    callbacks,
+    events,
+  );

@@ -5,7 +5,6 @@
 /* eslint-disable sonarjs/no-duplicate-string, @typescript-eslint/no-explicit-any */
 
 import test, { ExecutionContext } from "ava";
-import * as spec from "../flow";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
 import * as dataBE from "@ty-ras/data-backend";
@@ -14,9 +13,9 @@ import * as stream from "node:stream";
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: (method, groups) => ({
         found: "handler",
         handler: {
@@ -100,7 +99,7 @@ test("Validate typicalServerFlow works with special values", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } =
     flowUtil.createTrackingCallback("undefined");
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: (method, groups) => ({
@@ -163,9 +162,9 @@ test("Validate typicalServerFlow works with special values", async (t) => {
 test("Validate typicalServerFlow works with special values 2", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback("array");
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: (method, groups) => ({
         found: "handler",
         handler: {
@@ -226,7 +225,7 @@ test("Validate typicalServerFlow works with special values 2", async (t) => {
 test("Validate typicalServerFlow works with invalid URL", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: /no-named-groups-will-match/,
       handler: () => {
@@ -253,9 +252,9 @@ test("Validate typicalServerFlow works with invalid URL", async (t) => {
 test("Validate typicalServerFlow works with invalid method", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "invalid-method",
         allowedMethods: [
@@ -299,9 +298,9 @@ test("Validate typicalServerFlow works with invalid method", async (t) => {
 test("Validate typicalServerFlow works with invalid state", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -354,9 +353,9 @@ test("Validate typicalServerFlow works with invalid state", async (t) => {
 test("Validate typicalServerFlow works with invalid state and custom error", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -409,9 +408,9 @@ test("Validate typicalServerFlow works with invalid state and custom error", asy
 test("Validate typicalServerFlow works with invalid URL parameters", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -466,9 +465,9 @@ test("Validate typicalServerFlow works with invalid URL parameters", async (t) =
 test("Validate typicalServerFlow works with invalid query parameters", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -522,9 +521,9 @@ test("Validate typicalServerFlow works with invalid query parameters", async (t)
 test("Validate typicalServerFlow works with invalid headers", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -583,9 +582,9 @@ test("Validate typicalServerFlow works with invalid headers", async (t) => {
 test("Validate typicalServerFlow works with invalid body", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -648,9 +647,9 @@ test("Validate typicalServerFlow works with invalid body", async (t) => {
 test("Validate typicalServerFlow works with invalid output", async (t) => {
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -711,8 +710,8 @@ test("Validate typicalServerFlow works with throwing callback", async (t) => {
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
   const { seenEvents, emitter } = evtUtil.createTrackingEvents();
   const thrownError = new ThrownError();
-  const regExp = /(?<group>path)/;
-  await spec.createTypicalServerFlow(
+  const regExp = /(?<group>\/path)/;
+  await flowUtil.createTypicalServerFlow(
     {
       url: regExp,
       handler: () => {
@@ -744,7 +743,7 @@ test("Validate typicalServerFlow works with throwing callback", async (t) => {
       eventName: "onException",
       args: {
         ctx: flowUtil.seenContext,
-        regExp,
+        regExp: /((?<e_0>^(?<group>\/path)$))/,
         error: thrownError,
       },
     },
@@ -755,9 +754,9 @@ test("Validate typicalServerFlow works with throwing and throwing event emitter"
   t.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
   const thrownError = new ThrownError();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => {
         throw thrownError;
       },
@@ -789,9 +788,9 @@ test("Validate typicalServerFlow works with throwing and throwing event emitter"
 test("Validate that setting skipSettingStatusCode and skipSendingBody works", async (c) => {
   c.plan(2);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => {
         throw new Error("Just to simplify endpoint code");
       },
@@ -815,9 +814,9 @@ test("Validate that setting skipSettingStatusCode and skipSendingBody works", as
     // Notice - setStatusCode will not be called!
   ]);
   seenCallbacks.length = 0;
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -888,9 +887,9 @@ const validateServerFlowForHEADMethod = async (
     contentTypeSuffix ? `; charset=${contentTypeSuffix}` : ""
   }`;
   const stateInformation = flowUtil.createStateValidator();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: (method) => {
         seenMethods.push(method);
         return method === "GET"
@@ -1063,9 +1062,9 @@ test("Validate typicalServerFlow handles HEAD method correctly when no GET metho
     getMethod: () => "HEAD",
   });
   const seenMethods: Array<string> = [];
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: (method) => {
         seenMethods.push(method);
         return {
@@ -1119,9 +1118,9 @@ test("Validate typicalServerFlow sends 404 when none of potential endpoint state
   c.plan(2);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
   const seenMethods: Array<string> = [];
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: (method) => {
         seenMethods.push(method);
         return {
@@ -1178,9 +1177,9 @@ test("Validate typicalServerFlow works with thrown HTTPError", async (c) => {
   c.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
   const error = new dataBE.HTTPError(401, "body");
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -1242,9 +1241,9 @@ test("Validate typicalServerFlow works with thrown HTTPError", async (c) => {
 test("Validate typicalServerFlow works with returned HTTPProtocolError", async (c) => {
   c.plan(1);
   const { seenCallbacks, callbacks } = flowUtil.createTrackingCallback();
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => ({
         found: "handler",
         handler: {
@@ -1314,9 +1313,9 @@ test("Validate typicalServerFlow works when sendBody throws inside error handler
       throw new Error("This should be catched");
     },
   });
-  await spec.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
-      url: /(?<group>path)/,
+      url: /(?<group>\/path)/,
       handler: () => {
         throw error;
       },

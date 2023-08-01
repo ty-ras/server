@@ -6,7 +6,7 @@
 import test from "ava";
 import * as spec from "../cors";
 import * as flowUtil from "./flow";
-import * as flow from "../flow";
+import type * as protocol from "@ty-ras/protocol";
 import type * as data from "@ty-ras/data";
 
 test("Validate that CORS callbacks intercept preflight call correctly", async (c) => {
@@ -19,7 +19,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
     allowMethods: true,
   });
   const stateInformation = flowUtil.createStateValidator();
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: (method) => {
@@ -95,7 +95,7 @@ test("Validate that CORS callbacks intercept preflight call correctly", async (c
 
 test("Validate that CORS callbacks intercept normal call correctly", async (c) => {
   c.plan(1);
-  const method: data.HttpMethod = "GET";
+  const method: protocol.HttpMethod = "GET";
   const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
     getMethod: () => method,
   });
@@ -103,7 +103,7 @@ test("Validate that CORS callbacks intercept normal call correctly", async (c) =
     allowOrigin: "*",
   });
   const stateInformation = flowUtil.createStateValidator();
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: (givenMethod) => {
@@ -187,7 +187,7 @@ test("Validate that CORS callbacks invoke custom origin callback", async (c) => 
       return "custom-origin";
     },
   });
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
@@ -266,7 +266,7 @@ test("Validate that CORS callbacks invoke custom allow headers callback", async 
       return "header1";
     },
   });
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
@@ -341,7 +341,7 @@ test("Validate that CORS callbacks check for given callback before proceeding", 
     // Filter which always just returns false
     () => false,
   );
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
@@ -393,7 +393,7 @@ test("Validate that CORS callbacks don't mistake normal method mismatch for pref
   const handler = spec.createCORSHandlerGeneric(callbacks, {
     allowOrigin: "*",
   });
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: () => ({
@@ -465,7 +465,7 @@ test("Validate that CORS callbacks work for all static options", async (c) => {
     exposeHeaders: ["header1"],
     maxAge: 1000,
   });
-  await flow.createTypicalServerFlow(
+  await flowUtil.createTypicalServerFlow(
     {
       url: flowUtil.dummyURLRegexp,
       handler: () => ({

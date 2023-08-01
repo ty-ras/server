@@ -7,4 +7,4 @@ export type * from "./state.types";
 export * from "./flow";
 export * from "./server";
 export * from "./cors";
-// Don't export internal utils.ts
+// Don't export internal utils.ts or endpoint-squash.ts
