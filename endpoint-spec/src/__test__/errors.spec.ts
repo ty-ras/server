@@ -156,7 +156,7 @@ test("Verify that using same protocol interface twice in different class a diffe
   );
 });
 
-test("Verify that returning non-conforming response body in endpoint method is returned", (c) => {
+test("Verify that returning non-conforming response body in endpoint method is returned", async (c) => {
   c.plan(1);
   const app = mp.newBuilder({});
   const url = app.url`/api/endpoint`({});
@@ -176,7 +176,7 @@ test("Verify that returning non-conforming response body in endpoint method is r
     .endpoints[0].getRegExpAndHandler("")
     .handler("GET", {});
   if (handler.found === "handler") {
-    c.like(handler.handler.handler({} as any), {
+    c.like(await handler.handler.handler({} as any), {
       error: "error",
       errorInfo: "invalidResponseBody",
     });

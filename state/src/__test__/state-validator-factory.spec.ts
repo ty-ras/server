@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /**
  * @file This file contains unit tests for functionality in file `../state-validator-factory.ts`.
  */
+
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
 
 import test from "ava";
 import * as spec from "../state-validator-factory";
