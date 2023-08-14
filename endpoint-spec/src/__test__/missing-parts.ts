@@ -23,7 +23,7 @@ import * as util from "node:util";
  */
 export function newBuilder(
   defaultReadRequestBody: dataBE.ReadBody,
-): spec.ApplicationBuilder<
+): spec.ApplicationBuilderGeneric<
   EncodedHKT,
   ValidatorHKT,
   DefaultStateHKT,

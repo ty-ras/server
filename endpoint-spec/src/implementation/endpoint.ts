@@ -192,10 +192,10 @@ const createAppEndpointHandlerGetter =
                 }
               : undefined,
           }),
-          handler: (args) =>
+          handler: async (args) =>
             getOutputFromMethodReturnValue(
               responseInfo,
-              invokeBoundMethod(
+              await invokeBoundMethod(
                 !!urlValidators,
                 boundMethod,
                 handlerInfo,
@@ -218,7 +218,7 @@ const createAppEndpointHandlerGetter =
     }
   };
 
-const invokeBoundMethod = <TServerContext>(
+const invokeBoundMethod = async <TServerContext>(
   hasURL: boolean,
   boundMethod: Function,
   handlerInfo: InternalStateForEndpointMethodRuntime<never>["handlerInfo"],
@@ -229,13 +229,15 @@ const invokeBoundMethod = <TServerContext>(
     url,
     ...args
   }: ep.AppEndpointHandlerFunctionArgs<TServerContext>,
-): api.MethodReturnTypeFull<{
-  method: protocol.HttpMethod;
-  responseBody: unknown;
-  responseHeaders: protocol.TResponseHeadersDataBase;
-}> => {
+): Promise<
+  api.MethodReturnTypeFull<{
+    method: protocol.HttpMethod;
+    responseBody: unknown;
+    responseHeaders: protocol.TResponseHeadersDataBase;
+  }>
+> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const methodResult = boundMethod(
+  const methodResult = await boundMethod(
     data.stripUndefineds({
       context,
       state,
@@ -251,7 +253,7 @@ const invokeBoundMethod = <TServerContext>(
 
 const getOutputFromMethodReturnValue = (
   responseInfo: InternalStateForEndpointMethodRuntimeResponseInfo,
-  { body, headers }: ReturnType<typeof invokeBoundMethod>,
+  { body, headers }: Awaited<ReturnType<typeof invokeBoundMethod>>,
 ): ep.AppEndpointHandlerFunctionReturn => {
   const validatorResult = responseInfo.body(body);
   let outputResult:

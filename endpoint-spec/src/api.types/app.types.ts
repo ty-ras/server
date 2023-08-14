@@ -23,7 +23,7 @@ import type * as url from "./url.types";
  * - change additional endpoint specification data via {@link changeEndpointSpecAdditionalData} function.
  * @see url.ApplicationEndpointsForURLFactory
  */
-export interface ApplicationBuilder<
+export interface ApplicationBuilderGeneric<
   TProtoEncodedHKT extends protocol.EncodedHKTBase,
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
@@ -146,7 +146,7 @@ export interface ApplicationBuilder<
       TAllResponseBodyContentTypes,
       TNewEndpointSpecAdditionalDataHKT
     >,
-  ) => ApplicationBuilder<
+  ) => ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
@@ -203,7 +203,7 @@ export interface ResetMetadataProviders<
    * @param this The `this` parameter is `void` to prevent using "this" in implementations.
    * @returns A new {@link ApplicationBuilder} with no metadata providers.
    */
-  (this: void): ApplicationBuilder<
+  (this: void): ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
@@ -233,7 +233,7 @@ export interface ResetMetadataProviders<
         TNewMetadataProviders[P]
       >;
     },
-  ): ApplicationBuilder<
+  ): ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
@@ -319,7 +319,7 @@ export type EndpointsCreationResult<
  * ```
  */
 export type StateSpecBaseOfAppBuilder<
-  TApp extends ApplicationBuilder<
+  TApp extends ApplicationBuilderGeneric<
     any,
     any,
     any,
@@ -331,7 +331,7 @@ export type StateSpecBaseOfAppBuilder<
     any,
     any
   >,
-> = TApp extends ApplicationBuilder<
+> = TApp extends ApplicationBuilderGeneric<
   any,
   any,
   infer TStateHKT,

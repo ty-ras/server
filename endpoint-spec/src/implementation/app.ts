@@ -50,7 +50,7 @@ export const newBuilderGeneric = <
       TMetadataProviders[P]
     >;
   },
-): api.ApplicationBuilder<
+): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
@@ -105,7 +105,7 @@ const newBuilderGenericImpl = <
     TAllResponseBodyContentTypes,
     TEndpointSpecAdditionalDataHKT
   >,
-): api.ApplicationBuilder<
+): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
@@ -128,7 +128,7 @@ const newBuilderGenericImpl = <
     >
   > = [];
   // Define resetMetadataProviders separately, as defining it inline causes problems with function overload having different argument count.
-  const resetMetadataProviders: api.ApplicationBuilder<
+  const resetMetadataProviders: api.ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
