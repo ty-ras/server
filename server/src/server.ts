@@ -1,33 +1,8 @@
 /**
  * @file This file contains utility methods to patch asynchronous functionality not present in Node.
  */
+
 import * as net from "node:net";
-
-/**
- * The helper function to listen to given {@link net.Server} asynchronously.
- * @param server The {@link net.Server} to listen to.
- * @param host The hostname as string.
- * @param port The port as number.
- * @param backlog The backlog parameter, if any.
- * @returns Asynchronously nothing.
- */
-export function listenAsyncGeneric(
-  server: net.Server,
-  host: string,
-  port: number,
-  backlog?: number,
-): Promise<void>;
-
-/**
- *The helper function to listen to given {@link net.Server} asynchronously.
- * @param server The {@link net.Server} to listen to.
- * @param options The options for listening.
- * @returns Asynchronously nothing.
- */
-export function listenAsyncGeneric(
-  server: net.Server,
-  options: net.ListenOptions,
-): Promise<void>;
 
 /**
  * The helper function to listen to given {@link net.Server} asynchronously.
@@ -40,8 +15,8 @@ export function listenAsyncGeneric(
 export function listenAsyncGeneric(
   server: net.Server,
   hostOrOptions: string | net.ListenOptions,
-  port?: number,
-  backlog?: number,
+  port: number | undefined,
+  backlog: number | undefined,
 ) {
   const options: net.ListenOptions =
     typeof hostOrOptions === "string"
