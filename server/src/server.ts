@@ -11,7 +11,7 @@ import * as net from "node:net";
  * @param backlog The backlog parameter, if any.
  * @returns Asynchronously nothing.
  */
-export function listenAsync(
+export function listenAsyncGeneric(
   server: net.Server,
   host: string,
   port: number,
@@ -24,7 +24,7 @@ export function listenAsync(
  * @param options The options for listening.
  * @returns Asynchronously nothing.
  */
-export function listenAsync(
+export function listenAsyncGeneric(
   server: net.Server,
   options: net.ListenOptions,
 ): Promise<void>;
@@ -37,7 +37,7 @@ export function listenAsync(
  * @param backlog The backlog parameter, if any.
  * @returns Asynchronously nothing.
  */
-export function listenAsync(
+export function listenAsyncGeneric(
   server: net.Server,
   hostOrOptions: string | net.ListenOptions,
   port?: number,
