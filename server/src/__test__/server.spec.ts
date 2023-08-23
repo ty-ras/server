@@ -12,7 +12,7 @@ test("Validate that listenAsync works for host and port combination", async (c) 
   const server = net.createServer(() => {});
   try {
     await c.notThrowsAsync(async () =>
-      spec.listenAsync(server, "localhost", await getPort()),
+      spec.listenAsyncGeneric(server, "localhost", await getPort()),
     );
   } finally {
     server.close();
@@ -24,7 +24,7 @@ test("Validate that listenAsync works for options object", async (c) => {
   const server = net.createServer(() => {});
   try {
     await c.notThrowsAsync(async () =>
-      spec.listenAsync(server, {
+      spec.listenAsyncGeneric(server, {
         host: "localhost",
         port: await getPort(),
       }),
@@ -40,11 +40,11 @@ test("Validate that listenAsync works when error in starting listening", async (
   try {
     const port = await getPort();
     await c.notThrowsAsync(
-      async () => await spec.listenAsync(server, "localhost", port),
+      async () => await spec.listenAsyncGeneric(server, "localhost", port),
     );
     // Listening same host + port on same server should insta-throw
     await c.throwsAsync(
-      async () => await spec.listenAsync(server, "localhost", port),
+      async () => await spec.listenAsyncGeneric(server, "localhost", port),
       {
         instanceOf: Error,
       },
@@ -53,7 +53,7 @@ test("Validate that listenAsync works when error in starting listening", async (
     // Listening same host + port on different server should throw via event
     await c.throwsAsync(
       async () =>
-        await spec.listenAsync(
+        await spec.listenAsyncGeneric(
           net.createServer(() => {}),
           "localhost",
           port,
