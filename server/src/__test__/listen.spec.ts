@@ -3,7 +3,7 @@
  */
 
 import test from "ava";
-import * as spec from "../server";
+import * as spec from "../listen";
 import getPort from "@ava/get-port";
 import * as net from "node:net";
 
