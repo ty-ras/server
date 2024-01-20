@@ -199,18 +199,57 @@ export interface AddEndpointAsInline<
       TProtocolSpec,
       TStateSpec
     >,
-    implementation: MethodForEndpoint<
-      GetMethodArgsGeneric<
-        TStateHKT,
-        TServerContext,
-        TProtocolSpec,
-        TStateSpec
-      >,
-      void,
-      GetMethodReturnType<TProtocolSpec>
+    implementation: InlineEndpointImplementation<
+      TStateHKT,
+      TServerContext,
+      TProtocolSpec,
+      TStateSpec
     >,
-  ): common.EndpointCreationArgLeafSingle;
+  ): InlineEndpointAdditionResult<
+    TStateHKT,
+    TServerContext,
+    TProtocolSpec,
+    TStateSpec
+  >;
 }
+
+/**
+ * This type specializes {@link MethodForEndpoint} for callbacks which are not class methods but plain functions.
+ * @see AddEndpointAsInline
+ */
+export type InlineEndpointImplementation<
+  TStateHKT extends dataBE.StateHKTBase,
+  TServerContext,
+  TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, unknown>,
+  TStateSpec extends dataBE.MaterializeStateSpecBase<TStateHKT>,
+> = MethodForEndpoint<
+  GetMethodArgsGeneric<TStateHKT, TServerContext, TProtocolSpec, TStateSpec>,
+  void,
+  GetMethodReturnType<TProtocolSpec>
+>;
+
+/**
+ * This is return type of {@link AddEndpointAsInline}.
+ * It contains a quality-of-life property to access the implementation provided to {@link AddEndpointAsInline}.
+ * This is very useful e.g. in unit test situations to test the actual implementation.
+ */
+export interface InlineEndpointAdditionResult<
+  TStateHKT extends dataBE.StateHKTBase,
+  TServerContext,
+  TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, unknown>,
+  TStateSpec extends dataBE.MaterializeStateSpecBase<TStateHKT>,
+> extends common.EndpointCreationArgLeafSingle {
+  /**
+   * The value of `implementation` parameter passed to {@link AddEndpointAsInline}, as-is.
+   */
+  implementation: InlineEndpointImplementation<
+    TStateHKT,
+    TServerContext,
+    TProtocolSpec,
+    TStateSpec
+  >;
+}
+
 /**
  * This is function interface to create the decorator for class methods acting as BE endpoints.
  *

@@ -19,7 +19,22 @@ const stateSpec = {
   userId: false,
 } as const satisfies StateSpecBase;
 
-const endpoint = withURL.endpoint<protocol.SomeEndpoint>({})(
+export const implementation: spec.InlineEndpointImplementation<
+  mp.DefaultStateHKT,
+  mp.ServerContext,
+  protocol.SomeEndpoint,
+  typeof stateSpec
+> = (args) => {
+  SEEN_ARGS.push(args);
+  return {
+    body: "responseBody",
+    headers: {
+      responseHeader: "resHeader",
+    },
+  } as const;
+};
+
+export const endpoint = withURL.endpoint<protocol.SomeEndpoint>({})(
   {
     method: "GET",
     responseBody: mp.responseBody(protocol.responseBody),
@@ -38,15 +53,7 @@ const endpoint = withURL.endpoint<protocol.SomeEndpoint>({})(
     requestBody: app.requestBody(protocol.requestBody),
     state: stateSpec,
   },
-  (args) => {
-    SEEN_ARGS.push(args);
-    return {
-      body: "responseBody",
-      headers: {
-        responseHeader: "resHeader",
-      },
-    } as const;
-  },
+  implementation,
 );
 
 export const SEEN_ARGS: Array<
