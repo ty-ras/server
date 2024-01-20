@@ -207,73 +207,76 @@ const newBuilderGenericImpl = <
           patternSpec: Array.from(generateURLPattern(fragments, args)),
         };
         urlStates.push(urlState);
-        return (mdArgs) => (specArg) => (method, context) => {
-          const spec = specArg as api.GetEndpointSpec<
-            TProtoEncodedHKT,
-            TValidatorHKT,
-            string,
-            string,
-            TEndpointSpecAdditionalDataHKT,
-            protocol.ProtocolSpecCore<protocol.HttpMethod, any> &
-              protocol.ProtocolSpecQuery<protocol.TQueryDataBase> &
-              protocol.ProtocolSpecRequestBody<any> &
-              protocol.ProtocolSpecHeaderData<protocol.TRequestHeadersDataBase> &
-              protocol.ProtocolSpecResponseHeaders<protocol.TResponseHeadersDataBase>,
-            any
-          >;
-          if (spec.method in urlState.specsAndMetadatas) {
-            throw new Error(
-              `Can not define different endpoints for same method "${spec.method}".`,
-            );
-          }
 
-          // We have to do this to get typing right
-          // Save current state - the initializer might run only after constuctor, if not static method
-          const currentEndpointState: InternalStateForEndpointMethod<
+        // Implementation for decorators
+        function endpointsForURL<
+          TProtocolSpec extends api.GetProtocolBaseForURLData<
+            api.GetURLData<TValidatorHKT, typeof args>
+          >,
+          TResponseBodyContentType extends TAllResponseBodyContentTypes,
+          TRequestBodyContentType extends TAllRequestBodyContentTypes,
+        >(
+          this: void,
+          mdArgs: api.GetEndpointMetadataArgs<
             TProtoEncodedHKT,
-            TValidatorHKT,
-            TStateHKT,
             TMetadataProviders,
-            InternalRuntimeInfoForClasses
-          > = {
-            metadata: {
-              spec: {
-                method: spec.method,
-                responseBody: spec.responseBody.validatorSpec,
-                query: spec.query?.metadata,
-                requestBody: spec.requestBody?.validatorSpec,
-                requestHeaders: spec.headers?.metadata,
-                responseHeaders: spec.responseHeaders?.metadata,
-                stateInfo: fromStateSpec(spec.state),
-              },
+            api.GetURLData<TValidatorHKT, typeof args>,
+            TProtocolSpec,
+            TRequestBodyContentType,
+            TResponseBodyContentType
+          >,
+        ): api.ClassMethodDecoratorFactory<
+          TProtoEncodedHKT,
+          TValidatorHKT,
+          TStateHKT,
+          TServerContext,
+          TRequestBodyContentType,
+          TResponseBodyContentType,
+          TEndpointSpecAdditionalDataHKT,
+          TProtocolSpec
+        > {
+          return (specArg) => (method, context) => {
+            addEndpointImplementation(
+              fromStateSpec,
+              processMethod,
+              urlState,
               mdArgs,
-            },
-            runtime: {
-              handlerInfo: {
-                queryValidator: spec.query?.validators,
-                bodyValidator: spec.requestBody?.validator,
-                headerValidator: spec.headers?.validators,
-              },
-              responseInfo: {
-                body: spec.responseBody.validator,
-                headers: spec.responseHeaders?.validators,
-              },
-              instances: [],
-            },
+              specArg,
+              { method, context },
+            );
           };
-          urlState.specsAndMetadatas[spec.method] = currentEndpointState;
-          context.addInitializer(function () {
-            const boundMethod = method.bind(this);
-            currentEndpointState.runtime.instances.push({
-              instance: this,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
-              boundMethod: (processMethod({
-                spec,
-                boundMethod,
-              } as any) ?? boundMethod) as any,
-            });
-          });
+        }
+
+        // Implementation for inline endpoints
+        const endpoint: api.ApplicationEndpointsForURL<
+          TProtoEncodedHKT,
+          TValidatorHKT,
+          TStateHKT,
+          TMetadataProviders,
+          TServerContext,
+          TAllRequestBodyContentTypes,
+          TAllResponseBodyContentTypes,
+          TDefaultRequestBodyContentType,
+          TDefaultResponseBodyContentType,
+          TEndpointSpecAdditionalDataHKT,
+          api.GetURLData<TValidatorHKT, typeof args>
+        >["endpoint"] = (mdArgs) => (specArg, implementation) => {
+          const instance = new InlineEndpoint();
+          addEndpointImplementation(
+            fromStateSpec,
+            processMethod,
+            urlState,
+            mdArgs,
+            specArg,
+            {
+              method: implementation,
+              instance,
+            },
+          );
+          return instance;
         };
+        endpointsForURL.endpoint = endpoint;
+        return endpointsForURL;
       };
     },
     createEndpoints: (mdArgs, ...args) => {
@@ -674,3 +677,173 @@ const getActualPatternSpec = (
   }
   return patternSpec;
 };
+
+const addEndpointImplementation = <
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends api.TMetadataProvidersBase,
+  TServerContext,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TEndpointSpecAdditionalDataHKT extends api.EndpointSpecAdditionalDataHKTBase,
+  TArgs extends api.TURLTemplateLiteralArgsBase<TValidatorHKT>,
+  TProtocolSpec extends api.GetProtocolBaseForURLData<
+    api.GetURLData<TValidatorHKT, TArgs>
+  >,
+  TResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TStateSpec extends dataBE.MaterializeStateSpecBase<TStateHKT>,
+  This extends object,
+>(
+  fromStateSpec: EndpointStateInformationFromStateSpec<TStateHKT>,
+  processMethod: api.EndpointMethodProcessor<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TServerContext,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TEndpointSpecAdditionalDataHKT
+  >,
+  urlState: InternalStateForURL<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    InternalRuntimeInfoForClasses
+  >,
+  mdArgs: api.GetEndpointMetadataArgs<
+    TProtoEncodedHKT,
+    TMetadataProviders,
+    api.GetURLData<TValidatorHKT, TArgs>,
+    TProtocolSpec,
+    TRequestBodyContentType,
+    TResponseBodyContentType
+  >,
+  specArg: api.GetEndpointSpec<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TRequestBodyContentType,
+    TResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT,
+    TProtocolSpec,
+    TStateSpec
+  >,
+  methodInfo:
+    | {
+        method: api.MethodForEndpoint<
+          api.GetMethodArgsGeneric<
+            TStateHKT,
+            TServerContext,
+            TProtocolSpec,
+            TStateSpec
+          >,
+          This,
+          api.GetMethodReturnType<TProtocolSpec>
+        >;
+        context: ClassMethodDecoratorContext<
+          This,
+          api.MethodForEndpoint<
+            api.GetMethodArgsGeneric<
+              TStateHKT,
+              TServerContext,
+              TProtocolSpec,
+              TStateSpec
+            >,
+            This,
+            api.GetMethodReturnType<TProtocolSpec>
+          >
+        >;
+      }
+    | {
+        method: api.MethodForEndpoint<
+          api.GetMethodArgsGeneric<
+            TStateHKT,
+            TServerContext,
+            TProtocolSpec,
+            TStateSpec
+          >,
+          void,
+          api.GetMethodReturnType<TProtocolSpec>
+        >;
+        instance: This;
+      },
+) => {
+  const spec = specArg as api.GetEndpointSpec<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    string,
+    string,
+    TEndpointSpecAdditionalDataHKT,
+    protocol.ProtocolSpecCore<protocol.HttpMethod, any> &
+      protocol.ProtocolSpecQuery<protocol.TQueryDataBase> &
+      protocol.ProtocolSpecRequestBody<any> &
+      protocol.ProtocolSpecHeaderData<protocol.TRequestHeadersDataBase> &
+      protocol.ProtocolSpecResponseHeaders<protocol.TResponseHeadersDataBase>,
+    any
+  >;
+  if (spec.method in urlState.specsAndMetadatas) {
+    throw new Error(
+      `Can not define different endpoints for same method "${spec.method}".`,
+    );
+  }
+
+  // We have to do this to get typing right
+  // Save current state - the initializer might run only after constuctor, if not static method
+  const currentEndpointState: InternalStateForEndpointMethod<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    InternalRuntimeInfoForClasses
+  > = {
+    metadata: {
+      spec: {
+        method: spec.method,
+        responseBody: spec.responseBody.validatorSpec,
+        query: spec.query?.metadata,
+        requestBody: spec.requestBody?.validatorSpec,
+        requestHeaders: spec.headers?.metadata,
+        responseHeaders: spec.responseHeaders?.metadata,
+        stateInfo: fromStateSpec(spec.state),
+      },
+      mdArgs,
+    },
+    runtime: {
+      handlerInfo: {
+        queryValidator: spec.query?.validators,
+        bodyValidator: spec.requestBody?.validator,
+        headerValidator: spec.headers?.validators,
+      },
+      responseInfo: {
+        body: spec.responseBody.validator,
+        headers: spec.responseHeaders?.validators,
+      },
+      instances: [],
+    },
+  };
+  urlState.specsAndMetadatas[spec.method] = currentEndpointState;
+  if ("context" in methodInfo) {
+    const { method, context } = methodInfo;
+    context.addInitializer(function () {
+      const boundMethod = method.bind(this);
+      currentEndpointState.runtime.instances.push({
+        instance: this,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
+        boundMethod: (processMethod({
+          spec,
+          boundMethod,
+        } as any) ?? boundMethod) as any,
+      });
+    });
+  } else {
+    const { method, instance } = methodInfo;
+    currentEndpointState.runtime.instances.push({
+      instance,
+      boundMethod: method,
+    });
+  }
+};
+
+class InlineEndpoint {}

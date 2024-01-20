@@ -49,3 +49,10 @@ export type MaterializeEndpointSpecAdditionalData<
       readonly _argStateSpec: TStateSpec;
     })["_getAdditionalEndpointSpecData"]
   : never;
+
+/**
+ * This is single atom of {@link EndpointCreationArgLeaf} type.
+ * It represents either class, or objects created from classes using `new` operator.
+ * Since TypeScript does not allow easily to describe such nuances, it is for now just `object` type, to avoid at least the most obvious compilation errors.
+ */
+export type EndpointCreationArgLeafSingle = object;

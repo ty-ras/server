@@ -93,16 +93,50 @@ export interface ApplicationEndpointsForURL<
     TRequestBodyContentType extends TAllRequestBodyContentTypes = TDefaultRequestBodyContentType,
   >(
     this: void,
-    mdArgs: {
-      [P in keyof TMetadataProviders]: md.MaterializeParameterWhenSpecifyingEndpoint<
-        TMetadataProviders[P],
-        TProtoEncodedHKT,
-        TProtocolSpec,
-        TRequestBodyContentType,
-        TResponseBodyContentType
-      >;
-    },
+    mdArgs: GetEndpointMetadataArgs<
+      TProtoEncodedHKT,
+      TMetadataProviders,
+      TURLData,
+      TProtocolSpec,
+      TRequestBodyContentType,
+      TResponseBodyContentType
+    >,
   ): ClassMethodDecoratorFactory<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TServerContext,
+    TRequestBodyContentType,
+    TResponseBodyContentType,
+    TEndpointSpecAdditionalData,
+    TProtocolSpec
+  >;
+
+  /**
+   * Allows endpoint to be added without using decorators.
+   * Useful when the toolchain does not support decorator functionality, and/or additional scope provided by the classes (e.g. with properties) is not required.
+   *
+   * The returned {@link AddEndpointAsInline} will need further invocation to provide actual implementation.
+   * This is in order to avoid specifying generic parameter twice.
+   * @param this The `this` parameter is `void` to prevent using "this" in implementations.
+   * @param mdArgs Parameters for each of the metadata providers. Each parameter is related to this specific BE endpoint.
+   * @returns The {@link AddEndpointAsInline} to continue adding the endpoint.
+   */
+  endpoint: <
+    TProtocolSpec extends GetProtocolBaseForURLData<TURLData>,
+    TResponseBodyContentType extends TAllResponseBodyContentTypes = TDefaultResponseBodyContentType,
+    TRequestBodyContentType extends TAllRequestBodyContentTypes = TDefaultRequestBodyContentType,
+  >(
+    this: void,
+    mdArgs: GetEndpointMetadataArgs<
+      TProtoEncodedHKT,
+      TMetadataProviders,
+      TURLData,
+      TProtocolSpec,
+      TRequestBodyContentType,
+      TResponseBodyContentType
+    >,
+  ) => AddEndpointAsInline<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
@@ -114,6 +148,69 @@ export interface ApplicationEndpointsForURL<
   >;
 }
 
+/**
+ * Helper type to define metadata arguments for one specific endpoint (url pattern + method combination).
+ */
+export type GetEndpointMetadataArgs<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TMetadataProviders extends common.TMetadataProvidersBase,
+  TURLData,
+  TProtocolSpec extends GetProtocolBaseForURLData<TURLData>,
+  TRequestBodyContentType extends string,
+  TResponseBodyContentType extends string,
+> = {
+  [P in keyof TMetadataProviders]: md.MaterializeParameterWhenSpecifyingEndpoint<
+    TMetadataProviders[P],
+    TProtoEncodedHKT,
+    TProtocolSpec,
+    TRequestBodyContentType,
+    TResponseBodyContentType
+  >;
+};
+
+/**
+ * This type exposes functionality to add endpoint implementation without decorators.
+ */
+export interface AddEndpointAsInline<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TServerContext,
+  TRequestBodyContentType extends string,
+  TResponseBodyContentType extends string,
+  TEndpointSpecAdditionalData extends common.EndpointSpecAdditionalDataHKTBase,
+  TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, unknown>,
+> {
+  /**
+   * Registers the endpoint to the application.
+   * @param this The `this` parameter is `void` to prevent using "this" in implementations.
+   * @param spec The endpoint specification.
+   * @param implementation The endpoint implementation.
+   * @returns Nothing.
+   */
+  <TStateSpec extends dataBE.MaterializeStateSpecBase<TStateHKT>>(
+    this: void,
+    spec: GetEndpointSpec<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TRequestBodyContentType,
+      TResponseBodyContentType,
+      TEndpointSpecAdditionalData,
+      TProtocolSpec,
+      TStateSpec
+    >,
+    implementation: MethodForEndpoint<
+      GetMethodArgsGeneric<
+        TStateHKT,
+        TServerContext,
+        TProtocolSpec,
+        TStateSpec
+      >,
+      void,
+      GetMethodReturnType<TProtocolSpec>
+    >,
+  ): common.EndpointCreationArgLeafSingle;
+}
 /**
  * This is function interface to create the decorator for class methods acting as BE endpoints.
  *
