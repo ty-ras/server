@@ -261,7 +261,7 @@ const newBuilderGenericImpl = <
           TEndpointSpecAdditionalDataHKT,
           api.GetURLData<TValidatorHKT, typeof args>
         >["endpoint"] = (mdArgs) => (specArg, implementation) => {
-          const instance = new InlineEndpoint();
+          const instance = new InlineEndpoint(implementation);
           addEndpointImplementation(
             fromStateSpec,
             processMethod,
@@ -846,4 +846,25 @@ const addEndpointImplementation = <
   }
 };
 
-class InlineEndpoint {}
+class InlineEndpoint<
+  TStateHKT extends dataBE.StateHKTBase,
+  TServerContext,
+  TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, unknown>,
+  TStateSpec extends dataBE.MaterializeStateSpecBase<TStateHKT>,
+> implements
+    api.InlineEndpointAdditionResult<
+      TStateHKT,
+      TServerContext,
+      TProtocolSpec,
+      TStateSpec
+    >
+{
+  public constructor(
+    public readonly implementation: api.InlineEndpointImplementation<
+      TStateHKT,
+      TServerContext,
+      TProtocolSpec,
+      TStateSpec
+    >,
+  ) {}
+}
