@@ -47,9 +47,7 @@ export interface ApplicationBuilderGeneric<
    * @param args The non-string portions of the template literal.
    * @returns A new {@link url.ApplicationEndpointsForURLFactory} to be used to decorate class methods using ES decorators.
    */
-  url: <
-    TArgs extends Array<dataBE.URLParameterInfo<string, any, TValidatorHKT>>,
-  >(
+  url: <TArgs extends TURLTemplateLiteralArgsBase<TValidatorHKT>>(
     this: void,
     fragments: TemplateStringsArray,
     ...args: TArgs
@@ -64,7 +62,7 @@ export interface ApplicationBuilderGeneric<
     TDefaultRequestBodyContentType,
     TDefaultResponseBodyContentType,
     TEndpointSpecAdditionalDataHKT,
-    TArgs extends [] ? undefined : URLParameterReducer<TArgs>
+    GetURLData<TValidatorHKT, TArgs>
   >;
 
   /**
@@ -159,6 +157,23 @@ export interface ApplicationBuilderGeneric<
     TNewEndpointSpecAdditionalDataHKT
   >;
 }
+
+/**
+ * This is the base type for he arguments given to template literal function.
+ * @see ApplicationBuilderGeneric.url
+ */
+export type TURLTemplateLiteralArgsBase<
+  TValidatorHKT extends data.ValidatorHKTBase,
+> = Array<dataBE.URLParameterInfo<string, any, TValidatorHKT>>;
+
+/**
+ * Helper type to extract the shape of the URL parameters from the arguments given to template literal function.
+ * @see ApplicationBuilderGeneric.url
+ */
+export type GetURLData<
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TArgs extends TURLTemplateLiteralArgsBase<TValidatorHKT>,
+> = TArgs extends [] ? undefined : URLParameterReducer<TArgs>;
 
 /**
  * Helper type to extract final type of URL parameters, given an array of {@link URLParameterInfo} objects.
@@ -267,14 +282,7 @@ export type EndpointCreationArg =
  * @see EndpointCreationArgLeafSingle
  */
 export type EndpointCreationArgLeaf =
-  data.OneOrMany<EndpointCreationArgLeafSingle>;
-
-/**
- * This is single atom of {@link EndpointCreationArgLeaf} type.
- * It represents either class, or objects created from classes using `new` operator.
- * Since TypeScript does not allow easily to describe such nuances, it is for now just `object` type, to avoid at least the most obvious compilation errors.
- */
-export type EndpointCreationArgLeafSingle = object;
+  data.OneOrMany<common.EndpointCreationArgLeafSingle>;
 
 /**
  * This type is part of {@link EndpointCreationArg}.
