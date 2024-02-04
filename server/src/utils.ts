@@ -29,7 +29,6 @@ export const checkURLPathNameForHandler = <TContext>(
 ): evt.EventArgumentsWithoutState<TContext> | undefined => {
   const pathName = (url instanceof u.URL ? url : new u.URL(url)).pathname;
   const groups = regExp.exec(pathName)?.groups;
-  // console.log("LEL", regExp, pathName, groups);
   if (!groups) {
     events?.("onInvalidUrl", {
       ctx,
