@@ -3,7 +3,7 @@
  */
 
 import type * as ep from "@ty-ras/endpoint";
-import type * as protocol from "@ty-ras/protocol";
+import * as protocol from "@ty-ras/protocol";
 import * as data from "@ty-ras/data";
 import * as dataBE from "@ty-ras/data-backend";
 import * as server from "./utils";
@@ -17,7 +17,7 @@ import * as stream from "node:stream";
  * Creates a callback which will asynchronously process each incoming HTTP request, to extract the endpoint based on URL path and method, validate all necessary inputs, invoke the endpoint, validate all necesary outputs, and write the result to HTTP response.
  * This function is used by other TyRAS plugins and usually not directly by client code.
  * @param endpoints All the {@link ep.AppEndpoint}s to use in returned callback.
- * @param callbacks The {@see ServerFlowCallbacks} necessary to actually implement the returned callback.
+ * @param callbacks The {@link ServerFlowCallbacks} necessary to actually implement the returned callback.
  * @param events The {@link evt.ServerEventHandler} to invoke on events.
  * @returns The callback which can be used to asynchronously process incoming HTTP request, and write to outgoing HTTP response.
  */
@@ -70,13 +70,15 @@ export const createTypicalServerFlow = <
         // We have a match -> get the handler that will handle our match
         const method = cb.getMethod(ctx) as protocol.HttpMethod;
         let foundHandler = handler(method, maybeEventArgs.groups);
-        const sendBody = method !== "HEAD";
+        const sendBody = method !== protocol.METHOD_HEAD;
         if (
           foundHandler.found !== "handler" &&
           !sendBody &&
-          foundHandler.allowedMethods.some(({ method }) => method === "GET")
+          foundHandler.allowedMethods.some(
+            ({ method }) => method === protocol.METHOD_GET,
+          )
         ) {
-          foundHandler = handler("GET", maybeEventArgs.groups);
+          foundHandler = handler(protocol.METHOD_GET, maybeEventArgs.groups);
         }
 
         if (foundHandler.found === "handler") {
@@ -244,7 +246,7 @@ export const createTypicalServerFlow = <
               maybeEventArgs,
               events,
               foundHandler.allowedMethods,
-              method === "OPTIONS"
+              method === protocol.METHOD_OPTIONS
                 ? undefined
                 : async (stateValidator) =>
                     stateValidator.validator(
@@ -254,8 +256,12 @@ export const createTypicalServerFlow = <
 
           if (!ctx.skipSettingStatusCode) {
             const statusCode =
-              allowedMethodsSentToClient.length > 0 ? 405 : 404;
-            if (statusCode === 405) {
+              allowedMethodsSentToClient.length > 0
+                ? method === protocol.METHOD_OPTIONS
+                  ? 200
+                  : 405
+                : 404;
+            if (statusCode !== 404) {
               cb.setHeader(ctx, "Allow", allowedMethodsSentToClient.join(","));
             }
             cb.setStatusCode(ctx, statusCode, false);
