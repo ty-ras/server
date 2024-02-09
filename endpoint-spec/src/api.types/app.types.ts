@@ -23,7 +23,47 @@ import type * as url from "./url.types";
  * - change additional endpoint specification data via {@link changeEndpointSpecAdditionalData} function.
  * @see url.ApplicationEndpointsForURLFactory
  */
-export interface ApplicationBuilderGeneric<
+export type ApplicationBuilderGeneric<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends common.TMetadataProvidersBase,
+  TServerContext,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TEndpointSpecAdditionalDataHKT extends common.EndpointSpecAdditionalDataHKTBase,
+> =
+  | ApplicationBuilderGenericNoContext<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders,
+      TServerContext,
+      TAllRequestBodyContentTypes,
+      TAllResponseBodyContentTypes,
+      TDefaultRequestBodyContentType,
+      TDefaultResponseBodyContentType,
+      TEndpointSpecAdditionalDataHKT
+    >
+  | ApplicationBuilderGenericWithContext<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders,
+      TServerContext,
+      TAllRequestBodyContentTypes,
+      TAllResponseBodyContentTypes,
+      TDefaultRequestBodyContentType,
+      TDefaultResponseBodyContentType,
+      TEndpointSpecAdditionalDataHKT
+    >;
+
+/**
+ * Common base interface for {@link ApplicationBuilderGenericNoContext} and {@link ApplicationBuilderGenericWithContext}.
+ */
+export interface ApplicationBuilderGenericBase<
   TProtoEncodedHKT extends protocol.EncodedHKTBase,
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
@@ -155,6 +195,104 @@ export interface ApplicationBuilderGeneric<
     TDefaultRequestBodyContentType,
     TDefaultResponseBodyContentType,
     TNewEndpointSpecAdditionalDataHKT
+  >;
+}
+
+/**
+ * This interface specializes {@link ApplicationBuilderGeneric} so that the raw server context will not be visible to endpoints.
+ * @see ApplicationBuilderGenericWithContext
+ */
+export interface ApplicationBuilderGenericNoContext<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends common.TMetadataProvidersBase,
+  TServerContext,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TEndpointSpecAdditionalDataHKT extends common.EndpointSpecAdditionalDataHKTBase,
+> extends ApplicationBuilderGenericBase<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    never,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TDefaultRequestBodyContentType,
+    TDefaultResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT
+  > {
+  /**
+   * This is discriminating type property for this type and {@link ApplicationBuilderGenericWithContext}.
+   */
+  contextVisibleToEndpoints: false;
+  /**
+   * Returns new instance of {@link ApplicationBuilderGenericWithContext} which allows endpoints to see raw server context.
+   * @returns The {@link ApplicationBuilderGenericWithContext}
+   */
+  makeContextVisibleToEndpoints: () => ApplicationBuilderGenericWithContext<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    TServerContext,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TDefaultRequestBodyContentType,
+    TDefaultResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT
+  >;
+}
+
+/**
+ * This interface specializes {@link ApplicationBuilderGeneric} so that the raw server context will be visible to endpoints.
+ * @see ApplicationBuilderGenericNoContext
+ */
+export interface ApplicationBuilderGenericWithContext<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends common.TMetadataProvidersBase,
+  TServerContext,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TEndpointSpecAdditionalDataHKT extends common.EndpointSpecAdditionalDataHKTBase,
+> extends ApplicationBuilderGenericBase<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    TServerContext,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TDefaultRequestBodyContentType,
+    TDefaultResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT
+  > {
+  /**
+   * This is discriminating type property for this type and {@link ApplicationBuilderGenericNoContext}.
+   */
+  contextVisibleToEndpoints: true;
+  /**
+   * Returns new instance of {@link ApplicationBuilderGenericNoContext} which disallows endpoints to see raw server context.
+   * @returns The {@link ApplicationBuilderGenericNoContext}
+   */
+  noContextForEndpoints: () => ApplicationBuilderGenericNoContext<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    TServerContext,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TDefaultRequestBodyContentType,
+    TDefaultResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT
   >;
 }
 
