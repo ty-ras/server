@@ -1346,6 +1346,116 @@ test("Validate typicalServerFlow works when sendBody throws inside error handler
   ]);
 });
 
+test("Validate that handling OPTIONS works as intended by typicalServeFlow when invalid method returned", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getMethod: () => "OPTIONS",
+  });
+  const allowedMethods = ["GET", "POST"] as const;
+  await flowUtil.createTypicalServerFlow(
+    {
+      url: /(?<group>\/path)/,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: allowedMethods.map((method) => ({
+          method,
+          stateInformation: flowUtil.createStateValidator(),
+        })),
+      }),
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getURL",
+      returnValue: "/path",
+    },
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getMethod",
+      returnValue: "OPTIONS",
+    },
+    {
+      args: [flowUtil.seenContext, "Allow", allowedMethods.join(",")],
+      callbackName: "setHeader",
+      returnValue: undefined,
+    },
+    {
+      args: [flowUtil.seenContext, 200, false],
+      callbackName: "setStatusCode",
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate that handling OPTIONS works as intended by typicalServeFlow when no allowed methods returned", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getMethod: () => "OPTIONS",
+  });
+  await flowUtil.createTypicalServerFlow(
+    {
+      url: /(?<group>\/path)/,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: [],
+      }),
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getURL",
+      returnValue: "/path",
+    },
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getMethod",
+      returnValue: "OPTIONS",
+    },
+    {
+      args: [flowUtil.seenContext, 404, false],
+      callbackName: "setStatusCode",
+      returnValue: undefined,
+    },
+  ]);
+});
+
+test("Validate that handling OPTIONS works as intended by typicalServeFlow when no handlers returned", async (c) => {
+  c.plan(1);
+  const { seenCallbacks, callbacks } = flowUtil.customizeTrackingCallback({
+    getURL: () => "/will-not-match",
+    getMethod: () => "OPTIONS",
+  });
+  await flowUtil.createTypicalServerFlow(
+    {
+      url: /(?<group>\/path)/,
+      handler: () => ({
+        found: "invalid-method",
+        allowedMethods: [],
+      }),
+    },
+    callbacks,
+    undefined,
+  )(flowUtil.inputContext);
+  c.deepEqual(seenCallbacks, [
+    {
+      args: [flowUtil.seenContext],
+      callbackName: "getURL",
+      returnValue: "/will-not-match",
+    },
+    {
+      args: [flowUtil.seenContext, 404, false],
+      callbackName: "setStatusCode",
+      returnValue: undefined,
+    },
+  ]);
+});
+
 const getHumanReadableMessage = () => "";
 
 const errorMessage = "This should never be called";
