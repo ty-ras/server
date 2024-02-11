@@ -1037,7 +1037,7 @@ const addEndpointImplementation = <
         instance: this,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
         boundMethod: (processMethod({
-          spec: spec,
+          spec,
           boundMethod,
         } as any) ?? boundMethod) as any,
       });
