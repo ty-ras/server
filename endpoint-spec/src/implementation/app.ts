@@ -50,12 +50,13 @@ export const newBuilderGeneric = <
       TMetadataProviders[P]
     >;
   },
-): api.ApplicationBuilderGenericNoContext<
+): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
   TMetadataProviders,
   TServerContext,
+  never,
   TAllRequestBodyContentTypes,
   TAllResponseBodyContentTypes,
   TDefaultRequestBodyContentType,
@@ -76,7 +77,7 @@ function newBuilderGenericImpl<
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
   TMetadataProviders extends api.TMetadataProvidersBase,
-  TServerContext,
+  TServerContextPossible,
   TAllRequestBodyContentTypes extends string,
   TAllResponseBodyContentTypes extends string,
   TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
@@ -101,19 +102,19 @@ function newBuilderGenericImpl<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
-    TServerContext,
+    TServerContextPossible,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TEndpointSpecAdditionalDataHKT
   >,
-
   contextVisibleToEndpoints: false,
-): api.ApplicationBuilderGenericNoContext<
+): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
   TMetadataProviders,
-  TServerContext,
+  TServerContextPossible,
+  never,
   TAllRequestBodyContentTypes,
   TAllResponseBodyContentTypes,
   TDefaultRequestBodyContentType,
@@ -156,13 +157,13 @@ function newBuilderGenericImpl<
     TAllResponseBodyContentTypes,
     TEndpointSpecAdditionalDataHKT
   >,
-
   contextVisibleToEndpoints: true,
-): api.ApplicationBuilderGenericWithContext<
+): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
   TMetadataProviders,
+  TServerContext,
   TServerContext,
   TAllRequestBodyContentTypes,
   TAllResponseBodyContentTypes,
@@ -176,7 +177,8 @@ function newBuilderGenericImpl<
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
   TMetadataProviders extends api.TMetadataProvidersBase,
-  TServerContext,
+  TServerContextPossible,
+  TServerContextArg extends never,
   TAllRequestBodyContentTypes extends string,
   TAllResponseBodyContentTypes extends string,
   TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
@@ -201,19 +203,19 @@ function newBuilderGenericImpl<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
-    TServerContext,
+    TServerContextPossible,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TEndpointSpecAdditionalDataHKT
   >,
-
   contextVisibleToEndpoints: boolean,
 ): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
   TMetadataProviders,
-  TServerContext,
+  TServerContextPossible,
+  TServerContextArg,
   TAllRequestBodyContentTypes,
   TAllResponseBodyContentTypes,
   TDefaultRequestBodyContentType,
@@ -226,7 +228,8 @@ function newBuilderGenericImpl<
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
   TMetadataProviders extends api.TMetadataProvidersBase,
-  TServerContext,
+  TServerContextPossible,
+  TServerContextArg extends never,
   TAllRequestBodyContentTypes extends string,
   TAllResponseBodyContentTypes extends string,
   TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
@@ -251,25 +254,40 @@ function newBuilderGenericImpl<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
-    TServerContext,
+    TServerContextPossible,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TEndpointSpecAdditionalDataHKT
   >,
 
   contextVisibleToEndpoints: boolean,
-): api.ApplicationBuilderGeneric<
-  TProtoEncodedHKT,
-  TValidatorHKT,
-  TStateHKT,
-  TMetadataProviders,
-  TServerContext,
-  TAllRequestBodyContentTypes,
-  TAllResponseBodyContentTypes,
-  TDefaultRequestBodyContentType,
-  TDefaultResponseBodyContentType,
-  TEndpointSpecAdditionalDataHKT
-> {
+):
+  | api.ApplicationBuilderGeneric<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders,
+      TServerContextPossible,
+      TServerContextArg,
+      TAllRequestBodyContentTypes,
+      TAllResponseBodyContentTypes,
+      TDefaultRequestBodyContentType,
+      TDefaultResponseBodyContentType,
+      TEndpointSpecAdditionalDataHKT
+    >
+  | api.ApplicationBuilderGeneric<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders,
+      TServerContextPossible,
+      never,
+      TAllRequestBodyContentTypes,
+      TAllResponseBodyContentTypes,
+      TDefaultRequestBodyContentType,
+      TDefaultResponseBodyContentType,
+      TEndpointSpecAdditionalDataHKT
+    > {
   // TODO we could use record instead of Array right here, to detect duplicate URL specs earlier
   const urlStates: Array<
     InternalStateForURL<
@@ -293,7 +311,8 @@ function newBuilderGenericImpl<
     TValidatorHKT,
     TStateHKT,
     TMetadataProviders,
-    TServerContext,
+    TServerContextPossible,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
@@ -305,7 +324,8 @@ function newBuilderGenericImpl<
       TValidatorHKT,
       TStateHKT,
       {},
-      TServerContext,
+      TServerContextPossible,
+      TServerContextArg,
       TAllRequestBodyContentTypes,
       TAllResponseBodyContentTypes,
       TDefaultRequestBodyContentType,
@@ -324,30 +344,25 @@ function newBuilderGenericImpl<
   // Return the public API to define and create endpoints
   return {
     // Context-related
-    contextVisibleToEndpoints,
-    ...(contextVisibleToEndpoints
-      ? {
-          noContextForEndpoints: () =>
-            newBuilderGenericImpl(
-              defaultRequestBodyContentType,
-              createRequestBodySpec,
-              fromStateSpec,
-              mdProviders,
-              processMethodArg,
-              false,
-            ),
-        }
-      : {
-          makeContextVisibleToEndpoints: () =>
-            newBuilderGenericImpl(
-              defaultRequestBodyContentType,
-              createRequestBodySpec,
-              fromStateSpec,
-              mdProviders,
-              processMethodArg,
-              true,
-            ),
-        }),
+    contextVisibleToEndpoints: () => contextVisibleToEndpoints,
+    noContextForEndpoints: () =>
+      newBuilderGenericImpl(
+        defaultRequestBodyContentType,
+        createRequestBodySpec,
+        fromStateSpec,
+        mdProviders,
+        processMethodArg,
+        false,
+      ),
+    makeContextVisibleToEndpoints: () =>
+      newBuilderGenericImpl(
+        defaultRequestBodyContentType,
+        createRequestBodySpec,
+        fromStateSpec,
+        mdProviders,
+        processMethodArg,
+        true,
+      ),
     // General helpers
     requestBody: ((validation, requestBodyContentType) =>
       createRequestBodySpec(validation, {
@@ -487,18 +502,7 @@ function newBuilderGenericImpl<
         ),
       };
     },
-  } as api.ApplicationBuilderGeneric<
-    TProtoEncodedHKT,
-    TValidatorHKT,
-    TStateHKT,
-    TMetadataProviders,
-    TServerContext,
-    TAllRequestBodyContentTypes,
-    TAllResponseBodyContentTypes,
-    TDefaultRequestBodyContentType,
-    TDefaultResponseBodyContentType,
-    TEndpointSpecAdditionalDataHKT
-  >;
+  };
 }
 
 /**
