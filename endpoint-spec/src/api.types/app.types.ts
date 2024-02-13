@@ -164,13 +164,13 @@ export interface ApplicationBuilderGeneric<
    * Returns value indicating whether the raw server context will be passed to endpoint methods of this builder.
    * @returns will return `true` if context is visible for endpoint methods; `false` otherwise.
    */
-  contextVisibleToEndpoints: () => boolean;
+  isContextVisibleToEndpoints: () => boolean;
 
   /**
    * Returns new instance of {@link ApplicationBuilderGeneric} which allows endpoints to see raw server context.
    * @returns The {@link ApplicationBuilderGeneric}
    */
-  makeContextVisibleToEndpoints: () => ApplicationBuilderGeneric<
+  showContextToEndpoints: () => ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
@@ -188,7 +188,7 @@ export interface ApplicationBuilderGeneric<
    * Returns new instance of {@link ApplicationBuilderGeneric} which disallows endpoints to see raw server context.
    * @returns The {@link ApplicationBuilderGeneric}
    */
-  noContextForEndpoints: () => ApplicationBuilderGeneric<
+  hideContextForEndpoints: () => ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,

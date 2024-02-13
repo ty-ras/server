@@ -11,7 +11,7 @@ import * as epValidation from "./endpoint-validation";
 test("Verify that making context visible works", async (c) => {
   c.plan(6);
 
-  const app = mp.newBuilder({}).makeContextVisibleToEndpoints();
+  const app = mp.newBuilder({}).showContextToEndpoints();
 
   const url = app.url`/api/something/${mp.urlParameter(
     "urlParam",
@@ -72,13 +72,13 @@ test("Verify that making context visible works", async (c) => {
   );
 });
 
-test("Verify that hiding context  works", async (c) => {
+test("Verify that hiding context works", async (c) => {
   c.plan(6);
 
   const app = mp
     .newBuilder({})
-    .makeContextVisibleToEndpoints()
-    .noContextForEndpoints();
+    .showContextToEndpoints()
+    .hideContextForEndpoints();
 
   const url = app.url`/api/something/${mp.urlParameter(
     "urlParam",

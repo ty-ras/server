@@ -344,8 +344,8 @@ function newBuilderGenericImpl<
   // Return the public API to define and create endpoints
   return {
     // Context-related
-    contextVisibleToEndpoints: () => contextVisibleToEndpoints,
-    noContextForEndpoints: () =>
+    isContextVisibleToEndpoints: () => contextVisibleToEndpoints,
+    hideContextForEndpoints: () =>
       newBuilderGenericImpl(
         defaultRequestBodyContentType,
         createRequestBodySpec,
@@ -354,7 +354,7 @@ function newBuilderGenericImpl<
         processMethodArg,
         false,
       ),
-    makeContextVisibleToEndpoints: () =>
+    showContextToEndpoints: () =>
       newBuilderGenericImpl(
         defaultRequestBodyContentType,
         createRequestBodySpec,
