@@ -28,11 +28,13 @@ export const createTypicalServerFlow = <
 >(
   // Notice - endpoints don't have GetContext<TContext> as their context!
   // The extra fields of GetContext<TContext> are meant to be used only by event handler!
-  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo>>,
+  endpoints: ServerEndpoints<TContext, TStateInfo>,
   callbacks: ServerFlowCallbacks<TContext, TStateInfo>,
   events: evt.ServerEventHandler<GetContext<TContext>, TState> | undefined,
 ): ((context: TContext) => Promise<void>) => {
-  const { handler, url: regExp } = squashEndpoints(endpoints);
+  const { handler, url: regExp } = squashEndpoints<TContext, TStateInfo>(
+    endpoints,
+  );
   const cb: ServerFlowCallbacks<GetContext<TContext>, TStateInfo> = {
     ...callbacks,
     setStatusCode: (...params) => {
@@ -292,6 +294,16 @@ export const createTypicalServerFlow = <
     }
   };
 };
+
+/**
+ * This is helper type to encapsulate array of {@link ep.AppEndpoint}s with correct type arguments for given context and state information.
+ */
+export type ServerEndpoints<
+  TContext extends TContextBase,
+  TStateInfo,
+> = ReadonlyArray<
+  ep.AppEndpoint<never, TStateInfo> | ep.AppEndpoint<TContext, TStateInfo>
+>;
 
 /**
  * The base type constraint for any server context in {@link createTypicalServerFlow}.

@@ -56,6 +56,7 @@ export const newBuilderGeneric = <
   TStateHKT,
   TMetadataProviders,
   TServerContext,
+  never,
   TAllRequestBodyContentTypes,
   TAllResponseBodyContentTypes,
   TDefaultRequestBodyContentType,
@@ -68,9 +69,60 @@ export const newBuilderGeneric = <
     fromStateSpec,
     mdProviders,
     ({ boundMethod }) => boundMethod,
+    false,
   );
 
-const newBuilderGenericImpl = <
+function newBuilderGenericImpl<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends api.TMetadataProvidersBase,
+  TServerContextPossible,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TEndpointSpecAdditionalDataHKT extends api.EndpointSpecAdditionalDataHKTBase,
+>(
+  defaultRequestBodyContentType: TDefaultRequestBodyContentType,
+  createRequestBodySpec: <T, TContentType extends string>(
+    validation: data.MaterializeDecoder<TValidatorHKT, T>,
+    opts?: { contentType: TContentType },
+  ) => dataBE.DataValidatorRequestInputSpec<T, TValidatorHKT, TContentType>,
+  fromStateSpec: EndpointStateInformationFromStateSpec<TStateHKT>,
+  mdProviders: {
+    [P in keyof TMetadataProviders]: md.MetadataProvider<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders[P]
+    >;
+  },
+  processMethodArg: api.EndpointMethodProcessor<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TServerContextPossible,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TEndpointSpecAdditionalDataHKT
+  >,
+  contextVisibleToEndpoints: false,
+): api.ApplicationBuilderGeneric<
+  TProtoEncodedHKT,
+  TValidatorHKT,
+  TStateHKT,
+  TMetadataProviders,
+  TServerContextPossible,
+  never,
+  TAllRequestBodyContentTypes,
+  TAllResponseBodyContentTypes,
+  TDefaultRequestBodyContentType,
+  TDefaultResponseBodyContentType,
+  TEndpointSpecAdditionalDataHKT
+>;
+
+function newBuilderGenericImpl<
   TProtoEncodedHKT extends protocol.EncodedHKTBase,
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
@@ -96,7 +148,7 @@ const newBuilderGenericImpl = <
       TMetadataProviders[P]
     >;
   },
-  processMethod: api.EndpointMethodProcessor<
+  processMethodArg: api.EndpointMethodProcessor<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
@@ -105,19 +157,138 @@ const newBuilderGenericImpl = <
     TAllResponseBodyContentTypes,
     TEndpointSpecAdditionalDataHKT
   >,
+  contextVisibleToEndpoints: true,
 ): api.ApplicationBuilderGeneric<
   TProtoEncodedHKT,
   TValidatorHKT,
   TStateHKT,
   TMetadataProviders,
   TServerContext,
+  TServerContext,
   TAllRequestBodyContentTypes,
   TAllResponseBodyContentTypes,
   TDefaultRequestBodyContentType,
   TDefaultResponseBodyContentType,
   TEndpointSpecAdditionalDataHKT
-> => {
-  // TODO we could use record instead of Array right here, to detect duplicate URL specs earlier.
+>;
+
+function newBuilderGenericImpl<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends api.TMetadataProvidersBase,
+  TServerContextPossible,
+  TServerContextArg extends never,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TEndpointSpecAdditionalDataHKT extends api.EndpointSpecAdditionalDataHKTBase,
+>(
+  defaultRequestBodyContentType: TDefaultRequestBodyContentType,
+  createRequestBodySpec: <T, TContentType extends string>(
+    validation: data.MaterializeDecoder<TValidatorHKT, T>,
+    opts?: { contentType: TContentType },
+  ) => dataBE.DataValidatorRequestInputSpec<T, TValidatorHKT, TContentType>,
+  fromStateSpec: EndpointStateInformationFromStateSpec<TStateHKT>,
+  mdProviders: {
+    [P in keyof TMetadataProviders]: md.MetadataProvider<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders[P]
+    >;
+  },
+  processMethodArg: api.EndpointMethodProcessor<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TServerContextPossible,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TEndpointSpecAdditionalDataHKT
+  >,
+  contextVisibleToEndpoints: boolean,
+): api.ApplicationBuilderGeneric<
+  TProtoEncodedHKT,
+  TValidatorHKT,
+  TStateHKT,
+  TMetadataProviders,
+  TServerContextPossible,
+  TServerContextArg,
+  TAllRequestBodyContentTypes,
+  TAllResponseBodyContentTypes,
+  TDefaultRequestBodyContentType,
+  TDefaultResponseBodyContentType,
+  TEndpointSpecAdditionalDataHKT
+>;
+
+function newBuilderGenericImpl<
+  TProtoEncodedHKT extends protocol.EncodedHKTBase,
+  TValidatorHKT extends data.ValidatorHKTBase,
+  TStateHKT extends dataBE.StateHKTBase,
+  TMetadataProviders extends api.TMetadataProvidersBase,
+  TServerContextPossible,
+  TServerContextArg extends never,
+  TAllRequestBodyContentTypes extends string,
+  TAllResponseBodyContentTypes extends string,
+  TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
+  TDefaultResponseBodyContentType extends TAllResponseBodyContentTypes,
+  TEndpointSpecAdditionalDataHKT extends api.EndpointSpecAdditionalDataHKTBase,
+>(
+  defaultRequestBodyContentType: TDefaultRequestBodyContentType,
+  createRequestBodySpec: <T, TContentType extends string>(
+    validation: data.MaterializeDecoder<TValidatorHKT, T>,
+    opts?: { contentType: TContentType },
+  ) => dataBE.DataValidatorRequestInputSpec<T, TValidatorHKT, TContentType>,
+  fromStateSpec: EndpointStateInformationFromStateSpec<TStateHKT>,
+  mdProviders: {
+    [P in keyof TMetadataProviders]: md.MetadataProvider<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders[P]
+    >;
+  },
+  processMethodArg: api.EndpointMethodProcessor<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TServerContextPossible,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TEndpointSpecAdditionalDataHKT
+  >,
+
+  contextVisibleToEndpoints: boolean,
+):
+  | api.ApplicationBuilderGeneric<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders,
+      TServerContextPossible,
+      TServerContextArg,
+      TAllRequestBodyContentTypes,
+      TAllResponseBodyContentTypes,
+      TDefaultRequestBodyContentType,
+      TDefaultResponseBodyContentType,
+      TEndpointSpecAdditionalDataHKT
+    >
+  | api.ApplicationBuilderGeneric<
+      TProtoEncodedHKT,
+      TValidatorHKT,
+      TStateHKT,
+      TMetadataProviders,
+      TServerContextPossible,
+      never,
+      TAllRequestBodyContentTypes,
+      TAllResponseBodyContentTypes,
+      TDefaultRequestBodyContentType,
+      TDefaultResponseBodyContentType,
+      TEndpointSpecAdditionalDataHKT
+    > {
+  // TODO we could use record instead of Array right here, to detect duplicate URL specs earlier
   const urlStates: Array<
     InternalStateForURL<
       TProtoEncodedHKT,
@@ -127,13 +298,21 @@ const newBuilderGenericImpl = <
       InternalRuntimeInfoForClasses
     >
   > = [];
+  // Don't pass context to the bound method if not configured to do so
+  const processMethod: typeof processMethodArg = contextVisibleToEndpoints
+    ? processMethodArg
+    : (pArgs) => {
+        const boundMethod = processMethodArg(pArgs) ?? pArgs.boundMethod;
+        return ({ context: _, ...args }) => boundMethod(args as any); // eslint-disable-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unused-vars
+      };
   // Define resetMetadataProviders separately, as defining it inline causes problems with function overload having different argument count.
   const resetMetadataProviders: api.ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
     TMetadataProviders,
-    TServerContext,
+    TServerContextPossible,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
@@ -145,7 +324,8 @@ const newBuilderGenericImpl = <
       TValidatorHKT,
       TStateHKT,
       {},
-      TServerContext,
+      TServerContextPossible,
+      TServerContextArg,
       TAllRequestBodyContentTypes,
       TAllResponseBodyContentTypes,
       TDefaultRequestBodyContentType,
@@ -157,11 +337,32 @@ const newBuilderGenericImpl = <
       fromStateSpec,
       mdProviders ?? {},
       processMethod,
+      contextVisibleToEndpoints,
     );
   };
 
   // Return the public API to define and create endpoints
   return {
+    // Context-related
+    isContextVisibleToEndpoints: () => contextVisibleToEndpoints,
+    hideContextForEndpoints: () =>
+      newBuilderGenericImpl(
+        defaultRequestBodyContentType,
+        createRequestBodySpec,
+        fromStateSpec,
+        mdProviders,
+        processMethodArg,
+        false,
+      ),
+    showContextToEndpoints: () =>
+      newBuilderGenericImpl(
+        defaultRequestBodyContentType,
+        createRequestBodySpec,
+        fromStateSpec,
+        mdProviders,
+        processMethodArg,
+        true,
+      ),
     // General helpers
     requestBody: ((validation, requestBodyContentType) =>
       createRequestBodySpec(validation, {
@@ -171,14 +372,18 @@ const newBuilderGenericImpl = <
       TDefaultRequestBodyContentType
     >,
     resetMetadataProviders,
-    changeEndpointSpecAdditionalData: (newMethodProcessor) =>
+    changeEndpointSpecAdditionalData: (
+      newMethodProcessor: any, // TS can't infer correct type here
+    ) =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       newBuilderGenericImpl(
         defaultRequestBodyContentType,
         createRequestBodySpec,
         fromStateSpec,
         mdProviders,
-        newMethodProcessor,
-      ),
+        newMethodProcessor, // eslint-disable-line @typescript-eslint/no-unsafe-argument
+        contextVisibleToEndpoints,
+      ) as any,
 
     // Functionality related to defining and creating endpoints
     url: (fragments, ...args) => {
@@ -229,7 +434,7 @@ const newBuilderGenericImpl = <
           TProtoEncodedHKT,
           TValidatorHKT,
           TStateHKT,
-          TServerContext,
+          never,
           TRequestBodyContentType,
           TResponseBodyContentType,
           TEndpointSpecAdditionalDataHKT,
@@ -238,7 +443,7 @@ const newBuilderGenericImpl = <
           return (specArg) => (method, context) => {
             addEndpointImplementation(
               fromStateSpec,
-              processMethod,
+              processMethod as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
               urlState,
               mdArgs,
               specArg,
@@ -253,7 +458,7 @@ const newBuilderGenericImpl = <
           TValidatorHKT,
           TStateHKT,
           TMetadataProviders,
-          TServerContext,
+          never,
           TAllRequestBodyContentTypes,
           TAllResponseBodyContentTypes,
           TDefaultRequestBodyContentType,
@@ -264,7 +469,7 @@ const newBuilderGenericImpl = <
           const instance = new InlineEndpoint(implementation);
           addEndpointImplementation(
             fromStateSpec,
-            processMethod,
+            processMethod as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
             urlState,
             mdArgs,
             specArg,
@@ -298,7 +503,7 @@ const newBuilderGenericImpl = <
       };
     },
   };
-};
+}
 
 /**
  * This interface "implements" the generic [HKT](https://www.matechs.com/blog/encoding-hkts-in-typescript-once-again), {@link api.EndpointSpecAdditionalDataHKTBase}.
@@ -841,7 +1046,12 @@ const addEndpointImplementation = <
     const { method, instance } = methodInfo;
     currentEndpointState.runtime.instances.push({
       instance,
-      boundMethod: method,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      boundMethod:
+        (processMethod({
+          spec: spec as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          boundMethod: method,
+        }) as any) ?? method,
     });
   }
 };

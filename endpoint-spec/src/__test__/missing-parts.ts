@@ -29,6 +29,7 @@ export function newBuilder(
   DefaultStateHKT,
   {},
   ServerContext,
+  never,
   typeof CONTENT_TYPE,
   typeof CONTENT_TYPE,
   typeof CONTENT_TYPE,

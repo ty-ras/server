@@ -8,7 +8,9 @@ import test, { ExecutionContext } from "ava";
 import * as evtUtil from "./events";
 import * as flowUtil from "./flow";
 import * as dataBE from "@ty-ras/data-backend";
+import type * as ep from "@ty-ras/endpoint";
 import * as stream from "node:stream";
+import * as spec from "../flow";
 
 test("Validate typicalServerFlow works", async (t) => {
   t.plan(1);
@@ -1454,6 +1456,30 @@ test("Validate that handling OPTIONS works as intended by typicalServeFlow when 
       returnValue: undefined,
     },
   ]);
+});
+
+test("Verify that typing for createTypicalServerFlow works", (c) => {
+  const endpoints: ReadonlyArray<ep.AppEndpoint<never, undefined>> = [];
+  const { callbacks } = flowUtil.createTrackingCallback();
+  spec.createTypicalServerFlow<spec.TContextBase, undefined, undefined>(
+    endpoints,
+    callbacks,
+    undefined,
+  );
+  const endpoints2: ReadonlyArray<
+    ep.AppEndpoint<spec.TContextBase, undefined>
+  > = [];
+  spec.createTypicalServerFlow<spec.TContextBase, undefined, undefined>(
+    endpoints2,
+    callbacks,
+    undefined,
+  );
+  spec.createTypicalServerFlow<spec.TContextBase, undefined, undefined>(
+    [...endpoints, ...endpoints2],
+    callbacks,
+    undefined,
+  );
+  c.pass();
 });
 
 const getHumanReadableMessage = () => "";

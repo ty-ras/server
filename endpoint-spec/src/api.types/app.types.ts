@@ -28,7 +28,8 @@ export interface ApplicationBuilderGeneric<
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
   TMetadataProviders extends common.TMetadataProvidersBase,
-  TServerContext,
+  TServerContextPossible,
+  TServerContextArg,
   TAllRequestBodyContentTypes extends string,
   TAllResponseBodyContentTypes extends string,
   TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
@@ -56,7 +57,7 @@ export interface ApplicationBuilderGeneric<
     TValidatorHKT,
     TStateHKT,
     TMetadataProviders,
-    TServerContext,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
@@ -89,7 +90,7 @@ export interface ApplicationBuilderGeneric<
     ...endpoints: [EndpointCreationArg, ...Array<EndpointCreationArg>]
   ) => EndpointsCreationResult<
     TMetadataProviders,
-    TServerContext,
+    TServerContextPossible,
     dataBE.MaterializeStateInfo<
       TStateHKT,
       dataBE.MaterializeStateSpecBase<TStateHKT>
@@ -115,7 +116,8 @@ export interface ApplicationBuilderGeneric<
     TProtoEncodedHKT,
     TValidatorHKT,
     TStateHKT,
-    TServerContext,
+    TServerContextPossible,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
@@ -139,7 +141,7 @@ export interface ApplicationBuilderGeneric<
       TProtoEncodedHKT,
       TValidatorHKT,
       TStateHKT,
-      TServerContext,
+      TServerContextArg,
       TAllRequestBodyContentTypes,
       TAllResponseBodyContentTypes,
       TNewEndpointSpecAdditionalDataHKT
@@ -149,12 +151,55 @@ export interface ApplicationBuilderGeneric<
     TValidatorHKT,
     TStateHKT,
     TMetadataProviders,
-    TServerContext,
+    TServerContextPossible,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
     TDefaultResponseBodyContentType,
     TNewEndpointSpecAdditionalDataHKT
+  >;
+
+  /**
+   * Returns value indicating whether the raw server context will be passed to endpoint methods of this builder.
+   * @returns will return `true` if context is visible for endpoint methods; `false` otherwise.
+   */
+  isContextVisibleToEndpoints: () => boolean;
+
+  /**
+   * Returns new instance of {@link ApplicationBuilderGeneric} which allows endpoints to see raw server context.
+   * @returns The {@link ApplicationBuilderGeneric}
+   */
+  showContextToEndpoints: () => ApplicationBuilderGeneric<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    TServerContextPossible,
+    TServerContextPossible,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TDefaultRequestBodyContentType,
+    TDefaultResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT
+  >;
+
+  /**
+   * Returns new instance of {@link ApplicationBuilderGeneric} which disallows endpoints to see raw server context.
+   * @returns The {@link ApplicationBuilderGeneric}
+   */
+  hideContextForEndpoints: () => ApplicationBuilderGeneric<
+    TProtoEncodedHKT,
+    TValidatorHKT,
+    TStateHKT,
+    TMetadataProviders,
+    TServerContextPossible,
+    never,
+    TAllRequestBodyContentTypes,
+    TAllResponseBodyContentTypes,
+    TDefaultRequestBodyContentType,
+    TDefaultResponseBodyContentType,
+    TEndpointSpecAdditionalDataHKT
   >;
 }
 
@@ -200,13 +245,14 @@ export type URLParameterReducer<
   : Readonly<Result>;
 
 /**
- * This type contains two function signatures for one function {@link ApplicationBuilder.resetMetadataProviders}.
+ * This type contains two function signatures for one function {@link ApplicationBuilderGeneric.resetMetadataProviders}.
  */
 export interface ResetMetadataProviders<
   TProtoEncodedHKT extends protocol.EncodedHKTBase,
   TValidatorHKT extends data.ValidatorHKTBase,
   TStateHKT extends dataBE.StateHKTBase,
-  TServerContext,
+  TServerContextPossible,
+  TServerContextArg,
   TAllRequestBodyContentTypes extends string,
   TAllResponseBodyContentTypes extends string,
   TDefaultRequestBodyContentType extends TAllRequestBodyContentTypes,
@@ -223,7 +269,8 @@ export interface ResetMetadataProviders<
     TValidatorHKT,
     TStateHKT,
     {},
-    TServerContext,
+    TServerContextPossible,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
@@ -253,7 +300,8 @@ export interface ResetMetadataProviders<
     TValidatorHKT,
     TStateHKT,
     TNewMetadataProviders,
-    TServerContext,
+    TServerContextPossible,
+    TServerContextArg,
     TAllRequestBodyContentTypes,
     TAllResponseBodyContentTypes,
     TDefaultRequestBodyContentType,
@@ -327,24 +375,40 @@ export type EndpointsCreationResult<
  * ```
  */
 export type StateSpecBaseOfAppBuilder<
-  TApp extends ApplicationBuilderGeneric<
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any
-  >,
+  TApp extends
+    | ApplicationBuilderGeneric<
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any
+      >
+    | ApplicationBuilderGeneric<
+        any,
+        any,
+        any,
+        any,
+        any,
+        never,
+        any,
+        any,
+        any,
+        any,
+        any
+      >,
 > = TApp extends ApplicationBuilderGeneric<
   any,
   any,
   infer TStateHKT,
   any,
   any,
+  infer _,
   any,
   any,
   any,

@@ -28,6 +28,7 @@ export const validateEndpoint = async (
     args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext>,
   ) => ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> = (args) => args,
   method: protocol.HttpMethod = "GET",
+  includeContext = false,
 ) => {
   c.truthy(endpoint, "Given endpoint must be of given type");
 
@@ -88,7 +89,13 @@ export const validateEndpoint = async (
     const result = await handler(args);
     if (result.error === "none") {
       c.deepEqual(result.data, expectedOutput);
-      c.deepEqual(getInstanceData(), [data.omit(args, "headers")]);
+      c.deepEqual(getInstanceData(), [
+        data.omit(
+          args,
+          "headers",
+          ...(includeContext ? [] : ["context" as const]),
+        ),
+      ]);
     } else {
       c.fail("Handler did not return validated response body.");
       c.log(result);

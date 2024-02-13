@@ -428,21 +428,37 @@ export type GetMethodArgsGeneric<
  */
 export type GetMethodArgs<
   TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, any>,
-  TEndpointsForURL extends ApplicationEndpointsForURL<
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    any,
-    TProtocolSpec extends protocol.ProtocolSpecURL<infer TURLData>
-      ? TURLData
-      : undefined
-  >,
+  TEndpointsForURL extends
+    | ApplicationEndpointsForURL<
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        TProtocolSpec extends protocol.ProtocolSpecURL<infer TURLData>
+          ? TURLData
+          : undefined
+      >
+    | ApplicationEndpointsForURL<
+        any,
+        any,
+        any,
+        any,
+        never,
+        any,
+        any,
+        any,
+        any,
+        any,
+        TProtocolSpec extends protocol.ProtocolSpecURL<infer TURLData>
+          ? TURLData
+          : undefined
+      >,
   TStateSpec,
 > = TEndpointsForURL extends ApplicationEndpointsForURL<
   any,

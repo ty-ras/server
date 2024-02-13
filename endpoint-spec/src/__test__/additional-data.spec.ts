@@ -9,6 +9,8 @@ import * as mp from "./missing-parts";
 import * as epValidation from "./endpoint-validation";
 import * as protocol from "./protocol";
 
+/* eslint-disable sonarjs/no-duplicate-string */
+
 test("Verify that modifying additional endpoint spec data type works", async (c) => {
   c.plan(14);
 
@@ -91,6 +93,108 @@ test("Verify that modifying additional endpoint spec data type works", async (c)
     c,
     endpoints[0],
     () => instance.seenArgs,
+    // No additional prefix is needed
+    "",
+    // Remove body, query, and state from inputs as they are unused by this endpoint
+    (info) => {
+      const result = info.splice(3);
+      result.unshift(["stateInformation.stateInfo.0", "userId"]);
+      return result;
+    },
+    // Expected output is also different
+    {
+      contentType: "text/plain",
+      output: '"simpleResponseBody"',
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
+    (args) => data.omit(args, "body", "query") as any,
+    // Now invoke the unauthenticatedEndpoint() method by using POST
+    "POST",
+  );
+  c.deepEqual(permissionChecks, []);
+});
+
+test("Verify that modifying additional endpoint spec data type works also for inline endpoint functions", async (c) => {
+  c.plan(14);
+
+  // Create app and tracking array
+  const { app, permissionChecks } = newBuilder();
+  type StateSpecBase = spec.StateSpecBaseOfAppBuilder<typeof app>;
+
+  // Create endpoints
+  const url = app.url`/${mp.urlParameter("urlParam", protocol.urlParam)}`({});
+  const authState = {
+    userId: true,
+  } as const satisfies StateSpecBase;
+  const unauthState = {
+    userId: false,
+  } as const satisfies StateSpecBase;
+
+  const seenArgs: Array<unknown> = [];
+
+  const endpointInfos = [
+    url.endpoint<Endpoint1>({})(
+      {
+        method: "GET",
+        state: authState,
+        responseBody: mp.responseBody("simpleResponseBody"),
+        permissions: "permissions",
+      },
+      (args) => {
+        seenArgs.push(args);
+        return "simpleResponseBody" as const;
+      },
+    ),
+
+    url.endpoint<Endpoint2>({})(
+      {
+        method: "POST",
+        state: unauthState,
+        responseBody: mp.responseBody("simpleResponseBody"),
+      },
+      (args) => {
+        seenArgs.push(args);
+        return "simpleResponseBody" as const;
+      },
+    ),
+  ];
+
+  const { endpoints } = app.createEndpoints({}, endpointInfos);
+
+  // Initial asserts
+  c.deepEqual(endpoints.length, 1);
+  c.deepEqual(permissionChecks, []);
+
+  // Check endpoint with permissions
+  await epValidation.validateEndpoint(
+    c,
+    endpoints[0],
+    () => seenArgs,
+    // No additional prefix is needed
+    "",
+    // Remove body, query, and state from inputs as they are unused by this endpoint
+    (info) => {
+      const result = info.splice(3);
+      result.unshift(["stateInformation.stateInfo.0", "userId"]);
+      return result;
+    },
+    // Expected output is also different
+    {
+      contentType: "text/plain",
+      output: '"simpleResponseBody"',
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
+    (args) => data.omit(args, "body", "query") as any,
+  );
+  c.deepEqual(permissionChecks, ["permissions"]);
+
+  // Check endpoint without permissions
+  permissionChecks.length = 0;
+  seenArgs.length = 0;
+  await epValidation.validateEndpoint(
+    c,
+    endpoints[0],
+    () => seenArgs,
     // No additional prefix is needed
     "",
     // Remove body, query, and state from inputs as they are unused by this endpoint

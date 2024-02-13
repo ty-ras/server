@@ -21,7 +21,7 @@ const stateSpec = {
 
 export const implementation: spec.InlineEndpointImplementation<
   mp.DefaultStateHKT,
-  mp.ServerContext,
+  never,
   protocol.SomeEndpoint,
   typeof stateSpec
 > = (args) => {
