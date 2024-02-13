@@ -13,17 +13,23 @@ import type * as ep from "@ty-ras/endpoint";
  * @returns One single {@link ep.FinalizedAppEndpoint} which will have its regexp as combination of regexps of all given {@link ep.AppEndpoint}s, and will delegate the implementation to the endpoint which matches the correct regexp.
  */
 export default <TContext, TStateInfo>(
-  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo>>,
+  endpoints: ReadonlyArray<
+    ep.AppEndpoint<never, TStateInfo> | ep.AppEndpoint<TContext, TStateInfo>
+  >,
 ): ep.FinalizedAppEndpoint<TContext, TStateInfo> => {
-  const { builtEndpoints, regExp } = buildEndpoints(endpoints);
+  const { builtEndpoints, regExp } = buildEndpoints<TContext, TStateInfo>(
+    endpoints,
+  );
   return {
     url: regExp,
-    handler: createPrefixedHandlerImpl(builtEndpoints),
+    handler: createPrefixedHandlerImpl<TContext, TStateInfo>(builtEndpoints),
   };
 };
 
 const buildEndpoints = <TContext, TStateInfo>(
-  endpoints: ReadonlyArray<ep.AppEndpoint<TContext, TStateInfo>>,
+  endpoints: ReadonlyArray<
+    ep.AppEndpoint<never, TStateInfo> | ep.AppEndpoint<TContext, TStateInfo>
+  >,
 ): PrefixedAppEndpointsInfo<TContext, TStateInfo> => {
   // TODO maybe throw if multiple endpoints have same regex?
   // Since currently, that is not supported.
@@ -31,9 +37,12 @@ const buildEndpoints = <TContext, TStateInfo>(
   // In 99% of the cases, the endpoints we receive here, will be endpoint created and validated by endpoint-spec project.
   const builtEndpointInfo = endpoints.map(({ getRegExpAndHandler }, idx) => {
     const regExpGroupName = `e_${idx}`;
+    const builtEndpoint = getRegExpAndHandler(
+      `${regExpGroupName}_`,
+    ) as ep.FinalizedAppEndpoint<TContext | never, TStateInfo>;
     return {
       regExpGroupName,
-      builtEndpoint: getRegExpAndHandler(`${regExpGroupName}_`),
+      builtEndpoint,
     };
   });
 
@@ -99,7 +108,7 @@ const createPrefixedHandlerImpl =
 interface PrefixedAppEndpointsInfo<TContext, TStateInfo> {
   builtEndpoints: {
     regExpGroupName: string;
-    handler: ep.AppEndpointHandlerGetter<TContext, TStateInfo>;
+    handler: ep.AppEndpointHandlerGetter<TContext | never, TStateInfo>;
   }[];
   regExp: RegExp;
 }
