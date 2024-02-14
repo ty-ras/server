@@ -303,7 +303,7 @@ function newBuilderGenericImpl<
     ? processMethodArg
     : (pArgs) => {
         const boundMethod = processMethodArg(pArgs) ?? pArgs.boundMethod;
-        return ({ context: _, ...args }) => boundMethod(args as any); // eslint-disable-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unused-vars
+        return (args) => boundMethod(data.omit(args, "context" as any) as any); // eslint-disable-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unused-vars
       };
   // Define resetMetadataProviders separately, as defining it inline causes problems with function overload having different argument count.
   const resetMetadataProviders: api.ApplicationBuilderGeneric<

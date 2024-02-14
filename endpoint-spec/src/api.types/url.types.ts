@@ -393,11 +393,11 @@ export type GetMethodArgsGeneric<
   TProtocolSpec extends protocol.ProtocolSpecCore<protocol.HttpMethod, any>,
   TStateSpec,
 > = {
-  context: TServerContext;
   state: dataBE.MaterializeRuntimeState<TStateHKT, TStateSpec>;
-} & (TProtocolSpec extends protocol.ProtocolSpecURL<infer TURLData>
-  ? { url: protocol.RuntimeOf<TURLData> }
-  : {}) &
+} & (never extends TServerContext ? {} : { context: TServerContext }) &
+  (TProtocolSpec extends protocol.ProtocolSpecURL<infer TURLData>
+    ? { url: protocol.RuntimeOf<TURLData> }
+    : {}) &
   (TProtocolSpec extends protocol.ProtocolSpecQuery<infer TQuery>
     ? { query: protocol.RuntimeOf<TQuery> }
     : {}) &
