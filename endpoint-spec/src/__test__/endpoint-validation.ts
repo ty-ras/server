@@ -11,7 +11,9 @@ import type * as mp from "./missing-parts";
 
 export const validateEndpoint = async (
   c: ExecutionContext,
-  endpoint: ep.AppEndpoint<mp.ServerContext, mp.DefaultStateInfo>,
+  endpoint:
+    | ep.AppEndpoint<never, mp.DefaultStateInfo>
+    | ep.AppEndpoint<mp.ServerContext, mp.DefaultStateInfo>,
   getInstanceData: () => ReadonlyArray<unknown>,
   prefix = "/api/something",
   processFlattenedHandlerInfo: (info: Array<unknown>) => Array<unknown> = (
@@ -32,12 +34,19 @@ export const validateEndpoint = async (
 ) => {
   c.truthy(endpoint, "Given endpoint must be of given type");
 
-  const { handler, url } = endpoint.getRegExpAndHandler("");
+  const finalized = endpoint.getRegExpAndHandler("") as ep.FinalizedAppEndpoint<
+    mp.ServerContext | never,
+    mp.DefaultStateInfo
+  >;
+  const { handler, url } = finalized;
   c.deepEqual(
     url.source,
     `${ep.escapeRegExp(prefix).replaceAll("/", "\\/")}\\/(?<urlParam>[^/]+)`,
   );
-  const methodOK = handler(
+  const methodOK: ep.AppEndpointHandlerGetterResult<
+    mp.ServerContext | never,
+    mp.DefaultStateInfo
+  > = handler(
     method,
     // 2nd argument is not used by these endpoints, only by the ones produced by endpoint-prefix library
     {},
@@ -68,7 +77,7 @@ export const validateEndpoint = async (
       ]),
     );
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext> =
+    const args: ep.AppEndpointHandlerFunctionArgs<mp.ServerContext | never> =
       processHandlerArgs({
         context: { req: "req", res: "res" },
         state: {
