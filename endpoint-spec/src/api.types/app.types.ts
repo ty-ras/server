@@ -90,7 +90,7 @@ export interface ApplicationBuilderGeneric<
     ...endpoints: [EndpointCreationArg, ...Array<EndpointCreationArg>]
   ) => EndpointsCreationResult<
     TMetadataProviders,
-    TServerContextPossible,
+    TServerContextArg,
     dataBE.MaterializeStateInfo<
       TStateHKT,
       dataBE.MaterializeStateSpecBase<TStateHKT>
